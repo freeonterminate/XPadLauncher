@@ -6,7 +6,7 @@ uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, PK.Device.GamePad,
   FMX.Objects, FMX.ImgList, System.ImageList, FMX.Layouts, FMX.StdCtrls,
-  FMX.Controls.Presentation, FMX.ListBox, uCommandPanel;
+  FMX.Controls.Presentation, FMX.ListBox, uCommandPanel, FMX.Effects;
 
 type
   TfrmConfig = class(TForm)
@@ -30,12 +30,11 @@ type
     glpRStick: TGlyph;
     pnlButtonSide: TPanel;
     pnlFront: TPanel;
-    lblConfigCommand: TLabel;
+    lblTitle: TLabel;
     layRoot: TLayout;
     layButtons: TLayout;
     laySequenceBase: TLayout;
     lstbxSequences: TListBox;
-    layOpBase: TLayout;
     btnClose: TButton;
     pnlSeqeunce: TPanel;
     imgSeqAppIcon: TImage;
@@ -61,6 +60,9 @@ type
     rectSeqAddButton: TRectangle;
     pathSeqAddButton: TPath;
     rectSelector: TRectangle;
+    effectTitleGlow: TGlowEffect;
+    layTitle: TLayout;
+    Image1: TImage;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure timerUpdateTimer(Sender: TObject);
