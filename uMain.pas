@@ -3,205 +3,104 @@
 interface
 
 uses
-  System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
-  FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, PK.Device.GamePad,
-  FMX.Objects, FMX.ImgList, System.ImageList, FMX.Layouts, FMX.StdCtrls,
-  FMX.Controls.Presentation, FMX.ListBox, uCommandPanel, FMX.Effects;
+  System.SysUtils, System.Types, System.UITypes, System.Classes,
+  FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, PK.TrayIcon, FMX.Menus,
+  System.ImageList, FMX.ImgList, FMX.Objects,
+  PK.Device.GamePad, PK.Device.GamePad.Types;
 
 type
-  TfrmConfig = class(TForm)
-    timerUpdate: TTimer;
+  TfrmMain = class(TForm)
+    popupMain: TPopupMenu;
+    menuEnabled: TMenuItem;
+    menuSep1: TMenuItem;
+    menuConfig: TMenuItem;
+    menuVersion: TMenuItem;
+    menuSep2: TMenuItem;
+    menuExit: TMenuItem;
     imglstButtons: TImageList;
-    glpA: TGlyph;
-    styleAir: TStyleBook;
-    glpB: TGlyph;
-    glpX: TGlyph;
-    glpY: TGlyph;
-    glpBack: TGlyph;
-    glpStart: TGlyph;
-    glpCR: TGlyph;
-    glpLB: TGlyph;
-    glpRB: TGlyph;
-    glpLT: TGlyph;
-    glpRT: TGlyph;
-    glpLS: TGlyph;
-    glpRS: TGlyph;
-    glpLStick: TGlyph;
-    glpRStick: TGlyph;
-    pnlButtonSide: TPanel;
-    pnlFront: TPanel;
-    lblTitle: TLabel;
-    layRoot: TLayout;
-    layButtons: TLayout;
-    laySequenceBase: TLayout;
-    lstbxSequences: TListBox;
-    btnClose: TButton;
-    pnlSeqeunce: TPanel;
-    imgSeqAppIcon: TImage;
-    scSeqBase: THorzScrollBox;
-    laySeq: TLayout;
-    laySeqInfo: TLayout;
-    btnCommandRemove: TButton;
-    laySeqInfoName: TLayout;
-    lblSeqName: TLabel;
-    laySeqDelete: TLayout;
-    laySeqMain: TLayout;
-    laySeqOpBase: TLayout;
-    laySeqBase: TLayout;
-    lblSeqPath: TLabel;
-    btnSeqAdd: TButton;
-    btnSeqDel: TButton;
-    pathSeqAdd: TPath;
-    pathSeqDel: TPath;
-    pathSeqDelete: TPath;
-    pnlSeqAppImageFrame: TPanel;
-    pnlSeqBaseFrame: TPanel;
-    itemSeqAdd: TListBoxItem;
-    rectSeqAddButton: TRectangle;
-    pathSeqAddButton: TPath;
-    rectSelector: TRectangle;
-    effectTitleGlow: TGlowEffect;
-    layTitle: TLayout;
-    Image1: TImage;
+    imgLogo: TImage;
+    timerUpdate: TTimer;
     procedure FormCreate(Sender: TObject);
+    procedure menuExitClick(Sender: TObject);
+    procedure menuConfigClick(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure FormShow(Sender: TObject);
     procedure timerUpdateTimer(Sender: TObject);
-    procedure rectSeqAddButtonMouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Single);
-    procedure btnCloseClick(Sender: TObject);
-  private var
+    procedure menuEnabledClick(Sender: TObject);
+  private
+    FTrayIcon: TTrayIcon;
     FPad: TGamePad;
-    FCommandPanels: TCommandPanels;
+    FCommands: TArray<TGamePadButton>;
+    FCommandIndex: Integer;
   public
   end;
 
 var
-  frmConfig: TfrmConfig;
+  frmMain: TfrmMain;
 
 implementation
 
 {$R *.fmx}
 
 uses
-  System.DateUtils
-  , PK.Device.GamePad.Types
-  , uButtonIndexes
+  uConfig
+  , uConfigForm
+  , PK.Utils.ImageListHelper
+  {$IFDEF MSWINDOWS}
+  , PK.GUI.DarkMode.Win
+  {$ENDIF}
   ;
 
-procedure TfrmConfig.btnCloseClick(Sender: TObject);
+procedure TfrmMain.FormCreate(Sender: TObject);
+begin
+  SetLength(FCommands, 32);
+  FCommandIndex := 0;
+
+  FPad := TGamePad.Create;
+
+  FTrayIcon := TTrayIcon.Create;
+  FTrayIcon.AssignPopupMenu(popupMain);
+  FTrayIcon.LButtonPopup := True;
+  FTrayIcon.RegisterIcon('Icon', imgLogo.Bitmap);
+  FTrayIcon.ChangeIcon('Icon', 'XPad Launcher');
+  FTrayIcon.Apply('{A4523C1E-210C-48AE-9A3F-00E0E04DB0BB}');
+
+  SetBounds(-MaxInt, -MaxInt, 1, 1);
+
+  timerUpdate.Enabled := True;
+end;
+
+procedure TfrmMain.FormDestroy(Sender: TObject);
+begin
+  FTrayIcon.Free;
+  FPad.Free;
+end;
+
+procedure TfrmMain.FormShow(Sender: TObject);
+begin
+  FTrayIcon.HideTaskbar;
+end;
+
+procedure TfrmMain.menuConfigClick(Sender: TObject);
+begin
+  ShowConfig(FPad, imglstButtons);
+end;
+
+procedure TfrmMain.menuEnabledClick(Sender: TObject);
+begin
+  menuEnabled.IsChecked := not menuEnabled.IsChecked;
+  timerUpdate.Enabled := menuEnabled.IsChecked;
+end;
+
+procedure TfrmMain.menuExitClick(Sender: TObject);
 begin
   Close;
 end;
 
-procedure TfrmConfig.FormCreate(Sender: TObject);
+procedure TfrmMain.timerUpdateTimer(Sender: TObject);
 begin
-  FPad := TGamePad.Create;
-  timerUpdate.Enabled := True;
-
-  FCommandPanels :=
-    TCommandPanels.Create(FPad, imglstButtons, lstbxSequences, pnlSeqeunce);
-end;
-
-procedure TfrmConfig.FormDestroy(Sender: TObject);
-begin
-  FPad.Free;
-  FCommandPanels.Free;
-end;
-
-procedure TfrmConfig.rectSeqAddButtonMouseDown(Sender: TObject;
-  Button: TMouseButton; Shift: TShiftState; X, Y: Single);
-begin
-  FCommandPanels.Add;
-end;
-
-procedure TfrmConfig.timerUpdateTimer(Sender: TObject);
-begin
-  var S := FPad.Check;
-
-  layButtons.BeginUpdate;
-  try
-    // A B X Y
-    glpA.ImageIndex := B_As[TGamePadButton.A in S];
-    glpB.ImageIndex := B_Bs[TGamePadButton.B in S];
-    glpX.ImageIndex := B_Xs[TGamePadButton.X in S];
-    glpY.ImageIndex := B_Ys[TGamePadButton.Y in S];
-
-    // Back Start
-    glpBack.ImageIndex := B_BACKs[TGamePadButton.Back in S];
-    glpStart.ImageIndex := B_STARTs[TGamePadButton.Start in S];
-
-    // LB LS LT
-    glpLB.ImageIndex := B_LBs[TGamePadButton.LeftShoulder in S];
-    glpLS.ImageIndex := B_LSs[TGamePadButton.LeftThumb in S];
-    glpLT.ImageIndex := B_LTs[TGamePadButton.LeftTrigger in S];
-
-    // RB RS RT
-    glpRB.ImageIndex := B_RBs[TGamePadButton.RightShoulder in S];
-    glpRS.ImageIndex := B_RSs[TGamePadButton.RightThumb in S];
-    glpRT.ImageIndex := B_RTs[TGamePadButton.RightTrigger in S];
-
-    // CROSS
-    glpCR.ImageIndex :=
-      B_CROSS
-      + Ord(TGamePadButton.Down in S) * 1
-      + Ord(TGamePadButton.Left in S) * 2
-      + Ord(TGamePadButton.Right in S) * 3
-      + Ord(TGamePadButton.Up in S) * 4;
-
-    if TGamePadButton.LeftUp in S then
-      glpCR.ImageIndex := B_CROSS_LU;
-
-    if TGamePadButton.LeftDown in S then
-      glpCR.ImageIndex := B_CROSS_LD;
-
-    if TGamePadButton.RightUp in S then
-      glpCR.ImageIndex := B_CROSS_RU;
-
-    if TGamePadButton.RightDown in S then
-      glpCR.ImageIndex := B_CROSS_RD;
-
-    // Left Stick
-    glpLStick.ImageIndex :=
-      ST_L
-      + Ord(TGamePadButton.LStickD in S) * 1
-      + Ord(TGamePadButton.LStickL in S) * 2
-      + Ord(TGamePadButton.LStickR in S) * 3
-      + Ord(TGamePadButton.LStickU in S) * 4;
-
-    if TGamePadButton.LStickLU in S then
-      glpLStick.ImageIndex := ST_L_LU;
-
-    if TGamePadButton.LStickLD in S then
-      glpLStick.ImageIndex := ST_L_LD;
-
-    if TGamePadButton.LStickRU in S then
-      glpLStick.ImageIndex := ST_L_RU;
-
-    if TGamePadButton.LStickRD in S then
-      glpLStick.ImageIndex := ST_L_RD;
-
-    // RStick
-    glpRStick.ImageIndex :=
-      ST_R
-      + Ord(TGamePadButton.RStickD in S) * 1
-      + Ord(TGamePadButton.RStickL in S) * 2
-      + Ord(TGamePadButton.RStickR in S) * 3
-      + Ord(TGamePadButton.RStickU in S) * 4;
-
-    if TGamePadButton.RStickLU in S then
-      glpRStick.ImageIndex := ST_R_LU;
-
-    if TGamePadButton.RStickLD in S then
-      glpRStick.ImageIndex := ST_R_LD;
-
-    if TGamePadButton.RStickRU in S then
-      glpRStick.ImageIndex := ST_R_RU;
-
-    if TGamePadButton.RStickRD in S then
-      glpRStick.ImageIndex := ST_R_RD;
-  finally
-    layButtons.EndUpdate;
-  end;
+  if not menuEnabled.IsChecked then
+    Exit;
 end;
 
 end.

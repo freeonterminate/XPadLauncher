@@ -91,12 +91,134 @@ const
   B_RSs: array [Boolean] of Integer = (B_RS, B_RS_P);
   B_RTs: array [Boolean] of Integer = (B_RT, B_RT_P);
 
-function GetImageIndex(const AStatus: TGamePadButtons): Integer;
-function GetGamePadButton(const AImageIndex: Integer): TGamePadButton;
+function StatusToPadButton(const AStatus: TGamePadButtons): TGamePadButton;
+
+function StatusToImageIndex(const AStatus: TGamePadButtons): Integer;
+function ImageIndexToPadButton(const AImageIndex: Integer): TGamePadButton;
 
 implementation
 
-function GetImageIndex(const AStatus: TGamePadButtons): Integer;
+function StatusToPadButton(const AStatus: TGamePadButtons): TGamePadButton;
+begin
+  Result := TGamePadButton.None;;
+
+  // Cross
+  if TGamePadButton.Up in AStatus then
+    Result := TGamePadButton.Up;
+
+  if TGamePadButton.Down in AStatus then
+    Result := TGamePadButton.Down;
+
+  if TGamePadButton.Left in AStatus then
+    Result := TGamePadButton.Left;
+
+  if TGamePadButton.Right in AStatus then
+    Result := TGamePadButton.Right;
+
+  if TGamePadButton.LeftUp in AStatus then
+    Result := TGamePadButton.LeftUp;
+
+  if TGamePadButton.LeftDown in AStatus then
+    Result := TGamePadButton.LeftDown;
+
+  if TGamePadButton.RightUp in AStatus then
+    Result := TGamePadButton.RightUp;
+
+  if TGamePadButton.RightDown in AStatus then
+    Result := TGamePadButton.RightDown;
+
+  // RStick
+  if TGamePadButton.RStickL in AStatus then
+    Result := TGamePadButton.RStickL;
+
+  if TGamePadButton.RStickR in AStatus then
+    Result := TGamePadButton.RStickR;
+
+  if TGamePadButton.RStickU in AStatus then
+    Result := TGamePadButton.RStickU;
+
+  if TGamePadButton.RStickD in AStatus then
+    Result := TGamePadButton.RStickD;
+
+  if TGamePadButton.RStickLU in AStatus then
+    Result := TGamePadButton.RStickLU;
+
+  if TGamePadButton.RStickLD in AStatus then
+    Result := TGamePadButton.RStickLD;
+
+  if TGamePadButton.RStickRU in AStatus then
+    Result := TGamePadButton.RStickRU;
+
+  if TGamePadButton.RStickRD in AStatus then
+    Result := TGamePadButton.RStickRD;
+
+  // LStick
+  if TGamePadButton.LStickL in AStatus then
+    Result := TGamePadButton.LStickL;
+
+  if TGamePadButton.LStickR in AStatus then
+    Result := TGamePadButton.LStickR;
+
+  if TGamePadButton.LStickU in AStatus then
+    Result := TGamePadButton.LStickU;
+
+  if TGamePadButton.LStickD in AStatus then
+    Result := TGamePadButton.LStickD;
+
+  if TGamePadButton.LStickLU in AStatus then
+    Result := TGamePadButton.LStickLU;
+
+  if TGamePadButton.LStickLD in AStatus then
+    Result := TGamePadButton.LStickLD;
+
+  if TGamePadButton.LStickRU in AStatus then
+    Result := TGamePadButton.LStickRU;
+
+  if TGamePadButton.LStickRD in AStatus then
+    Result := TGamePadButton.LStickRD;
+
+  // L Buttons
+  if TGamePadButton.LeftShoulder in AStatus then
+    Result := TGamePadButton.LeftShoulder;
+
+  if TGamePadButton.LeftTrigger in AStatus then
+    Result := TGamePadButton.LeftTrigger;
+
+  if TGamePadButton.LeftThumb in AStatus then
+    Result := TGamePadButton.LeftThumb;
+
+  // R Buttons
+  if TGamePadButton.RightShoulder in AStatus then
+    Result := TGamePadButton.RightShoulder;
+
+  if TGamePadButton.RightTrigger in AStatus then
+    Result := TGamePadButton.RightTrigger;
+
+  if TGamePadButton.RightThumb in AStatus then
+    Result := TGamePadButton.RightThumb;
+
+  // Back Start
+  if TGamePadButton.Back in AStatus then
+    Result := TGamePadButton.Back;
+
+  if TGamePadButton.Start in AStatus then
+    Result := TGamePadButton.Start;
+
+  // A B X Y
+  if TGamePadButton.A in AStatus then
+    Result := TGamePadButton.A;
+
+  if TGamePadButton.B in AStatus then
+    Result := TGamePadButton.B;
+
+  if TGamePadButton.X in AStatus then
+    Result := TGamePadButton.X;
+
+  if TGamePadButton.Y in AStatus then
+    Result := TGamePadButton.Y;
+end;
+
+function StatusToImageIndex(const AStatus: TGamePadButtons): Integer;
 begin
   Result := B_NONE;
 
@@ -214,7 +336,7 @@ begin
     Result := ST_R_RD;
 end;
 
-function GetGamePadButton(const AImageIndex: Integer): TGamePadButton;
+function ImageIndexToPadButton(const AImageIndex: Integer): TGamePadButton;
 begin
   Result := TGamePadButton.None;
 

@@ -12,6 +12,7 @@ uses
   , FMX.StdCtrls
   , FMX.Objects
   , FMX.ImgList
+  , FMX.Dialogs
   , PK.Device.GamePad.Types
   , PK.Device.GamePad
   ;
@@ -25,6 +26,10 @@ type
     FItem: TListBoxItem;
     FPanel: TPanel;
     FPalette: TLayout;
+    FInfo: TLayout;
+    FInfoName: TLabel;
+    FInfoPath: TLabel;
+    FInfoImage: TImage;
     FSelector: TRectangle;
     FCommands: TList<TGlyph>;
   private
@@ -32,8 +37,11 @@ type
     procedure AddBtnClickHandler(Sender: TObject);
     procedure DelBtnClickHandler(Sender: TObject);
     procedure GlyphClickHandler(Sender: TObject);
+    procedure InfoClickHandler(Sender: TObject);
     function GetCount: Integer;
     function GetCommands(const AIndex: Integer): TGamePadButton;
+    procedure AddCommand(const AButtons: TGamePadButtons);
+    procedure SetNameAndPath(const AName, APath: String);
   public
     constructor Create(const AParent: TCommandPanels);
     destructor Destroy; override;
@@ -50,14 +58,20 @@ type
     FPad: TGamePad;
     FImageList: TImageList;
     FListBox: TListBox;
+    FDialog: TOpenDialog;
     FItems: TList<TCommandPanel>;
+  private
+    procedure Load;
+    procedure Save;
   public
     constructor Create(
       const APad: TGamePad;
       const AImageList: TImageList;
       const AListBox: TListBox;
-      const APanel: TPanel);
+      const APanel: TPanel;
+      const ADialog: TOpenDialog);
     destructor Destroy; override;
+    procedure Clear;
     function Add: TCommandPanel;
   end;
 
@@ -65,22 +79,34 @@ implementation
 
 uses
   System.DateUtils
+  , System.JSON.Serializers
+  , System.IOUtils
   , FMX.Types
   , uButtonIndexes
+  , uConfig
+  {$IFDEF MSWINDOWS}
+  , PK.Graphic.IconConverter.Win
+  , PK.Graphic.IconUtils.Win
+  {$ENDIF}
   ;
 
 { TCommandPanel }
 
 procedure TCommandPanel.AddBtnClickHandler(Sender: TObject);
 begin
-  if FParent.FPad.Status = [] then
+  AddCommand(FParent.FPad.Status);
+end;
+
+procedure TCommandPanel.AddCommand(const AButtons: TGamePadButtons);
+begin
+  if AButtons = [] then
     Exit;
 
   var G := TGlyph.Create(FPalette);
   FCommands.Add(G);
 
   G.Images := FParent.FImageList;
-  G.ImageIndex := GetImageIndex(FParent.FPad.Status);
+  G.ImageIndex := StatusToImageIndex(AButtons);
   G.Align := TAlignLayout.Left;
   G.HitTest := True;
   G.OnClick := GlyphClickHandler;
@@ -116,13 +142,21 @@ begin
   var RemoveBtn := TButton(FPanel.FindComponent('btnCommandRemove'));
   var AddBtn := TButton(FPanel.FindComponent('btnSeqAdd'));
   var DelBtn := TButton(FPanel.FindComponent('btnSeqDel'));
+  RemoveBtn.OnClick := RemoveBtnClickHandler;
+  AddBtn.OnClick := AddBtnClickHandler;
+  DelBtn.OnClick := DelBtnClickHandler;
+
   FPalette := TLayout(FPanel.FindComponent('laySeq'));
   FSelector := TRectangle(FPanel.FindComponent('rectSelector'));
   FSelector.Visible := False;
 
-  RemoveBtn.OnClick := RemoveBtnClickHandler;
-  AddBtn.OnClick := AddBtnClickHandler;
-  DelBtn.OnClick := DelBtnClickHandler;
+  FInfo := TLayout(FPanel.FindComponent('laySeqInfoName'));
+  FInfoName := TLabel(FPanel.FindComponent('lblSeqName'));
+  FInfoPath := TLabel(FPanel.FindComponent('lblSeqPath'));
+  FInfoImage := TImage(FPanel.FindComponent('imgSeqAppIcon'));
+  FInfo.OnClick := InfoClickHandler;
+  FInfoName.Text := '';
+  FInfoPath.Text := '';
 
   FPanel.Parent := FItem;
 
@@ -184,7 +218,7 @@ end;
 
 function TCommandPanel.GetCommands(const AIndex: Integer): TGamePadButton;
 begin
-  Result := GetGamePadButton(FCommands[AIndex].ImageIndex);
+  Result := ImageIndexToPadButton(FCommands[AIndex].ImageIndex);
 end;
 
 function TCommandPanel.GetCount: Integer;
@@ -205,6 +239,15 @@ begin
   FSelector.Parent := G;
 end;
 
+procedure TCommandPanel.InfoClickHandler(Sender: TObject);
+begin
+  if FParent.FDialog.Execute then
+  begin
+    var F := FParent.FDialog.FileName;
+    SetNameAndPath(ChangeFileExt(ExtractFileName(F), ''), F);
+  end;
+end;
+
 procedure TCommandPanel.RemoveBtnClickHandler(Sender: TObject);
 begin
   var This := Self;
@@ -218,6 +261,25 @@ begin
   );
 end;
 
+procedure TCommandPanel.SetNameAndPath(const AName, APath: String);
+begin
+    FInfoName.Text := AName;
+    FInfoPath.Text := APath;
+
+    TLabel(FPanel.FindComponent('lblSeqMessage')).Visible := False;
+
+    {$IFDEF MSWINDOWS}
+    TIconUtils.GetAppIcon(
+      APath,
+      procedure(const AIcon: TWinIcon)
+      begin
+        if AIcon <> 0 then
+          TIconConverter.IconToBitmap(AIcon, FInfoImage.Bitmap);
+      end
+    );
+    {$ENDIF}
+end;
+
 { TCommandPanels }
 
 function TCommandPanels.Add: TCommandPanel;
@@ -226,17 +288,27 @@ begin
   FItems.Add(Result);
 end;
 
+procedure TCommandPanels.Clear;
+begin
+  for var Item in FItems do
+    Item.Free;
+
+  FItems.Clear;
+end;
+
 constructor TCommandPanels.Create(
   const APad: TGamePad;
   const AImageList: TImageList;
   const AListBox: TListBox;
-  const APanel: TPanel);
+  const APanel: TPanel;
+  const ADialog: TOpenDialog);
 begin
   inherited Create;
 
   FPad := APad;
   FImageList := AImageList;
   FListBox := AListBox;
+  FDialog := ADialog;
 
   FOriginalPanel := TMemoryStream.Create;
   FOriginalPanel.WriteComponent(APanel);
@@ -244,10 +316,14 @@ begin
   APanel.Visible := False;
 
   FItems := TList<TCommandPanel>.Create;
+
+  Load;
 end;
 
 destructor TCommandPanels.Destroy;
 begin
+  Save;
+
   FOriginalPanel.Free;
 
   for var Item in FItems do
@@ -256,6 +332,38 @@ begin
   FItems.Free;
 
   inherited;
+end;
+
+procedure TCommandPanels.Load;
+begin
+  Clear;
+
+  for var i := 0 to Config.Count - 1 do
+  begin
+    var Item := Config[i];
+
+    var P := Add;
+    P.SetNameAndPath(Item.name, Item.path);
+
+    for var C in Item.sequences do
+      P.AddCommand([TGamePadButton(C)]);
+  end;
+end;
+
+procedure TCommandPanels.Save;
+begin
+  Config.Clear;
+
+  for var i := 0 to FItems.Count - 1 do
+  begin
+    var P := FItems[i];
+
+    var Seq: TArray<TGamePadButton>;
+    for var j := 0 to P.FCommands.Count - 1 do
+      Seq := Seq + [ImageIndexToPadButton(P.FCommands[j].ImageIndex)];
+
+    Config.Add(P.FInfoName.Text, P.FInfoPath.Text, Seq);
+  end;
 end;
 
 end.
