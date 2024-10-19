@@ -222,44 +222,6 @@ function StatusToImageIndex(const AStatus: TGamePadButtons): Integer;
 begin
   Result := B_NONE;
 
-  if TGamePadButton.A in AStatus then
-    Result := B_A;
-
-  if TGamePadButton.B in AStatus then
-    Result := B_B;
-
-  if TGamePadButton.X in AStatus then
-    Result := B_X;
-
-  if TGamePadButton.Y in AStatus then
-    Result := B_Y;
-
-  if TGamePadButton.Back in AStatus then
-    Result := B_BACK;
-
-  if TGamePadButton.Start in AStatus then
-    Result := B_START;
-
-  // L Buttons
-  if TGamePadButton.LeftShoulder in AStatus then
-    Result := B_LB;
-
-  if TGamePadButton.LeftTrigger in AStatus then
-    Result := B_LT;
-
-  if TGamePadButton.LeftThumb in AStatus then
-    Result := B_LS;
-
-  // R Buttons
-  if TGamePadButton.RightShoulder in AStatus then
-    Result := B_RB;
-
-  if TGamePadButton.RightTrigger in AStatus then
-    Result := B_RT;
-
-  if TGamePadButton.RightThumb in AStatus then
-    Result := B_RS;
-
   // Cross
   if TGamePadButton.Up in AStatus then
     Result := B_CROSS_U;
@@ -284,6 +246,31 @@ begin
 
   if TGamePadButton.RightDown in AStatus then
     Result := B_CROSS_RD;
+
+  // RStick
+  if TGamePadButton.RStickL in AStatus then
+    Result := ST_R_L;
+
+  if TGamePadButton.RStickR in AStatus then
+    Result := ST_R_R;
+
+  if TGamePadButton.RStickU in AStatus then
+    Result := ST_R_U;
+
+  if TGamePadButton.RStickD in AStatus then
+    Result := ST_R_D;
+
+  if TGamePadButton.RStickLU in AStatus then
+    Result := ST_R_LU;
+
+  if TGamePadButton.RStickLD in AStatus then
+    Result := ST_R_LD;
+
+  if TGamePadButton.RStickRU in AStatus then
+    Result := ST_R_RU;
+
+  if TGamePadButton.RStickRD in AStatus then
+    Result := ST_R_RD;
 
   // LStick
   if TGamePadButton.LStickL in AStatus then
@@ -310,73 +297,50 @@ begin
   if TGamePadButton.LStickRD in AStatus then
     Result := ST_L_RD;
 
-  // RStick
-  if TGamePadButton.RStickL in AStatus then
-    Result := ST_R_L;
+  // L Buttons
+  if TGamePadButton.LeftShoulder in AStatus then
+    Result := B_LB;
 
-  if TGamePadButton.RStickR in AStatus then
-    Result := ST_R_R;
+  if TGamePadButton.LeftTrigger in AStatus then
+    Result := B_LT;
 
-  if TGamePadButton.RStickU in AStatus then
-    Result := ST_R_U;
+  if TGamePadButton.LeftThumb in AStatus then
+    Result := B_LS;
 
-  if TGamePadButton.RStickD in AStatus then
-    Result := ST_R_D;
+  // R Buttons
+  if TGamePadButton.RightShoulder in AStatus then
+    Result := B_RB;
 
-  if TGamePadButton.RStickLU in AStatus then
-    Result := ST_R_LU;
+  if TGamePadButton.RightTrigger in AStatus then
+    Result := B_RT;
 
-  if TGamePadButton.RStickLD in AStatus then
-    Result := ST_R_LD;
+  if TGamePadButton.RightThumb in AStatus then
+    Result := B_RS;
 
-  if TGamePadButton.RStickRU in AStatus then
-    Result := ST_R_RU;
+  // Back Start
+  if TGamePadButton.Back in AStatus then
+    Result := B_BACK;
 
-  if TGamePadButton.RStickRD in AStatus then
-    Result := ST_R_RD;
+  if TGamePadButton.Start in AStatus then
+    Result := B_START;
+
+  // A B X Y
+  if TGamePadButton.A in AStatus then
+    Result := B_A;
+
+  if TGamePadButton.B in AStatus then
+    Result := B_B;
+
+  if TGamePadButton.X in AStatus then
+    Result := B_X;
+
+  if TGamePadButton.Y in AStatus then
+    Result := B_Y;
 end;
 
 function ImageIndexToPadButton(const AImageIndex: Integer): TGamePadButton;
 begin
   Result := TGamePadButton.None;
-
-  if AImageIndex = B_A then
-    Result := TGamePadButton.A;
-
-  if AImageIndex = B_B then
-    Result := TGamePadButton.B;
-
-  if AImageIndex = B_X then
-    Result := TGamePadButton.X;
-
-  if AImageIndex = B_Y then
-    Result := TGamePadButton.Y;
-
-  if AImageIndex = B_BACK then
-    Result := TGamePadButton.Back;
-
-  if AImageIndex = B_START then
-    Result := TGamePadButton.Start;
-
-  // L Buttons
-  if AImageIndex = B_LB then
-    Result := TGamePadButton.LeftShoulder;
-
-  if AImageIndex = B_LT then
-    Result := TGamePadButton.LeftTrigger;
-
-  if AImageIndex = B_LS then
-    Result := TGamePadButton.LeftThumb;
-
-  // R Buttons
-  if AImageIndex = B_RB then
-    Result := TGamePadButton.RightShoulder;
-
-  if AImageIndex = B_RT then
-    Result := TGamePadButton.RightTrigger;
-
-  if AImageIndex = B_RS then
-    Result := TGamePadButton.RightThumb;
 
   // Cross
   if AImageIndex = B_CROSS_U then
@@ -403,6 +367,31 @@ begin
   if AImageIndex = B_CROSS_RD then
     Result := TGamePadButton.RightDown;
 
+  // RStick
+  if AImageIndex = ST_R_L then
+    Result := TGamePadButton.RStickL;
+
+  if AImageIndex = ST_R_R then
+    Result := TGamePadButton.RStickR;
+
+  if AImageIndex = ST_R_U then
+    Result := TGamePadButton.RStickU;
+
+  if AImageIndex = ST_R_D then
+    Result := TGamePadButton.RStickD;
+
+  if AImageIndex = ST_R_LU then
+    Result := TGamePadButton.RStickLU;
+
+  if AImageIndex = ST_R_LD then
+    Result := TGamePadButton.RStickLD;
+
+  if AImageIndex = ST_R_RU then
+    Result := TGamePadButton.RStickRU;
+
+  if AImageIndex = ST_R_RD then
+    Result := TGamePadButton.RStickRD;
+
   // LStick
   if AImageIndex = ST_L_L then
     Result := TGamePadButton.LStickL;
@@ -428,30 +417,45 @@ begin
   if AImageIndex = ST_L_RD then
     Result := TGamePadButton.LStickRD;
 
-  // RStick
-  if AImageIndex = ST_R_L then
-    Result := TGamePadButton.RStickL;
+  // L Buttons
+  if AImageIndex = B_LB then
+    Result := TGamePadButton.LeftShoulder;
 
-  if AImageIndex = ST_R_R then
-    Result := TGamePadButton.RStickR;
+  if AImageIndex = B_LT then
+    Result := TGamePadButton.LeftTrigger;
 
-  if AImageIndex = ST_R_U then
-    Result := TGamePadButton.RStickU;
+  if AImageIndex = B_LS then
+    Result := TGamePadButton.LeftThumb;
 
-  if AImageIndex = ST_R_D then
-    Result := TGamePadButton.RStickD;
+  // R Buttons
+  if AImageIndex = B_RB then
+    Result := TGamePadButton.RightShoulder;
 
-  if AImageIndex = ST_R_LU then
-    Result := TGamePadButton.RStickLU;
+  if AImageIndex = B_RT then
+    Result := TGamePadButton.RightTrigger;
 
-  if AImageIndex = ST_R_LD then
-    Result := TGamePadButton.RStickLD;
+  if AImageIndex = B_RS then
+    Result := TGamePadButton.RightThumb;
 
-  if AImageIndex = ST_R_RU then
-    Result := TGamePadButton.RStickRU;
+  // Back Start
+  if AImageIndex = B_BACK then
+    Result := TGamePadButton.Back;
 
-  if AImageIndex = ST_R_RD then
-    Result := TGamePadButton.RStickRD;
+  if AImageIndex = B_START then
+    Result := TGamePadButton.Start;
+
+  // A B X Y
+  if AImageIndex = B_A then
+    Result := TGamePadButton.A;
+
+  if AImageIndex = B_B then
+    Result := TGamePadButton.B;
+
+  if AImageIndex = B_X then
+    Result := TGamePadButton.X;
+
+  if AImageIndex = B_Y then
+    Result := TGamePadButton.Y;
 end;
 
 end.
