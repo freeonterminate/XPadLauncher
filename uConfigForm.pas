@@ -159,7 +159,7 @@ begin
       FImageList,
       lstbxSequences,
       pnlSeqeunce,
-      dlgOpen);
+      styleAir);
 
   timerUpdate.Enabled := True;
 end;

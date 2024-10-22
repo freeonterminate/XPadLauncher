@@ -1,0 +1,218 @@
+object frmInputCommand: TfrmInputCommand
+  Left = 0
+  Top = 0
+  BorderIcons = []
+  BorderStyle = Single
+  Caption = 'Input Command '
+  ClientHeight = 112
+  ClientWidth = 468
+  FormStyle = StayOnTop
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnClose = FormClose
+  OnDestroy = FormDestroy
+  OnShow = FormShow
+  DesignerMasterStyle = 0
+  object layRoot: TLayout
+    Align = Contents
+    Size.Width = 468.000000000000000000
+    Size.Height = 112.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 0
+    object layCommandBase: TLayout
+      Align = Client
+      Padding.Left = 8.000000000000000000
+      Padding.Top = 8.000000000000000000
+      Padding.Right = 8.000000000000000000
+      Padding.Bottom = 8.000000000000000000
+      Size.Width = 468.000000000000000000
+      Size.Height = 80.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+      object imgIcon: TImage
+        MultiResBitmap = <
+          item
+          end>
+        Align = Left
+        Margins.Right = 8.000000000000000000
+        Position.X = 8.000000000000000000
+        Position.Y = 8.000000000000000000
+        Size.Width = 64.000000000000000000
+        Size.Height = 64.000000000000000000
+        Size.PlatformDefault = False
+        OnClick = imgIconClick
+      end
+      object layCommandInfoBase: TLayout
+        Align = Client
+        Padding.Top = 8.000000000000000000
+        Padding.Bottom = 8.000000000000000000
+        Size.Width = 380.000000000000000000
+        Size.Height = 64.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+        object layCommandTitleBase: TLayout
+          Align = Left
+          Margins.Right = 8.000000000000000000
+          Position.Y = 8.000000000000000000
+          Size.Width = 73.000000000000000000
+          Size.Height = 48.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          object lblCommandName: TLabel
+            Align = Top
+            Size.Width = 73.000000000000000000
+            Size.Height = 17.000000000000000000
+            Size.PlatformDefault = False
+            TextSettings.HorzAlign = Trailing
+            Text = 'Name'
+            TabOrder = 1
+          end
+          object lblCommandExe: TLabel
+            Align = Bottom
+            Position.Y = 31.000000000000000000
+            Size.Width = 73.000000000000000000
+            Size.Height = 17.000000000000000000
+            Size.PlatformDefault = False
+            TextSettings.HorzAlign = Trailing
+            TextSettings.VertAlign = Leading
+            Text = 'Command'
+            TabOrder = 0
+          end
+        end
+        object layCommandLinesBase: TLayout
+          Align = Client
+          Size.Width = 299.000000000000000000
+          Size.Height = 48.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 1
+          object edtCommandName: TEdit
+            Touch.InteractiveGestures = [LongTap, DoubleTap]
+            Align = Top
+            TabOrder = 0
+            Size.Width = 299.000000000000000000
+            Size.Height = 20.000000000000000000
+            Size.PlatformDefault = False
+          end
+          object layCommandCommandBase: TLayout
+            Align = Bottom
+            Position.Y = 28.000000000000000000
+            Size.Width = 299.000000000000000000
+            Size.Height = 20.000000000000000000
+            Size.PlatformDefault = False
+            TabOrder = 1
+            object edtCommand: TEdit
+              Touch.InteractiveGestures = [LongTap, DoubleTap]
+              Align = Client
+              TabOrder = 0
+              Size.Width = 275.000000000000000000
+              Size.Height = 20.000000000000000000
+              Size.PlatformDefault = False
+            end
+            object btnCommandRef: TButton
+              Align = Right
+              Margins.Left = 4.000000000000000000
+              Position.X = 279.000000000000000000
+              Size.Width = 20.000000000000000000
+              Size.Height = 20.000000000000000000
+              Size.PlatformDefault = False
+              StyleLookup = 'transparentcirclebuttonstyle'
+              TabOrder = 1
+              Text = 'btnCommandRef'
+              TextSettings.Trimming = None
+              OnClick = btnCommandRefClick
+              object pathCommandRefIcon: TPath
+                Align = Client
+                Data.Path = {
+                  37000000000000009E7FFD430A3756430200000040E5FA430E8D4E4302000000
+                  54A3F643A0FA494302000000441BF243A0FA49430100000096E34C43A0FA4943
+                  02000000C3553D43A0FA4943020000009E6F2F430AF75343020000001D1A2A43
+                  3CFF6243010000003D0A0343E1EAA94302000000C2D5014316A9AB4302000000
+                  281CFE42B603AD43020000006E12F7428F92AD4302000000B408F0428320AE43
+                  02000000D062E8424DD2AD43020000007268E242D9BEAC43010000000AD7D642
+                  1DAAAA430200000093D8CC4271DDA8430200000064BBC84296A3A54302000000
+                  00C0CC421DBAA2430100000056CE0D43CE2C524302000000B6F315437A493B43
+                  02000000B0522B43A9E62B4302000000CB014343A9E62B43010000006270B843
+                  A9E62B4301000000C285B5437C741943020000003D0AB343A7BB094302000000
+                  F3EDAB432931FE42020000006CE7A3432931FE42010000002FFD07432931FE42
+                  020000000000F9422931FE42020000002F1DE4429E84F042020000008D57DA42
+                  9C19DB420200000070BDCE4217AEC1420200000066E6B542B973B14202000000
+                  359E9A42B973B14201000000D34DDE41B973B1420200000087169741B973B142
+                  0200000012832841733DBA42020000004060A9407112C942020000000068913D
+                  04EBD74202000000500CB2BFA405EB420200000070BEAF3FBF74FC4201000000
+                  8D97AA42A3A5C743020000003B9FB342F7C8CE4302000000CA21CE4234A3D343
+                  020000008015EC4234A3D34301000000F3BDD04334A3D343020000002601D843
+                  34A3D34302000000ED7CDE430711CF430200000028ECE043B538C84301000000
+                  8C27FF437C74704302000000335B00444AAC674302000000080C004448E15D43
+                  020000009E7FFD430A375643030000009E7FFD430A375643}
+                Fill.Color = claOrange
+                HitTest = False
+                Margins.Top = 3.000000000000000000
+                Margins.Bottom = 3.000000000000000000
+                Size.Width = 20.000000000000000000
+                Size.Height = 14.000000000000000000
+                Size.PlatformDefault = False
+                Stroke.Kind = None
+              end
+              object dlgOpen: TOpenDialog
+                DefaultExt = 'exe'
+                Filter = 'Exe File (*.exe)|*.exe|All (*.*)|*.*'
+                Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
+                Left = 168
+                Top = 4
+              end
+            end
+          end
+          object dlgOpenImage: TOpenDialog
+            DefaultExt = 'png'
+            Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
+            Left = 228
+            Top = 4
+          end
+        end
+      end
+    end
+    object layButtonBase: TLayout
+      Align = Bottom
+      Padding.Left = 4.000000000000000000
+      Padding.Top = 4.000000000000000000
+      Padding.Right = 4.000000000000000000
+      Padding.Bottom = 4.000000000000000000
+      Position.Y = 80.000000000000000000
+      Size.Width = 468.000000000000000000
+      Size.Height = 32.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 1
+      object btnCancel: TButton
+        Align = Right
+        Cancel = True
+        Default = True
+        ModalResult = 2
+        Position.X = 364.000000000000000000
+        Position.Y = 4.000000000000000000
+        Size.Width = 100.000000000000000000
+        Size.Height = 24.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+        Text = '&Cancel'
+        TextSettings.Trimming = None
+        OnClick = btnCancelClick
+      end
+      object btnOK: TButton
+        Align = Right
+        Cancel = True
+        ModalResult = 1
+        Margins.Right = 8.000000000000000000
+        Position.X = 256.000000000000000000
+        Position.Y = 4.000000000000000000
+        Size.Width = 100.000000000000000000
+        Size.Height = 24.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        Text = '&OK'
+        TextSettings.Trimming = None
+        OnClick = btnOKClick
+      end
+    end
+  end
+end

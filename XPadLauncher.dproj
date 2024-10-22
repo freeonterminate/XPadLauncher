@@ -307,6 +307,9 @@
         <DCCReference Include="uMain.pas">
             <Form>frmMain</Form>
         </DCCReference>
+        <DCCReference Include="uCommandInputForm.pas">
+            <Form>frmInputCommand</Form>
+        </DCCReference>
         <DCCReference Include="uXPadCommand.pas"/>
         <DCCReference Include="uCommandPanel.pas"/>
         <DCCReference Include="uButtonIndexes.pas"/>
@@ -326,6 +329,9 @@
         <DCCReference Include="uConfig.pas"/>
         <DCCReference Include="Lib\Utils\PK.Utils.ImageListHelper.pas"/>
         <DCCReference Include="Lib\GUI\PK.GUI.DarkMode.Win.pas"/>
+        <DCCReference Include="Lib\Graphics\PK.Graphic.BitmapCodecManagerHelper.pas"/>
+        <DCCReference Include="uCommon.pas"/>
+        <DCCReference Include="Lib\Utils\PK.Utils.ScreenHelper.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

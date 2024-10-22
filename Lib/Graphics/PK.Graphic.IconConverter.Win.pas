@@ -34,7 +34,7 @@ class procedure TIconConverter.IconToBitmap(
   const AIcon: HICON;
   const ABitmap: TBitmap);
 begin
-  ABitmap.SetSize(0, 0);
+  ABitmap.Assign(nil);
 
   var W: Int64 := 0;
   var H: Int64 := 0;

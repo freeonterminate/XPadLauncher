@@ -12,9 +12,10 @@ uses
   , FMX.StdCtrls
   , FMX.Objects
   , FMX.ImgList
-  , FMX.Dialogs
+  , FMX.Controls
   , PK.Device.GamePad.Types
   , PK.Device.GamePad
+  , uConfig
   ;
 
 type
@@ -41,7 +42,7 @@ type
     function GetCount: Integer;
     function GetCommands(const AIndex: Integer): TGamePadButton;
     procedure AddCommand(const AButtons: TGamePadButtons);
-    procedure SetNameAndPath(const AName, APath: String);
+    procedure SetNameAndPath(const ACommand: TJsonCommand);
   public
     constructor Create(const AParent: TCommandPanels);
     destructor Destroy; override;
@@ -58,7 +59,7 @@ type
     FPad: TGamePad;
     FImageList: TImageList;
     FListBox: TListBox;
-    FDialog: TOpenDialog;
+    FStyleBook: TStyleBook;
     FItems: TList<TCommandPanel>;
   private
     procedure Load;
@@ -69,7 +70,7 @@ type
       const AImageList: TImageList;
       const AListBox: TListBox;
       const APanel: TPanel;
-      const ADialog: TOpenDialog);
+      const AStyleBook: TStyleBook);
     destructor Destroy; override;
     procedure Clear;
     function Add: TCommandPanel;
@@ -82,8 +83,9 @@ uses
   , System.JSON.Serializers
   , System.IOUtils
   , FMX.Types
+  , FMX.Forms
   , uButtonIndexes
-  , uConfig
+  , uCommandInputForm
   {$IFDEF MSWINDOWS}
   , PK.Graphic.IconConverter.Win
   , PK.Graphic.IconUtils.Win
@@ -241,11 +243,20 @@ end;
 
 procedure TCommandPanel.InfoClickHandler(Sender: TObject);
 begin
-  if FParent.FDialog.Execute then
-  begin
-    var F := FParent.FDialog.FileName;
-    SetNameAndPath(ChangeFileExt(ExtractFileName(F), ''), F);
-  end;
+  var Command: TJsonCommand;
+  Command.name := FInfoName.Text;
+  Command.path := FInfoPath.Text;
+  Command.SetImage(FInfoImage.Bitmap);
+
+  ShowInputCommand(
+    Screen.ActiveForm,
+    Command,
+    procedure(const ASuccess: Boolean; const ACommand: TJsonCommand)
+    begin
+      if ASuccess then
+        SetNameAndPath(ACommand);
+    end
+  );
 end;
 
 procedure TCommandPanel.RemoveBtnClickHandler(Sender: TObject);
@@ -261,23 +272,13 @@ begin
   );
 end;
 
-procedure TCommandPanel.SetNameAndPath(const AName, APath: String);
+procedure TCommandPanel.SetNameAndPath(const ACommand: TJsonCommand);
 begin
-    FInfoName.Text := AName;
-    FInfoPath.Text := APath;
+    FInfoName.Text := ACommand.name;
+    FInfoPath.Text := ACommand.path;
+    ACommand.GetImage(FInfoImage.Bitmap);
 
     TLabel(FPanel.FindComponent('lblSeqMessage')).Visible := False;
-
-    {$IFDEF MSWINDOWS}
-    TIconUtils.GetAppIcon(
-      APath,
-      procedure(const AIcon: TWinIcon)
-      begin
-        if AIcon <> 0 then
-          TIconConverter.IconToBitmap(AIcon, FInfoImage.Bitmap);
-      end
-    );
-    {$ENDIF}
 end;
 
 { TCommandPanels }
@@ -301,14 +302,14 @@ constructor TCommandPanels.Create(
   const AImageList: TImageList;
   const AListBox: TListBox;
   const APanel: TPanel;
-  const ADialog: TOpenDialog);
+  const AStyleBook: TStyleBook);
 begin
   inherited Create;
 
   FPad := APad;
   FImageList := AImageList;
   FListBox := AListBox;
-  FDialog := ADialog;
+  FStyleBook := AStyleBook;
 
   FOriginalPanel := TMemoryStream.Create;
   FOriginalPanel.WriteComponent(APanel);
@@ -343,7 +344,7 @@ begin
     var Item := Config[i];
 
     var P := Add;
-    P.SetNameAndPath(Item.name, Item.path);
+    P.SetNameAndPath(Item);
 
     for var C in Item.sequences do
       P.AddCommand([TGamePadButton(C)]);

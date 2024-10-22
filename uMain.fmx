@@ -6,7 +6,6 @@ object frmMain: TfrmMain
   ClientHeight = 92
   ClientWidth = 376
   Position = Default
-  WindowState = wsMinimized
   FormFactor.Width = 320
   FormFactor.Height = 480
   FormFactor.Devices = [Desktop]
@@ -84,6 +83,12 @@ object frmMain: TfrmMain
       Text = 'E&xit'
       OnClick = menuExitClick
     end
+  end
+  object timerUpdate: TTimer
+    Enabled = False
+    OnTimer = timerUpdateTimer
+    Left = 288
+    Top = 16
   end
   object imglstButtons: TImageList
     Source = <
@@ -2466,12 +2471,6 @@ object frmMain: TfrmMain
           end>
       end>
     Left = 200
-    Top = 16
-  end
-  object timerUpdate: TTimer
-    Enabled = False
-    OnTimer = timerUpdateTimer
-    Left = 288
     Top = 16
   end
 end

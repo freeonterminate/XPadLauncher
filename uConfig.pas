@@ -4,6 +4,9 @@ interface
 
 uses
   System.SysUtils
+  , System.Classes
+  , System.JSON.Serializers
+  , FMX.Graphics
   , PK.Device.GamePad.Types
   ;
 
@@ -11,7 +14,10 @@ type
   TJsonCommand = record
     name: String;
     path: String;
-    sequences: TArray<Integer>
+    image: String;
+    sequences: TArray<Integer>;
+    [JsonIgnore] procedure GetImage(const AImage: TBitmap);
+    [JsonIgnore] procedure SetImage(const AImage: TBitmap);
   end;
 
   TJsonCommands = record
@@ -49,12 +55,90 @@ implementation
 
 uses
   System.IOUtils
-  , System.JSON.Serializers
+  , System.NetEncoding
+  {$IFDEF MSWINDOWS}
+  , PK.Graphic.IconConverter.Win
+  , PK.Graphic.IconUtils.Win
+  {$ENDIF}
   ;
 
 function Config: TConfig;
 begin
   Result := TConfig.FInstance;
+end;
+
+{ TJsonCommand }
+
+procedure TJsonCommand.GetImage(const AImage: TBitmap);
+begin
+  if AImage = nil then
+    Exit;
+
+  if image.IsEmpty then
+  begin
+    AImage.Assign(nil);
+
+    {$IFDEF MSWINDOWS}
+    if TFile.Exists(path) then
+    begin
+      var Icon := TIconUtils.GetAppIcon(path, 0);
+      try
+        TIconConverter.IconToBitmap(Icon, AImage);
+      finally
+        TIconUtils.FreeIcon(Icon);
+      end;
+    end;
+    {$ENDIF}
+
+    Exit;
+  end;
+
+  var B64: TBase64Encoding := nil;
+  var Base64Data: TStringStream := nil;
+  var ImageData: TMemoryStream := nil;
+  try
+    B64 := TBase64Encoding.Create;
+    Base64Data := TStringStream.Create(image);
+    ImageData := TMemoryStream.Create;
+
+    B64.Decode(Base64Data, ImageData);
+    ImageData.Position := 0;
+
+    AImage.LoadFromStream(ImageData);
+  finally
+    B64.Free;
+    Base64Data.Free;
+    ImageData.Free;
+  end;
+end;
+
+procedure TJsonCommand.SetImage(const AImage: TBitmap);
+begin
+  image := '';
+
+  if (AImage = nil) or (AImage.IsEmpty) then
+    Exit;
+
+  var B64: TBase64Encoding := nil;
+  var Base64Data: TStringStream := nil;
+  var ImageData: TMemoryStream := nil;
+  try
+    B64 := TBase64Encoding.Create;
+    Base64Data := TStringStream.Create(image);
+    ImageData := TMemoryStream.Create;
+
+    AImage.SaveToStream(ImageData);
+    ImageData.Position := 0;
+
+    B64.Encode(ImageData, Base64Data);
+    Base64Data.Position := 0;
+
+    image := Base64Data.DataString;
+  finally
+    B64.Free;
+    Base64Data.Free;
+    ImageData.Free;
+  end;
 end;
 
 { TConfig }

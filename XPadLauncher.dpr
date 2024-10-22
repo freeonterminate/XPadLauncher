@@ -5,6 +5,7 @@ uses
   FMX.Forms,
   uConfigForm in 'uConfigForm.pas' {frmConfig},
   uMain in 'uMain.pas' {frmMain},
+  uCommandInputForm in 'uCommandInputForm.pas' {frmInputCommand},
   uXPadCommand in 'uXPadCommand.pas',
   uCommandPanel in 'uCommandPanel.pas',
   uButtonIndexes in 'uButtonIndexes.pas',
@@ -23,7 +24,10 @@ uses
   PK.GUI.NativePopupMenu.Win in 'Lib\GUI\PK.GUI.NativePopupMenu.Win.pas',
   uConfig in 'uConfig.pas',
   PK.Utils.ImageListHelper in 'Lib\Utils\PK.Utils.ImageListHelper.pas',
-  PK.GUI.DarkMode.Win in 'Lib\GUI\PK.GUI.DarkMode.Win.pas';
+  PK.GUI.DarkMode.Win in 'Lib\GUI\PK.GUI.DarkMode.Win.pas',
+  PK.Graphic.BitmapCodecManagerHelper in 'Lib\Graphics\PK.Graphic.BitmapCodecManagerHelper.pas',
+  uCommon in 'uCommon.pas',
+  PK.Utils.ScreenHelper in 'Lib\Utils\PK.Utils.ScreenHelper.pas';
 
 {$R *.res}
 
