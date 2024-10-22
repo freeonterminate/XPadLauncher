@@ -7,7 +7,6 @@ uses
   uMain in 'uMain.pas' {frmMain},
   uCommandInputForm in 'uCommandInputForm.pas' {frmInputCommand},
   uXPadCommand in 'uXPadCommand.pas',
-  uCommandPanel in 'uCommandPanel.pas',
   uButtonIndexes in 'uButtonIndexes.pas',
   PK.Device.GamePad.Types in 'Lib\Device\PK.Device.GamePad.Types.pas',
   PK.Device.GamePad in 'Lib\Device\PK.Device.GamePad.pas',
@@ -27,7 +26,8 @@ uses
   PK.GUI.DarkMode.Win in 'Lib\GUI\PK.GUI.DarkMode.Win.pas',
   PK.Graphic.BitmapCodecManagerHelper in 'Lib\Graphics\PK.Graphic.BitmapCodecManagerHelper.pas',
   uCommon in 'uCommon.pas',
-  PK.Utils.ScreenHelper in 'Lib\Utils\PK.Utils.ScreenHelper.pas';
+  PK.Utils.ScreenHelper in 'Lib\Utils\PK.Utils.ScreenHelper.pas',
+  uCommandFrame in 'uCommandFrame.pas' {frameCommand: TFrame};
 
 {$R *.res}
 

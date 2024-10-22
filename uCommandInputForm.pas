@@ -91,10 +91,10 @@ begin
   begin
     var F := dlgOpen.FileName;
 
-    if lblCommandName.Text.IsEmpty then
-      lblCommandName.Text := ChangeFileExt(ExtractFileName(F), '');
+    if edtCommandName.Text.IsEmpty then
+      edtCommandName.Text := ChangeFileExt(ExtractFileName(F), '');
 
-    lblCommandExe.Text := F;
+    edtCommand.Text := F;
     GetAppIconImage(F, imgIcon.Bitmap);
   end;
 end;

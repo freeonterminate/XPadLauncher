@@ -311,7 +311,6 @@
             <Form>frmInputCommand</Form>
         </DCCReference>
         <DCCReference Include="uXPadCommand.pas"/>
-        <DCCReference Include="uCommandPanel.pas"/>
         <DCCReference Include="uButtonIndexes.pas"/>
         <DCCReference Include="Lib\Device\PK.Device.GamePad.Types.pas"/>
         <DCCReference Include="Lib\Device\PK.Device.GamePad.pas"/>
@@ -332,6 +331,11 @@
         <DCCReference Include="Lib\Graphics\PK.Graphic.BitmapCodecManagerHelper.pas"/>
         <DCCReference Include="uCommon.pas"/>
         <DCCReference Include="Lib\Utils\PK.Utils.ScreenHelper.pas"/>
+        <DCCReference Include="uCommandFrame.pas">
+            <Form>frameCommand</Form>
+            <FormType>fmx</FormType>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

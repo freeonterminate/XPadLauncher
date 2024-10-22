@@ -1,0 +1,315 @@
+object frameCommand: TframeCommand
+  Align = Contents
+  Size.Width = 320.000000000000000000
+  Size.Height = 148.000000000000000000
+  Size.PlatformDefault = False
+  object pnlSeqeunce: TPanel
+    Align = Contents
+    Padding.Left = 4.000000000000000000
+    Padding.Top = 4.000000000000000000
+    Padding.Right = 4.000000000000000000
+    Padding.Bottom = 4.000000000000000000
+    Size.Width = 320.000000000000000000
+    Size.Height = 148.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 1
+    object laySeqMain: TLayout
+      Align = Client
+      Size.Width = 312.000000000000000000
+      Size.Height = 140.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 0
+      object laySeqInfo: TLayout
+        Align = Top
+        Margins.Bottom = 8.000000000000000000
+        Size.Width = 312.000000000000000000
+        Size.Height = 56.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 0
+        object laySeqInfoName: TLayout
+          Align = Client
+          Cursor = crHandPoint
+          HitTest = True
+          Padding.Top = 6.000000000000000000
+          Margins.Right = 4.000000000000000000
+          Size.Width = 230.000000000000000000
+          Size.Height = 56.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          OnClick = laySeqInfoNameClick
+          object lblSeqName: TLabel
+            Align = Top
+            Position.Y = 6.000000000000000000
+            Size.Width = 230.000000000000000000
+            Size.Height = 17.000000000000000000
+            Size.PlatformDefault = False
+            TabOrder = 1
+          end
+          object lblSeqPath: TLabel
+            Align = Client
+            Size.Width = 230.000000000000000000
+            Size.Height = 33.000000000000000000
+            Size.PlatformDefault = False
+            TextSettings.WordWrap = False
+            TabOrder = 0
+          end
+        end
+        object laySeqDelete: TLayout
+          Align = Right
+          Padding.Top = 2.000000000000000000
+          Position.X = 296.000000000000000000
+          Size.Width = 16.000000000000000000
+          Size.Height = 56.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 1
+          object btnCommandRemove: TButton
+            Align = Top
+            Padding.Left = 2.000000000000000000
+            Padding.Top = 2.000000000000000000
+            Padding.Right = 2.000000000000000000
+            Padding.Bottom = 2.000000000000000000
+            Position.Y = 2.000000000000000000
+            Size.Width = 16.000000000000000000
+            Size.Height = 16.000000000000000000
+            Size.PlatformDefault = False
+            StyleLookup = 'transparentcirclebuttonstyle'
+            TabOrder = 0
+            Text = 'btnDeleteSeq'
+            TextSettings.Trimming = None
+            TouchTargetExpansion.Left = 4.000000000000000000
+            TouchTargetExpansion.Top = 4.000000000000000000
+            TouchTargetExpansion.Right = 4.000000000000000000
+            TouchTargetExpansion.Bottom = 4.000000000000000000
+            OnClick = btnCommandRemoveClick
+            object pathSeqDelete: TPath
+              Align = Client
+              Data.Path = {
+                1A0000000000000000E0A54400443346010000000000000000841E4601000000
+                0000EA44004401460100000000106A450000C845010000000000EA4400788D45
+                010000000000000000F025450100000000E0A54400E0A5440100000000F02545
+                000000000100000000788D450000EA44010000000000C84500106A4501000000
+                004401460000EA440100000000841E4600000000010000000044334600E0A544
+                010000000000484600F025450100000000C02A4600788D4501000000007C0D46
+                0000C8450100000000C02A4600440146010000000000484600841E4601000000
+                00443346004433460100000000841E4600004846010000000044014600C02A46
+                010000000000C845007C0D460100000000788D4500C02A460100000000F02545
+                000048460100000000E0A544004433460300000000E0A54400443346}
+              Fill.Color = claMediumvioletred
+              HitTest = False
+              Size.Width = 12.000000000000000000
+              Size.Height = 12.000000000000000000
+              Size.PlatformDefault = False
+              Stroke.Kind = None
+            end
+          end
+        end
+        object laySeqAppImageBase: TLayout
+          Align = Left
+          Padding.Left = 4.000000000000000000
+          Padding.Top = 4.000000000000000000
+          Padding.Right = 4.000000000000000000
+          Padding.Bottom = 4.000000000000000000
+          Margins.Right = 6.000000000000000000
+          Size.Width = 56.000000000000000000
+          Size.Height = 56.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 2
+          object imgSeqAppIcon: TImage
+            MultiResBitmap = <
+              item
+              end>
+            Align = Client
+            MarginWrapMode = Fit
+            Size.Width = 48.000000000000000000
+            Size.Height = 48.000000000000000000
+            Size.PlatformDefault = False
+          end
+        end
+        object lblSeqMessage: TLabel
+          Align = Center
+          AutoSize = True
+          StyledSettings = [Family, Style, FontColor]
+          Size.Width = 200.000000000000000000
+          Size.Height = 21.599998474121090000
+          Size.PlatformDefault = False
+          TextSettings.Font.Size = 16.000000000000000000
+          Text = 'Click to add Application'
+          TabOrder = 3
+        end
+      end
+      object laySeqBase: TLayout
+        Align = Client
+        Size.Width = 312.000000000000000000
+        Size.Height = 76.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 1
+        object laySeqOpBase: TLayout
+          Align = Left
+          Padding.Top = 4.000000000000000000
+          Padding.Bottom = 4.000000000000000000
+          Margins.Right = 4.000000000000000000
+          Size.Width = 16.000000000000000000
+          Size.Height = 76.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 0
+          object btnSeqAdd: TButton
+            Align = Top
+            Padding.Left = 2.000000000000000000
+            Padding.Top = 2.000000000000000000
+            Padding.Right = 2.000000000000000000
+            Padding.Bottom = 2.000000000000000000
+            Position.Y = 4.000000000000000000
+            Size.Width = 16.000000000000000000
+            Size.Height = 16.000000000000000000
+            Size.PlatformDefault = False
+            StyleLookup = 'transparentcirclebuttonstyle'
+            TabOrder = 0
+            Text = 'btnSeqAdd'
+            TextSettings.Trimming = None
+            TouchTargetExpansion.Left = 4.000000000000000000
+            TouchTargetExpansion.Top = 4.000000000000000000
+            TouchTargetExpansion.Right = 4.000000000000000000
+            TouchTargetExpansion.Bottom = 4.000000000000000000
+            OnClick = btnSeqAddClick
+            object pathSeqAdd: TPath
+              Align = Client
+              Data.Path = {
+                7E000000000000000058D445000447460200000000F0D14500F0464602000000
+                0078C64500DC46460200000000E0BA4500D846460200000000D8A84500D04646
+                020000000050A54500C846460200000000A8A245008C46460200000000409645
+                008445460200000000388F45006043460200000000388B4500683F4602000000
+                0078874500AC3B46020000000050864500343546020000000088874500782A46
+                0200000000E8874500182746020000000010884500C821460200000000288845
+                008C14460100000000508845001003460100000000802A450018034602000000
+                00C07E44002403460200000000407744002003460200000000C0414400740246
+                0200000000009F4300040146020000000000AA420078FA450200000000002042
+                0008ED450200000000000C420080EB45020000000000F04100B0E74502000000
+                0000F0410098E445020000000000F0410080E145020000000000B84100E0D745
+                02000000000060410030CF4502000000000000C10008BA4502000000000080BF
+                0008AE45020000000000204200789F4502000000000068420068994502000000
+                0000EA4200F09445020000000000664300309145020000000080D24300D88A45
+                0200000000402D4400F08745020000000040944400F08645020000000000AB44
+                009086450200000000A0BA4400A88645020000000000164500A8874502000000
+                00203445003088450200000000106645006088450200000000D0724500F88745
+                0200000000108345006087450200000000B88745006086450200000000188845
+                00C08445020000000030884500588445020000000048884500505C4502000000
+                0058884500E0264502000000007088450020A344020000000080884500C08944
+                0200000000F8884500407B440200000000688B450000EA430200000000009145
+                00004E430200000000C09C450000A2420200000000A8A2450000884102000000
+                00E0A14500009841020000000010C74500002041020000000060DD450000A040
+                020000000028EA450000A040020000000068EC4500004041020000000020FE45
+                0000804202000000002C03460000C74302000000000C044600608E4402000000
+                003C04460000A244020000000020044600A0DB440200000000DC03460000F544
+                0200000000C4034600E0FC440200000000A0034600F01D4502000000008C0346
+                00804045020000000074034600106345020000000060034600B8804502000000
+                005C034600088245020000000054034600F88445020000000088034600D08545
+                02000000007C044600C086450100000000340546007887450100000000881F46
+                008087450200000000383346008887450200000000383A4600A0874502000000
+                00443B4600E887450200000000A43D46009088450200000000E43F4600488A45
+                020000000084414600B88C450200000000C843460020904502000000003C4546
+                0030944502000000001C4646007099450200000000CC464600A89D4502000000
+                00EC46460040A045020000000010474600F8AC45020000000024474600B0B345
+                02000000005047460020BC45020000000070474600B8BF450200000000404846
+                0080D64502000000002448460010E34502000000000C47460028ED4502000000
+                00A046460008F1450200000000B445460048F6450200000000F8444600E0F845
+                02000000007043460060FE450200000000144146003801460200000000603E46
+                002C02460200000000D43B46000C03460200000000C03D4600FC024602000000
+                003C2046001403460200000000500746002C0346020000000000054600300346
+                020000000078044600700346020000000068034600EC03460200000000500346
+                003C044602000000006803460014074602000000007403460074084602000000
+                007C03460044144602000000007C03460054214602000000007C0346005C3A46
+                02000000007C034600383A460200000000C4024600043D460200000000240246
+                00803F46020000000088004600084246020000000030FD450090434602000000
+                00A8F545008C4646020000000030E84500B04746020000000058D44500044746
+                030000000058D44500044746}
+              Fill.Color = claMediumspringgreen
+              HitTest = False
+              Size.Width = 12.000000000000000000
+              Size.Height = 12.000000000000000000
+              Size.PlatformDefault = False
+              Stroke.Kind = None
+            end
+          end
+          object btnSeqDel: TButton
+            Align = Bottom
+            Padding.Left = 2.000000000000000000
+            Padding.Top = 2.000000000000000000
+            Padding.Right = 2.000000000000000000
+            Padding.Bottom = 2.000000000000000000
+            Position.Y = 56.000000000000000000
+            Size.Width = 16.000000000000000000
+            Size.Height = 16.000000000000000000
+            Size.PlatformDefault = False
+            StyleLookup = 'transparentcirclebuttonstyle'
+            TabOrder = 1
+            Text = 'btnSeqDel'
+            TextSettings.Trimming = None
+            TouchTargetExpansion.Left = 4.000000000000000000
+            TouchTargetExpansion.Top = 4.000000000000000000
+            TouchTargetExpansion.Right = 4.000000000000000000
+            TouchTargetExpansion.Bottom = 4.000000000000000000
+            OnClick = btnSeqDelClick
+            object pathSeqDel: TPath
+              Align = Client
+              Data.Path = {
+                1A0000000000000000E0A54400443346010000000000000000841E4601000000
+                0000EA44004401460100000000106A450000C845010000000000EA4400788D45
+                010000000000000000F025450100000000E0A54400E0A5440100000000F02545
+                000000000100000000788D450000EA44010000000000C84500106A4501000000
+                004401460000EA440100000000841E4600000000010000000044334600E0A544
+                010000000000484600F025450100000000C02A4600788D4501000000007C0D46
+                0000C8450100000000C02A4600440146010000000000484600841E4601000000
+                00443346004433460100000000841E4600004846010000000044014600C02A46
+                010000000000C845007C0D460100000000788D4500C02A460100000000F02545
+                000048460100000000E0A544004433460300000000E0A54400443346}
+              Fill.Color = claMediumvioletred
+              HitTest = False
+              Size.Width = 12.000000000000000000
+              Size.Height = 12.000000000000000000
+              Size.PlatformDefault = False
+              Stroke.Kind = None
+            end
+          end
+        end
+        object pnlSeqBaseFrame: TPanel
+          Align = Client
+          Size.Width = 292.000000000000000000
+          Size.Height = 76.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 1
+          object scSeqBase: THorzScrollBox
+            Align = Client
+            Size.Width = 292.000000000000000000
+            Size.Height = 76.000000000000000000
+            Size.PlatformDefault = False
+            StyleLookup = 'holzscrollboxstyle'
+            TabOrder = 0
+            Viewport.Width = 292.000000000000000000
+            Viewport.Height = 76.000000000000000000
+            object laySeq: TLayout
+              Position.X = 7.000000000000000000
+              Position.Y = 8.000000000000000000
+              Size.Width = 120.000000000000000000
+              Size.Height = 50.000000000000000000
+              Size.PlatformDefault = False
+              TabOrder = 0
+            end
+          end
+          object rectSelector: TRectangle
+            Fill.Kind = None
+            HitTest = False
+            Position.X = -4.000000000000000000
+            Position.Y = -4.000000000000000000
+            Size.Width = 58.000000000000000000
+            Size.Height = 58.000000000000000000
+            Size.PlatformDefault = False
+            Stroke.Color = claOrange
+            Stroke.Thickness = 4.000000000000000000
+            XRadius = 4.000000000000000000
+            YRadius = 4.000000000000000000
+          end
+        end
+      end
+    end
+  end
+end

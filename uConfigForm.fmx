@@ -11,6 +11,7 @@ object frmConfig: TfrmConfig
   FormFactor.Width = 320
   FormFactor.Height = 480
   FormFactor.Devices = [Desktop]
+  OnClose = FormClose
   OnDestroy = FormDestroy
   DesignerMasterStyle = 0
   object layRoot: TLayout
@@ -246,22 +247,21 @@ object frmConfig: TfrmConfig
         Padding.Top = 4.000000000000000000
         Padding.Right = 4.000000000000000000
         Padding.Bottom = 4.000000000000000000
-        Position.X = 8.000000000000000000
-        Position.Y = 112.000000000000000000
-        Size.Width = 356.000000000000000000
+        Size.Width = 372.000000000000000000
         Size.Height = 148.000000000000000000
         Size.PlatformDefault = False
+        Visible = False
         TabOrder = 1
         object laySeqMain: TLayout
           Align = Client
-          Size.Width = 348.000000000000000000
+          Size.Width = 364.000000000000000000
           Size.Height = 140.000000000000000000
           Size.PlatformDefault = False
           TabOrder = 0
           object laySeqInfo: TLayout
             Align = Top
             Margins.Bottom = 8.000000000000000000
-            Size.Width = 348.000000000000000000
+            Size.Width = 364.000000000000000000
             Size.Height = 56.000000000000000000
             Size.PlatformDefault = False
             TabOrder = 0
@@ -271,14 +271,14 @@ object frmConfig: TfrmConfig
               HitTest = True
               Padding.Top = 6.000000000000000000
               Margins.Right = 4.000000000000000000
-              Size.Width = 266.000000000000000000
+              Size.Width = 282.000000000000000000
               Size.Height = 56.000000000000000000
               Size.PlatformDefault = False
               TabOrder = 0
               object lblSeqName: TLabel
                 Align = Top
                 Position.Y = 6.000000000000000000
-                Size.Width = 266.000000000000000000
+                Size.Width = 282.000000000000000000
                 Size.Height = 17.000000000000000000
                 Size.PlatformDefault = False
                 Text = 'lblSeqName'
@@ -286,7 +286,7 @@ object frmConfig: TfrmConfig
               end
               object lblSeqPath: TLabel
                 Align = Client
-                Size.Width = 266.000000000000000000
+                Size.Width = 282.000000000000000000
                 Size.Height = 33.000000000000000000
                 Size.PlatformDefault = False
                 TextSettings.WordWrap = False
@@ -297,7 +297,7 @@ object frmConfig: TfrmConfig
             object laySeqDelete: TLayout
               Align = Right
               Padding.Top = 2.000000000000000000
-              Position.X = 332.000000000000000000
+              Position.X = 348.000000000000000000
               Size.Width = 16.000000000000000000
               Size.Height = 56.000000000000000000
               Size.PlatformDefault = False
@@ -378,7 +378,7 @@ object frmConfig: TfrmConfig
           end
           object laySeqBase: TLayout
             Align = Client
-            Size.Width = 348.000000000000000000
+            Size.Width = 364.000000000000000000
             Size.Height = 76.000000000000000000
             Size.PlatformDefault = False
             TabOrder = 1
@@ -510,18 +510,18 @@ object frmConfig: TfrmConfig
             end
             object pnlSeqBaseFrame: TPanel
               Align = Client
-              Size.Width = 328.000000000000000000
+              Size.Width = 344.000000000000000000
               Size.Height = 76.000000000000000000
               Size.PlatformDefault = False
               TabOrder = 1
               object scSeqBase: THorzScrollBox
                 Align = Client
-                Size.Width = 328.000000000000000000
+                Size.Width = 344.000000000000000000
                 Size.Height = 76.000000000000000000
                 Size.PlatformDefault = False
                 StyleLookup = 'holzscrollboxstyle'
                 TabOrder = 0
-                Viewport.Width = 328.000000000000000000
+                Viewport.Width = 344.000000000000000000
                 Viewport.Height = 76.000000000000000000
                 object laySeq: TLayout
                   Position.X = 7.000000000000000000

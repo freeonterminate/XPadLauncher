@@ -44,8 +44,8 @@ type
       const ASequences: TArray<TGamePadButton>): TJsonCommand;
     procedure Remove(const AInfo: TJsonCommand);
     procedure Clear;
-    procedure SaveToFile(const APath: String);
-    procedure LoadFromFile(const APath: String);
+    procedure Save;
+    procedure Load;
     property Count: Integer read GetCount;
     property Items[const AIndex: Integer]: TJsonCommand read GetItems; default;
   end;
@@ -57,6 +57,7 @@ implementation
 uses
   System.IOUtils
   , System.NetEncoding
+  , System.JSON.Types
   {$IFDEF MSWINDOWS}
   , PK.Graphic.IconConverter.Win
   , PK.Graphic.IconUtils.Win
@@ -170,12 +171,12 @@ end;
 class constructor TConfig.CreateClass;
 begin
   FInstance := TConfig.Create;
-  FInstance.LoadFromFile(GetConfigFilePath);
+  FInstance.Load;
 end;
 
 class destructor TConfig.DestroyClass;
 begin
-  FInstance.SaveToFile(GetConfigFilePath);
+  FInstance.Save;
   FInstance.Free;
 end;
 
@@ -202,14 +203,16 @@ begin
   end;
 end;
 
-procedure TConfig.LoadFromFile(const APath: String);
+procedure TConfig.Load;
 begin
+  var Path := GetConfigFilePath;
+
   SetLength(FItems, 0);
 
-  if not TFile.Exists(APath) then
+  if not TFile.Exists(Path) then
     Exit;
 
-  var Json := TFile.ReadAllText(APath, TEncoding.UTF8);
+  var Json := TFile.ReadAllText(Path, TEncoding.UTF8);
   if Json.IsEmpty then
     Exit;
 
@@ -236,9 +239,11 @@ begin
     end;
 end;
 
-procedure TConfig.SaveToFile(const APath: String);
+procedure TConfig.Save;
 begin
-  var Dir := ExtractFilePath(APath);
+  var Path := GetConfigFilePath;
+
+  var Dir := ExtractFilePath(Path);
   if not TDirectory.Exists(Dir) then
     TDirectory.CreateDirectory(Dir);
 
@@ -255,9 +260,11 @@ begin
   try
     var S := TJsonSerializer.Create;
     try
+      S.Formatting := TJsonFormatting.Indented;
+
       var Json := S.Serialize<TJsonCommands>(Commands);
 
-      TFile.WriteAllText(APath, Json);
+      TFile.WriteAllText(Path, Json);
     finally
       S.Free;
     end;

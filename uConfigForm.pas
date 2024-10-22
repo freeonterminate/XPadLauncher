@@ -21,7 +21,7 @@ uses
   , FMX.Types
   , FMX.StdCtrls
   , PK.Device.GamePad
-  , uCommandPanel
+  , uCommandFrame
   ;
 
 type
@@ -85,10 +85,11 @@ type
     procedure rectSeqAddButtonMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Single);
     procedure btnCloseClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private var
     FPad: TGamePad;
     FImageList: TImageList;
-    FCommandPanels: TCommandPanels;
+    FCommandFrames: TCommandFrames;
   private
     procedure Init(const APad: TGamePad; const AImageList: TImageList);
   public
@@ -121,12 +122,18 @@ end;
 
 procedure TfrmConfig.btnCloseClick(Sender: TObject);
 begin
+  FCommandFrames.Save;
   Close;
+end;
+
+procedure TfrmConfig.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  Action := TCloseAction.caFree;
 end;
 
 procedure TfrmConfig.FormDestroy(Sender: TObject);
 begin
-  FCommandPanels.Free;
+  FCommandFrames.Free;
 end;
 
 procedure TfrmConfig.Init(const APad: TGamePad; const AImageList: TImageList);
@@ -153,13 +160,11 @@ begin
   glpRS.Images := FImageList;
   glpRT.Images := FImageList;
 
-  FCommandPanels :=
-    TCommandPanels.Create(
+  FCommandFrames :=
+    TCommandFrames.Create(
       FPad,
       FImageList,
-      lstbxSequences,
-      pnlSeqeunce,
-      styleAir);
+      lstbxSequences);
 
   timerUpdate.Enabled := True;
 end;
@@ -167,7 +172,7 @@ end;
 procedure TfrmConfig.rectSeqAddButtonMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Single);
 begin
-  FCommandPanels.Add;
+  FCommandFrames.Add;
   lstbxSequences.ScrollBy(0, -MaxInt);
 end;
 
