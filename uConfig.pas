@@ -40,6 +40,7 @@ type
   public
     function Add(
       const AName, APath: String;
+      const AImage: TBitmap;
       const ASequences: TArray<TGamePadButton>): TJsonCommand;
     procedure Remove(const AInfo: TJsonCommand);
     procedure Clear;
@@ -145,10 +146,14 @@ end;
 
 function TConfig.Add(
   const AName, APath: String;
+  const AImage: TBitmap;
   const ASequences: TArray<TGamePadButton>): TJsonCommand;
 begin
   Result.name := AName;
   Result.path := APath;
+
+  if (AImage <> nil) then
+    Result.SetImage(AImage);
 
   SetLength(Result.sequences, Length(ASequences));
   for var i := 0 to High(ASequences) do

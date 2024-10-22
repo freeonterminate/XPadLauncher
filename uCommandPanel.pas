@@ -346,6 +346,8 @@ begin
     var P := Add;
     P.SetNameAndPath(Item);
 
+    Item.GetImage(P.FInfoImage.Bitmap);
+
     for var C in Item.sequences do
       P.AddCommand([TGamePadButton(C)]);
   end;
@@ -363,7 +365,7 @@ begin
     for var j := 0 to P.FCommands.Count - 1 do
       Seq := Seq + [ImageIndexToPadButton(P.FCommands[j].ImageIndex)];
 
-    Config.Add(P.FInfoName.Text, P.FInfoPath.Text, Seq);
+    Config.Add(P.FInfoName.Text, P.FInfoPath.Text, P.FInfoImage.Bitmap, Seq);
   end;
 end;
 
