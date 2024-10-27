@@ -12,7 +12,6 @@ object frmInputCommand: TfrmInputCommand
   FormFactor.Devices = [Desktop]
   OnClose = FormClose
   OnDestroy = FormDestroy
-  OnShow = FormShow
   DesignerMasterStyle = 0
   object layRoot: TLayout
     Align = Contents

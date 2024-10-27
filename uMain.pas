@@ -57,6 +57,7 @@ begin
   FCommandIndex := 0;
 
   FPad := TGamePad.Create;
+  FPad.ControllerIndex := 1;
 
   FTrayIcon := TTrayIcon.Create;
   FTrayIcon.AssignPopupMenu(popupMain);
@@ -65,7 +66,9 @@ begin
   FTrayIcon.ChangeIcon('Icon', 'XPad Launcher');
   FTrayIcon.Apply('{A4523C1E-210C-48AE-9A3F-00E0E04DB0BB}');
 
+  {$IFDEF RELEASE}
   SetBounds(-MaxInt, -MaxInt, 1, 1);
+  {$ENDIF}
 
   timerUpdate.Enabled := True;
 end;
@@ -78,7 +81,14 @@ end;
 
 procedure TfrmMain.FormShow(Sender: TObject);
 begin
+  {$IFDEF DEBUG}
+  ShowConfig(FPad, imglstButtons);
+  Close;
+  {$ENDIF}
+
+  {$IFDEF RELEASE}
   FTrayIcon.HideTaskbar;
+  {$ENDIF}
 end;
 
 procedure TfrmMain.menuConfigClick(Sender: TObject);
@@ -94,7 +104,13 @@ end;
 
 procedure TfrmMain.menuExitClick(Sender: TObject);
 begin
-  Close;
+  TThread.ForceQueue(
+    nil,
+    procedure
+    begin
+      Close;
+    end
+  );
 end;
 
 procedure TfrmMain.timerUpdateTimer(Sender: TObject);

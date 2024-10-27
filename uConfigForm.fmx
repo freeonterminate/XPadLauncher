@@ -28135,4 +28135,12 @@ object frmConfig: TfrmConfig
     Left = 416
     Top = 4
   end
+  object SizeGrip1: TSizeGrip
+    Anchors = [akRight, akBottom]
+    Position.X = 774.000000000000000000
+    Position.Y = 390.000000000000000000
+    Size.Width = 39.000000000000000000
+    Size.Height = 39.000000000000000000
+    Size.PlatformDefault = False
+  end
 end

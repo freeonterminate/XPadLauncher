@@ -15,7 +15,7 @@ type
     name: String;
     path: String;
     image: String;
-    sequences: TArray<Integer>;
+    sequences: TArray<TArray<Integer>>;
     [JsonIgnore] procedure GetImage(const AImage: TBitmap);
     [JsonIgnore] procedure SetImage(const AImage: TBitmap);
   end;
@@ -41,7 +41,7 @@ type
     function Add(
       const AName, APath: String;
       const AImage: TBitmap;
-      const ASequences: TArray<TGamePadButton>): TJsonCommand;
+      const ASequences: TArray<TArray<TGamePadButton>>): TJsonCommand;
     procedure Remove(const AInfo: TJsonCommand);
     procedure Clear;
     procedure Save;
@@ -148,17 +148,22 @@ end;
 function TConfig.Add(
   const AName, APath: String;
   const AImage: TBitmap;
-  const ASequences: TArray<TGamePadButton>): TJsonCommand;
+  const ASequences: TArray<TArray<TGamePadButton>>): TJsonCommand;
 begin
   Result.name := AName;
   Result.path := APath;
 
-  if (AImage <> nil) then
+  if (AImage = nil) then
+    Result.image := ''
+  else
     Result.SetImage(AImage);
 
   SetLength(Result.sequences, Length(ASequences));
   for var i := 0 to High(ASequences) do
-    Result.sequences[i] := Ord(ASequences[i]);
+  begin
+    for var j := 0 to High(ASequences[i]) do
+      Result.sequences[i] := Result.sequences[i] + [Ord(ASequences[i][j])];
+  end;
 
   FItems := FItems + [Result];
 end;

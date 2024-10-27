@@ -80,6 +80,7 @@ type
     dlgOpen: TOpenDialog;
     laySeqAppImageBase: TLayout;
     lblSeqMessage: TLabel;
+    SizeGrip1: TSizeGrip;
     procedure FormDestroy(Sender: TObject);
     procedure timerUpdateTimer(Sender: TObject);
     procedure rectSeqAddButtonMouseDown(Sender: TObject; Button: TMouseButton;

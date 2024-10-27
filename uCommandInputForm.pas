@@ -35,18 +35,21 @@ type
     dlgOpenImage: TOpenDialog;
     procedure imgIconClick(Sender: TObject);
     procedure btnCommandRefClick(Sender: TObject);
-    procedure FormShow(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure btnOKClick(Sender: TObject);
     procedure btnCancelClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private var
-    FIsChanged: Boolean;
+    FHasImage: Boolean;
     FParent: TCommonCustomForm;
     FCommand: TJsonCommand;
     FDoneProc: TInputCommandDoneProc;
     FOK: Boolean;
   public
+    constructor CreateWithParam(
+      const AParent: TCommonCustomForm;
+      const ACommand: TJsonCommand;
+      const ADoneProc: TInputCommandDoneProc);
   end;
 
 procedure ShowInputCommand(
@@ -70,13 +73,7 @@ procedure ShowInputCommand(
   var ACommand: TJsonCommand;
   const ADoneProc: TInputCommandDoneProc);
 begin
-  var F := TfrmInputCommand.Create(nil);
-  F.FParent := AParent;
-
-  F.StyleBook := AParent.StyleBook;
-  F.FCommand := ACommand;
-  F.FDoneProc := ADoneProc;
-
+  var F := TfrmInputCommand.CreateWithParam(AParent, ACommand, ADoneProc);
   F.ShowModal;
 end;
 
@@ -105,6 +102,31 @@ begin
   Close;
 end;
 
+constructor TfrmInputCommand.CreateWithParam(
+  const AParent: TCommonCustomForm;
+  const ACommand: TJsonCommand;
+  const ADoneProc: TInputCommandDoneProc);
+begin
+  inherited Create(nil);
+
+  FParent := AParent;
+
+  StyleBook := AParent.StyleBook;
+  FCommand := ACommand;
+  FDoneProc := ADoneProc;
+
+  var B := AParent.BoundsF;
+  var X := B.Left + (B.Width - Width) / 2;
+  var Y := B.Top + (B.Height - Height) / 2;
+
+  BoundsF := RectF(X, Y, X + Width, Y + Height);
+
+  edtCommandName.Text := FCommand.name;
+  edtCommand.Text := FCommand.path;
+  FCommand.GetImage(imgIcon.Bitmap);
+  FHasImage := not FCommand.image.IsEmpty;
+end;
+
 procedure TfrmInputCommand.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Action := TCloseAction.caFree;
@@ -124,24 +146,11 @@ begin
     FCommand.name := Name;
   end;
 
-  if FIsChanged then
+  if FHasImage then
     FCommand.SetImage(imgIcon.Bitmap);
 
   if Assigned(FDoneProc) then
     FDoneProc(FOK, FCommand);
-end;
-
-procedure TfrmInputCommand.FormShow(Sender: TObject);
-begin
-  edtCommandName.Text := FCommand.name;
-  edtCommand.Text := FCommand.path;
-  FCommand.GetImage(imgIcon.Bitmap);
-
-  var B := FParent.BoundsF;
-  var X := B.Left + (B.Width - Width) / 2;
-  var Y := B.Top + (B.Height - Height) / 2;
-
-  BoundsF := RectF(X, Y, X + Width, Y + Height);
 end;
 
 procedure TfrmInputCommand.imgIconClick(Sender: TObject);
@@ -150,7 +159,7 @@ begin
   if dlgOpenImage.Execute then
   begin
     imgIcon.Bitmap.LoadFromFile(dlgOpenImage.FileName);
-    FIsChanged := True;
+    FHasImage := True;
   end;
 end;
 

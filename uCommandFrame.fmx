@@ -294,6 +294,17 @@ object frameCommand: TframeCommand
               Size.PlatformDefault = False
               TabOrder = 0
             end
+            object rectGrouping: TRectangle
+              Fill.Color = x1000FFFF
+              Position.X = 135.000000000000000000
+              Position.Y = 4.000000000000000000
+              Size.Width = 58.000000000000000000
+              Size.Height = 58.000000000000000000
+              Size.PlatformDefault = False
+              Stroke.Color = claAqua
+              XRadius = 4.000000000000000000
+              YRadius = 4.000000000000000000
+            end
           end
           object rectSelector: TRectangle
             Fill.Kind = None

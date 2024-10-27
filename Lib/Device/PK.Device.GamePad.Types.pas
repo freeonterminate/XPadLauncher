@@ -14,12 +14,6 @@ type
     Up, Down, Left, Right,
     LeftUp, LeftDown, RightUp, RightDown, // 斜め方向の簡単化
 
-    Start, Back,
-    LeftThumb, RightThumb,
-    LeftShoulder, RightShoulder,
-    LeftTrigger, RightTrigger,
-    A, B, X, Y,
-
     LStickL, RStickL,
     LStickR, RStickR,
     LStickU, RStickU,
@@ -29,6 +23,12 @@ type
     LStickRU, RStickRU,
     LStickLD, RStickLD,
     LStickRD, RStickRD,
+
+    Start, Back,
+    LeftThumb, RightThumb,
+    LeftShoulder, RightShoulder,
+    LeftTrigger, RightTrigger,
+    A, B, X, Y,
 
     // エイリアス
     Menu = Start,
@@ -83,8 +83,140 @@ type
     function IsClicked(const AButton: TGamePadButton): Boolean;
       virtual; abstract;
     function GetStatus: TGamePadButtons; virtual; abstract;
+  public
+    function GetStatusAsArray(
+      const AStatus: TGamePadButtons): TArray<TGamePadButton>;
+    property
+      StatusAsArray[const AStatus: TGamePadButtons]: TArray<TGamePadButton>
+      read GetStatusAsArray;
   end;
 
 implementation
+
+uses
+  System.Generics.Collections;
+
+{ TGamePadIntf }
+
+function TGamePadIntf.GetStatusAsArray(
+  const AStatus: TGamePadButtons): TArray<TGamePadButton>;
+begin
+  Result := [];
+
+  // LStick
+  if TGamePadButton.LStickL in AStatus then
+    Result := Result + [TGamePadButton.LStickL];
+
+  if TGamePadButton.LStickR in AStatus then
+    Result := Result + [TGamePadButton.LStickR];
+
+  if TGamePadButton.LStickU in AStatus then
+    Result := Result + [TGamePadButton.LStickU];
+
+  if TGamePadButton.LStickD in AStatus then
+    Result := Result + [TGamePadButton.LStickD];
+
+  if TGamePadButton.LStickLU in AStatus then
+    Result := Result + [TGamePadButton.LStickLU];
+
+  if TGamePadButton.LStickLD in AStatus then
+    Result := Result + [TGamePadButton.LStickLD];
+
+  if TGamePadButton.LStickRU in AStatus then
+    Result := Result + [TGamePadButton.LStickRU];
+
+  if TGamePadButton.LStickRD in AStatus then
+    Result := Result + [TGamePadButton.LStickRD];
+
+  // RStick
+  if TGamePadButton.RStickL in AStatus then
+    Result := Result + [TGamePadButton.RStickL];
+
+  if TGamePadButton.RStickR in AStatus then
+    Result := Result + [TGamePadButton.RStickR];
+
+  if TGamePadButton.RStickU in AStatus then
+    Result := Result + [TGamePadButton.RStickU];
+
+  if TGamePadButton.RStickD in AStatus then
+    Result := Result + [TGamePadButton.RStickD];
+
+  if TGamePadButton.RStickLU in AStatus then
+    Result := Result + [TGamePadButton.RStickLU];
+
+  if TGamePadButton.RStickLD in AStatus then
+    Result := Result + [TGamePadButton.RStickLD];
+
+  if TGamePadButton.RStickRU in AStatus then
+    Result := Result + [TGamePadButton.RStickRU];
+
+  if TGamePadButton.RStickRD in AStatus then
+    Result := Result + [TGamePadButton.RStickRD];
+
+  // Cross
+  if TGamePadButton.Up in AStatus then
+    Result := Result + [TGamePadButton.Up];
+
+  if TGamePadButton.Down in AStatus then
+    Result := Result + [TGamePadButton.Down];
+
+  if TGamePadButton.Left in AStatus then
+    Result := Result + [TGamePadButton.Left];
+
+  if TGamePadButton.Right in AStatus then
+    Result := Result + [TGamePadButton.Right];
+
+  if TGamePadButton.LeftUp in AStatus then
+    Result := Result + [TGamePadButton.LeftUp];
+
+  if TGamePadButton.LeftDown in AStatus then
+    Result := Result + [TGamePadButton.LeftDown];
+
+  if TGamePadButton.RightUp in AStatus then
+    Result := Result + [TGamePadButton.RightUp];
+
+  if TGamePadButton.RightDown in AStatus then
+    Result := Result + [TGamePadButton.RightDown];
+
+  // L Buttons
+  if TGamePadButton.LeftShoulder in AStatus then
+    Result := Result + [TGamePadButton.LeftShoulder];
+
+  if TGamePadButton.LeftTrigger in AStatus then
+    Result := Result + [TGamePadButton.LeftTrigger];
+
+  if TGamePadButton.LeftThumb in AStatus then
+    Result := Result + [TGamePadButton.LeftThumb];
+
+  // R Buttons
+  if TGamePadButton.RightShoulder in AStatus then
+    Result := Result + [TGamePadButton.RightShoulder];
+
+  if TGamePadButton.RightTrigger in AStatus then
+    Result := Result + [TGamePadButton.RightTrigger];
+
+  if TGamePadButton.RightThumb in AStatus then
+    Result := Result + [TGamePadButton.RightThumb];
+
+  // Start Back
+  if TGamePadButton.Start in AStatus then
+    Result := Result + [TGamePadButton.Start];
+
+  if TGamePadButton.Back in AStatus then
+    Result := Result + [TGamePadButton.Back];
+
+  // A B X Y
+  if TGamePadButton.A in AStatus then
+    Result := Result + [TGamePadButton.A];
+
+  if TGamePadButton.B in AStatus then
+    Result := Result + [TGamePadButton.B];
+
+  if TGamePadButton.X in AStatus then
+    Result := Result + [TGamePadButton.X];
+
+  if TGamePadButton.Y in AStatus then
+    Result := Result + [TGamePadButton.Y];
+end;
 
 end.

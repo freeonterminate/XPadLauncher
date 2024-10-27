@@ -35,20 +35,29 @@ type
     scSeqBase: THorzScrollBox;
     laySeq: TLayout;
     rectSelector: TRectangle;
+    rectGrouping: TRectangle;
     procedure btnSeqAddClick(Sender: TObject);
     procedure laySeqInfoNameClick(Sender: TObject);
     procedure btnCommandRemoveClick(Sender: TObject);
     procedure btnSeqDelClick(Sender: TObject);
+  private type
+    TGlyphs = TList<TGlyph>;
   private var
     FParent: TCommandFrames;
     FPad: TGamePad;
     FImageList: TImageList;
-    FCommands: TList<TGlyph>;
+    FCommands: TList<TGlyphs>;
     FItem: TListBoxItem;
+    FHasImage: Boolean;
+    FOrgGrouping: TRectangle;
+    FGroupingRects: TList<TRectangle>;
   private
     procedure GlyphClickHandler(Sender: TObject);
     procedure SetInfo(const ACommand: TJsonCommand);
     procedure AddCommand(const AButtons: TGamePadButtons);
+    procedure CreateGroupingRect;
+    procedure ClearGroupingRect;
+    procedure DeleteGlyphs(const AIndex: Integer);
   public
     constructor CreateCommandFrame(
       const AParent: TListBox;
@@ -81,7 +90,8 @@ implementation
 {$R *.fmx}
 
 uses
-  uButtonIndexes
+  System.Math
+  , uButtonIndexes
   , uCommandInputForm
   ;
 
@@ -90,25 +100,67 @@ begin
   if AButtons = [] then
     Exit;
 
-  var G := TGlyph.Create(laySeq);
-  FCommands.Add(G);
+  var MinX: Single := -1;
+  var MaxX: Single := 0;
 
-  G.Images := FImageList;
-  G.ImageIndex := StatusToImageIndex(AButtons);
-  G.Align := TAlignLayout.Left;
-  G.HitTest := True;
-  G.OnClick := GlyphClickHandler;
-
-  G.Margins.Right := 8;
   var H := laySeq.Height;
   var W := H + 8;
-  var X := FCommands.Count * W;
-  G.SetBounds(X, 0, H, H);
 
-  G.Parent := laySeq;
-  GlyphClickHandler(G);
+  var Buttons := FPad.GetStatusAsArray(AButtons);
 
-  laySeq.Width := X;
+  if Length(Buttons) > 0 then
+  begin
+    var Gs := TGlyphs.Create;
+    FCommands.Add(Gs);
+
+    var C := FCommands.Count;
+
+    for var i := 0 to High(Buttons) do
+    begin
+      var B := Buttons[i];
+
+      var G := TGlyph.Create(laySeq);
+      Gs.Add(G);
+
+      G.Images := FImageList;
+      G.ImageIndex := StatusToImageIndex([B]);
+      G.Align := TAlignLayout.Left;
+      G.HitTest := True;
+      G.OnClick := GlyphClickHandler;
+
+      G.Margins.Right := 8;
+
+      var X := C * W;
+      G.SetBounds(X, 0, H, H);
+
+      if MinX < 0 then
+        MinX := X;
+
+      MaxX := X + H;
+
+      G.Parent := laySeq;
+      GlyphClickHandler(G);
+
+      Inc(C);
+    end;
+  end;
+
+  {
+  if Length(Buttons) > 1 then
+  begin
+    var R := TRectangle(FOrgGrouping.Clone(laySeq));
+    FGroupingRects.Add(R);
+
+    R.SetBounds(MinX, 0, MaxX - MinX, H);
+    R.Parent := laySeq;
+    R.Visible := True;
+    R.SendToBack;
+  end;
+  }
+
+  laySeq.Width := MaxX;
+
+  CreateGroupingRect;
 end;
 
 procedure TframeCommand.btnCommandRemoveClick(Sender: TObject);
@@ -138,34 +190,74 @@ begin
 
   rectSelector.Parent := nil;
 
-  var G := TGlyph(rectSelector.TagObject);
-  if G <> nil then
+  var Glyph := TGlyph(rectSelector.TagObject);
+  if Glyph <> nil then
   begin
-    var Index := FCommands.IndexOf(G);
+    var Index := -1;
 
-    G.Free;
-    FCommands.Remove(G);
-
-    if FCommands.Count > 0 then
+    for var i := 0 to FCommands.Count - 1 do
     begin
-      var C := FCommands.Count;
-      if Index >= C then
-        Index := C - 1;
+      var tmpIndex := FCommands[i].IndexOf(Glyph);
+      if tmpIndex > -1 then
+      begin
+        Index := i;
+        Break;
+      end;
+    end;
 
-      G := FCommands[Index];
-      rectSelector.TagObject := G;
-      GlyphClickHandler(G);
+    Glyph.Free;
+    FCommands[Index].Remove(Glyph);
 
-      rectSelector.Parent := G;
-
-      laySeq.Width := FCommands[C - 1].BoundsRect.Width;
+    var Next: TGlyph := nil;
+    if FCommands[Index].Count > 0 then
+    begin
+      Next := FCommands[Index][FCommands[Index].Count - 1];
     end
     else
     begin
+      DeleteGlyphs(Index);
+
+      var C := FCommands.Count;
+
+      if Index > 0 then
+        Dec(Index);
+
+      if Index < C then
+        for var i := Index to C - 1 do
+        begin
+          var GC := FCommands[i].Count;
+          if GC > 0 then
+          begin
+            Next := FCommands[i][GC - 1];
+            Break;
+          end;
+        end;
+    end;
+
+    if Next = nil then
+    begin
       rectSelector.TagObject := nil;
       rectSelector.Visible := False;
+    end
+    else
+    begin
+      rectSelector.TagObject := Next;
+      GlyphClickHandler(Next);
+      rectSelector.Parent := Next;
+
+      var Gs := FCommands[FCommands.Count - 1];
+      laySeq.Width := Gs[Gs.Count - 1].BoundsRect.Right;
     end;
   end;
+
+  CreateGroupingRect;
+end;
+
+procedure TframeCommand.ClearGroupingRect;
+begin
+  for var R in FGroupingRects do
+    R.Free;
+  FGroupingRects.Clear;
 end;
 
 constructor TframeCommand.CreateCommandFrame(
@@ -175,7 +267,7 @@ constructor TframeCommand.CreateCommandFrame(
 begin
   inherited Create(nil);
 
-  FCommands := TList<TGlyph>.Create;
+  FCommands := TList<TGlyphs>.Create;
 
   FPad := APad;
   FImageList := AImageList;
@@ -183,6 +275,11 @@ begin
   FItem := TListBoxItem.Create(nil);
   FItem.Height := pnlSeqeunce.Height + 12;
   FItem.Margins.Bottom := 16;
+
+  FGroupingRects := TList<TRectangle>.Create;
+
+  FOrgGrouping := rectGrouping;
+  FOrgGrouping.Visible := False;
 
   Parent := FItem;
 
@@ -194,9 +291,60 @@ begin
   rectSelector.Visible := False;
 end;
 
+procedure TframeCommand.CreateGroupingRect;
+begin
+  ClearGroupingRect;
+
+  var H := laySeq.Height;
+
+  for var Gs in FCommands do
+  begin
+    var Min: Single := MaxInt;
+    var Max: Single := -MaxInt;
+
+    if Gs.Count > 1 then
+    begin
+      for var G in Gs do
+      begin
+        var Left := G.BoundsRect.Left;
+        var Right := G.BoundsRect.Right;
+
+        if Max < Right then
+          Max := Right;
+
+        if Min > Left then
+          Min := Left;
+      end;
+
+      var R := TRectangle(FOrgGrouping.Clone(laySeq));
+      FGroupingRects.Add(R);
+
+      R.SetBounds(Min, 0, Max - Min, H);
+      R.Parent := laySeq;
+      R.Visible := True;
+      R.SendToBack;
+    end;
+  end;
+end;
+
+procedure TframeCommand.DeleteGlyphs(const AIndex: Integer);
+begin
+  for var G in FCommands[AIndex] do
+    G.Free;
+  FCommands[AIndex].Free;
+  FCommands.Delete(AIndex);
+end;
+
 destructor TframeCommand.Destroy;
 begin
+  ClearGroupingRect;
+
+  for var i := 0 to FCommands.Count - 1 do
+    DeleteGlyphs(0);
+
+  FGroupingRects.Free;
   FCommands.Free;
+
   inherited;
 end;
 
@@ -218,7 +366,9 @@ begin
   var Command: TJsonCommand;
   Command.name := lblSeqName.Text;
   Command.path := lblSeqPath.Text;
-  Command.SetImage(imgSeqAppIcon.Bitmap);
+
+  if FHasImage then
+    Command.SetImage(imgSeqAppIcon.Bitmap);
 
   ShowInputCommand(
     Screen.ActiveForm,
@@ -236,6 +386,8 @@ begin
   lblSeqName.Text := ACommand.name;
   lblSeqPath.Text := ACommand.path;
   ACommand.GetImage(imgSeqAppIcon.Bitmap);
+
+  FHasImage := not ACommand.image.IsEmpty;
 
   lblSeqMessage.Visible := False;
 end;
@@ -292,8 +444,14 @@ begin
     var P := Add;
     P.SetInfo(Item);
 
-    for var C in Item.sequences do
-      P.AddCommand([TGamePadButton(C)]);
+    for var Ss in Item.sequences do
+    begin
+      var Buttons: TGamePadButtons := [];
+      for var S in Ss do
+        Include(Buttons, TGamePadButton(S));
+
+      P.AddCommand(Buttons);
+    end;
   end;
 end;
 
@@ -305,16 +463,20 @@ begin
   begin
     var F := FItems[i];
 
-    var Seq: TArray<TGamePadButton>;
-    for var j := 0 to F.FCommands.Count - 1 do
-      Seq := Seq + [ImageIndexToPadButton(F.FCommands[j].ImageIndex)];
+    var Seq: TArray<TArray<TGamePadButton>>;
+    SetLength(Seq, F.FCommands.Count);
 
-    Config.Add(
-      F.lblSeqName.Text,
-      F.lblSeqPath.Text,
-      F.imgSeqAppIcon.Bitmap,
-      Seq
-    );
+    for var j := 0 to F.FCommands.Count - 1 do
+    begin
+      for var G in F.FCommands[j] do
+        Seq[j] := Seq[j] + [ImageIndexToPadButton(G.ImageIndex)];
+    end;
+
+    var Bmp: TBitmap := nil;
+    if F.FHasImage then
+      Bmp := F.imgSeqAppIcon.Bitmap;
+
+    Config.Add(F.lblSeqName.Text, F.lblSeqPath.Text, Bmp, Seq);
   end;
 
   Config.Save;
