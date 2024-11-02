@@ -76,18 +76,22 @@ type
     rectSelector: TRectangle;
     effectTitleGlow: TGlowEffect;
     layTitle: TLayout;
-    Image1: TImage;
+    imgIcon: TImage;
     dlgOpen: TOpenDialog;
     laySeqAppImageBase: TLayout;
     lblSeqMessage: TLabel;
-    SizeGrip1: TSizeGrip;
+    layContollerIndexBase: TLayout;
+    lblControllerIndex: TLabel;
+    cmbbxControllerIndex: TComboBox;
     procedure FormDestroy(Sender: TObject);
     procedure timerUpdateTimer(Sender: TObject);
     procedure rectSeqAddButtonMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Single);
     procedure btnCloseClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure cmbbxControllerIndexChange(Sender: TObject);
   private var
+    FInitializing: Boolean;
     FPad: TGamePad;
     FImageList: TImageList;
     FCommandFrames: TCommandFrames;
@@ -105,7 +109,9 @@ implementation
 uses
   System.DateUtils
   , PK.Device.GamePad.Types
+  , PK.Utils.Log
   , uButtonIndexes
+  , uConfig
   ;
 
 procedure ShowConfig(const APad: TGamePad; const AImageList: TImageList);
@@ -127,6 +133,18 @@ begin
   Close;
 end;
 
+procedure TfrmConfig.cmbbxControllerIndexChange(Sender: TObject);
+begin
+  cmbbxControllerIndex.Hint := cmbbxControllerIndex.Text;
+
+  FPad.ControllerIndex := cmbbxControllerIndex.ItemIndex;
+
+  if not FInitializing then
+    FPad.Vibrate($ffff, $ffff, 200);
+
+  Config.ControllerId := FPad.GamePadInfos[FPad.ControllerIndex].Id;
+end;
+
 procedure TfrmConfig.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Action := TCloseAction.caFree;
@@ -139,35 +157,58 @@ end;
 
 procedure TfrmConfig.Init(const APad: TGamePad; const AImageList: TImageList);
 begin
-  FPad := APad;
-  FImageList := AImageList;
+  FInitializing := True;
+  try
+    FPad := APad;
+    FImageList := AImageList;
 
-  glpA.Images := FImageList;
-  glpB.Images := FImageList;
-  glpX.Images := FImageList;
-  glpY.Images := FImageList;
+    glpA.Images := FImageList;
+    glpB.Images := FImageList;
+    glpX.Images := FImageList;
+    glpY.Images := FImageList;
 
-  glpBack.Images := FImageList;
-  glpStart.Images := FImageList;
+    glpBack.Images := FImageList;
+    glpStart.Images := FImageList;
 
-  glpCR.Images := FImageList;
-  glpLStick.Images := FImageList;
-  glpRStick.Images := FImageList;
+    glpCR.Images := FImageList;
+    glpLStick.Images := FImageList;
+    glpRStick.Images := FImageList;
 
-  glpLB.Images := FImageList;
-  glpLS.Images := FImageList;
-  glpLT.Images := FImageList;
-  glpRB.Images := FImageList;
-  glpRS.Images := FImageList;
-  glpRT.Images := FImageList;
+    glpLB.Images := FImageList;
+    glpLS.Images := FImageList;
+    glpLT.Images := FImageList;
+    glpRB.Images := FImageList;
+    glpRS.Images := FImageList;
+    glpRT.Images := FImageList;
 
-  FCommandFrames :=
-    TCommandFrames.Create(
-      FPad,
-      FImageList,
-      lstbxSequences);
+    FCommandFrames :=
+      TCommandFrames.Create(
+        FPad,
+        FImageList,
+        lstbxSequences);
 
-  timerUpdate.Enabled := True;
+    var ControllerId := Config.ControllerId;
+    var ControllerIndex := 0;
+
+    for var i := 0 to FPad.GamePadInfoCount do
+    begin
+      var Info := FPad.GamePadInfos[i];
+      var Cpation := Info.Caption;
+
+      if not Cpation.IsEmpty then
+        cmbbxControllerIndex.Items.Add(Cpation);
+
+      if Info.Id = ControllerId then
+        ControllerIndex := i;
+    end;
+
+    FPad.ControllerIndex := ControllerIndex;
+    cmbbxControllerIndex.ItemIndex := FPad.ControllerIndex;
+
+    timerUpdate.Enabled := True;
+  finally
+    FInitializing := False;
+  end;
 end;
 
 procedure TfrmConfig.rectSeqAddButtonMouseDown(Sender: TObject;

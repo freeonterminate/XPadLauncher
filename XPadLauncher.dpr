@@ -27,7 +27,8 @@ uses
   PK.Graphic.BitmapCodecManagerHelper in 'Lib\Graphics\PK.Graphic.BitmapCodecManagerHelper.pas',
   uCommon in 'uCommon.pas',
   PK.Utils.ScreenHelper in 'Lib\Utils\PK.Utils.ScreenHelper.pas',
-  uCommandFrame in 'uCommandFrame.pas' {frameCommand: TFrame};
+  uCommandFrame in 'uCommandFrame.pas' {frameCommand: TFrame},
+  PK.HardInfo.WMI.Win in 'Lib\HardInfo\PK.HardInfo.WMI.Win.pas';
 
 {$R *.res}
 

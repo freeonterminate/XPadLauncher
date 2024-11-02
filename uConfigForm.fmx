@@ -28,9 +28,9 @@ object frmConfig: TfrmConfig
       Align = Left
       Margins.Right = 12.000000000000000000
       Position.X = 8.000000000000000000
-      Position.Y = 40.000000000000000000
+      Position.Y = 44.000000000000000000
       Size.Width = 400.000000000000000000
-      Size.Height = 368.000000000000000000
+      Size.Height = 364.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 0
       TabStop = False
@@ -176,13 +176,13 @@ object frmConfig: TfrmConfig
     object laySequenceBase: TLayout
       Align = Client
       Size.Width = 372.000000000000000000
-      Size.Height = 368.000000000000000000
+      Size.Height = 364.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 1
       object lstbxSequences: TListBox
         Align = Client
         Size.Width = 372.000000000000000000
-        Size.Height = 368.000000000000000000
+        Size.Height = 364.000000000000000000
         Size.PlatformDefault = False
         StyleLookup = 'commandlistboxstyle'
         TabOrder = 0
@@ -191,7 +191,7 @@ object frmConfig: TfrmConfig
         DefaultItemStyles.GroupHeaderStyle = ''
         DefaultItemStyles.GroupFooterStyle = ''
         Viewport.Width = 368.000000000000000000
-        Viewport.Height = 364.000000000000000000
+        Viewport.Height = 360.000000000000000000
         object itemSeqAdd: TListBoxItem
           Size.Width = 368.000000000000000000
           Size.Height = 40.000000000000000000
@@ -552,6 +552,7 @@ object frmConfig: TfrmConfig
     end
     object layTitle: TLayout
       Align = Top
+      Margins.Bottom = 4.000000000000000000
       Position.X = 8.000000000000000000
       Position.Y = 8.000000000000000000
       Size.Width = 784.000000000000000000
@@ -559,11 +560,12 @@ object frmConfig: TfrmConfig
       Size.PlatformDefault = False
       TabOrder = 2
       object lblTitle: TLabel
-        Align = Client
+        Align = Left
         AutoSize = True
         StyledSettings = [Family]
         Margins.Bottom = 8.000000000000000000
-        Size.Width = 632.000000000000000000
+        Position.X = 48.000000000000000000
+        Size.Width = 210.399993896484400000
         Size.Height = 24.000000000000000000
         Size.PlatformDefault = False
         TextSettings.Font.Size = 24.000000000000000000
@@ -578,7 +580,7 @@ object frmConfig: TfrmConfig
           Opacity = 0.899999976158142100
         end
       end
-      object Image1: TImage
+      object imgIcon: TImage
         MultiResBitmap.Height = 64
         MultiResBitmap.Width = 64
         MultiResBitmap = <
@@ -636,14 +638,40 @@ object frmConfig: TfrmConfig
         TextSettings.Trimming = None
         OnClick = btnCloseClick
       end
+      object layContollerIndexBase: TLayout
+        Align = Client
+        Margins.Right = 8.000000000000000000
+        Size.Width = 413.600006103515600000
+        Size.Height = 32.000000000000000000
+        Size.PlatformDefault = False
+        TabOrder = 2
+        object lblControllerIndex: TLabel
+          Align = Left
+          StyledSettings = [Family, Style, FontColor]
+          Size.Width = 78.000000000000000000
+          Size.Height = 32.000000000000000000
+          Size.PlatformDefault = False
+          TextSettings.Font.Size = 16.000000000000000000
+          Text = 'Gamepad'
+          TabOrder = 0
+        end
+        object cmbbxControllerIndex: TComboBox
+          Align = Client
+          Size.Width = 335.600006103515600000
+          Size.Height = 32.000000000000000000
+          Size.PlatformDefault = False
+          TabOrder = 1
+          OnChange = cmbbxControllerIndexChange
+        end
+      end
     end
   end
   object timerUpdate: TTimer
     Enabled = False
     Interval = 50
     OnTimer = timerUpdateTimer
-    Left = 192
-    Top = 112
+    Left = 464
+    Top = 192
   end
   object styleAir: TStyleBook
     Styles = <
@@ -28125,22 +28153,14 @@ object frmConfig: TfrmConfig
           00000000000000C804401453697A652E506C6174666F726D44656661756C7408
           0756697369626C650800000000}
       end>
-    Left = 264
-    Top = 8
+    Left = 456
+    Top = 128
   end
   object dlgOpen: TOpenDialog
     DefaultExt = 'exe'
     Filter = 'Exe File (*.exe)|*.exe|All (*.*)|*.*'
     Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
-    Left = 416
-    Top = 4
-  end
-  object SizeGrip1: TSizeGrip
-    Anchors = [akRight, akBottom]
-    Position.X = 774.000000000000000000
-    Position.Y = 390.000000000000000000
-    Size.Width = 39.000000000000000000
-    Size.Height = 39.000000000000000000
-    Size.PlatformDefault = False
+    Left = 536
+    Top = 124
   end
 end

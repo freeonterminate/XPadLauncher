@@ -5,6 +5,7 @@ interface
 uses
   System.SysUtils
   , System.Types
+  , System.Generics.Collections
   ;
 
 type
@@ -43,20 +44,51 @@ type
   );
   TGamePadButtons = set of TGamePadButton;
 
+  TGamePadInfo = record
+  private
+    FId: String;
+    FIndex: Integer;
+    FCaption: String;
+    FVendorId: Word;
+    FProductId: Word;
+  public
+    constructor Create(
+      const AId: String;
+      const AIndex: Integer;
+      const ACaption: String;
+      const AVendorId, AProductId: Word);
+    property Id: String read FId write FId;
+    property Index: Integer read FIndex write FIndex;
+    property Caption: String read FCaption write FCaption;
+    property VendorId: Word read FVendorId write FVendorId;
+    property ProductId: Word read FProductId write FProductId;
+  end;
+
   IGamePad = interface
   ['{80E4879F-7D6E-418A-A783-1FD39C519EFC}']
     procedure SetDeadZone(const ALeft, ARight: Integer);
-    procedure SetControllerIndex(const AIndex: Integer);
-    function GetControllerIndex: Integer;
     function Check: TGamePadButtons;
     function CheckStick(const AThumb: TGamePadButton): TPoint;
     function CheckTrigger(const AThumb: TGamePadButton): Integer;
     function IsClicked(const AButton: TGamePadButton): Boolean;
-    function GetStatus: TGamePadButtons;
+    procedure Vibrate(
+      const ALeftMotor, ARightMotor: Word;
+      const ADuration: Integer);
 
+    function GetStatus: TGamePadButtons;
+    procedure SetControllerIndex(const AIndex: Integer);
+    function GetControllerIndex: Integer;
+
+    function GetGamePadInfoCount: Integer;
+    function GetGamePadInfos(const AIndex: Integer): TGamePadInfo;
+
+    property Status: TGamePadButtons read GetStatus;
     property ControllerIndex: Integer
       read GetControllerIndex write SetControllerIndex;
-    property Status: TGamePadButtons read GetStatus;
+
+    property GamePadInfoCount: Integer read GetGamePadInfoCount;
+    property GamePadInfos[const AIndex: Integer]: TGamePadInfo
+      read GetGamePadInfos;
   end;
 
   IGamePadFactory = interface
@@ -70,10 +102,15 @@ type
   end;
 
   TGamePadIntf = class abstract(TInterfacedObject, IGamePad)
+  private
   protected
     procedure SetDeadZone(const ALeft, ARight: Integer); virtual; abstract;
     procedure SetControllerIndex(const AIndex: Integer); virtual; abstract;
     function GetControllerIndex: Integer; virtual; abstract;
+    function GetStatus: TGamePadButtons; virtual; abstract;
+    function GetGamePadInfoCount: Integer; virtual; abstract;
+    function GetGamePadInfos(
+      const AIndex: Integer): TGamePadInfo; virtual; abstract;
   public
     function Check: TGamePadButtons; virtual; abstract;
     function CheckStick(const AThumb: TGamePadButton): TPoint;
@@ -82,19 +119,51 @@ type
       virtual; abstract;
     function IsClicked(const AButton: TGamePadButton): Boolean;
       virtual; abstract;
-    function GetStatus: TGamePadButtons; virtual; abstract;
+    procedure Vibrate(
+      const ALeftMotor, ARightMotor: Word;
+      const ADuration: Integer); virtual; abstract;
   public
+    property Status: TGamePadButtons read GetStatus;
+    property ControllerIndex: Integer
+      read GetControllerIndex write SetControllerIndex;
+
+    property GamePadInfoCount: Integer read GetGamePadInfoCount;
+    property GamePadInfos[const AIndex: Integer]: TGamePadInfo
+      read GetGamePadInfos;
+
     function GetStatusAsArray(
       const AStatus: TGamePadButtons): TArray<TGamePadButton>;
     property
       StatusAsArray[const AStatus: TGamePadButtons]: TArray<TGamePadButton>
-      read GetStatusAsArray;
+        read GetStatusAsArray;
   end;
+
+const
+  GAMEPADINFO_NONE: TGamePadInfo =
+  (
+    FId: '';
+    FIndex: -1;
+    FCaption: '';
+    FVendorId: 0;
+    FProductId: 0
+  );
 
 implementation
 
-uses
-  System.Generics.Collections;
+{ TGamePadInfo }
+
+constructor TGamePadInfo.Create(
+  const AId: String;
+  const AIndex: Integer;
+  const ACaption: String;
+  const AVendorId, AProductId: Word);
+begin
+  FId := AId;
+  FIndex := AIndex;
+  FCaption := ACaption;
+  FVendorId := AVendorId;
+  FProductId := AProductId;
+end;
 
 { TGamePadIntf }
 

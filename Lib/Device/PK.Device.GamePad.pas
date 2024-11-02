@@ -16,6 +16,9 @@ type
     procedure SetDeadZone(const ALeft, ARight: Integer); override;
     procedure SetControllerIndex(const AIndex: Integer); override;
     function GetControllerIndex: Integer; override;
+    function GetStatus: TGamePadButtons; override;
+    function GetGamePadInfoCount: Integer; override;
+    function GetGamePadInfos(const AIndex: Integer): TGamePadInfo; override;
   public
     constructor Create; reintroduce;
 
@@ -26,11 +29,9 @@ type
       override;
     function IsClicked(const AButton: TGamePadButton): Boolean;
       override;
-    function GetStatus: TGamePadButtons; override;
-
-    property ControllerIndex: Integer
-      read GetControllerIndex write SetControllerIndex;
-    property Status: TGamePadButtons read GetStatus;
+    procedure Vibrate(
+      const ALeftMotor, ARightMotor: Word;
+      const ADuration: Integer); override;
   end;
 
 implementation
@@ -92,6 +93,21 @@ begin
     Result := FIntf.GetControllerIndex;
 end;
 
+function TGamePad.GetGamePadInfoCount: Integer;
+begin
+  if FIntf = nil then
+    Result := 0
+  else
+    Result := FIntf.GetGamePadInfoCount;
+end;
+
+function TGamePad.GetGamePadInfos(const AIndex: Integer): TGamePadInfo;
+begin
+  Result := GAMEPADINFO_NONE;
+  if FIntf <> nil then
+    Result := FIntf.GetGamePadInfos(AIndex)
+end;
+
 function TGamePad.GetStatus: TGamePadButtons;
 begin
   if FIntf = nil then
@@ -118,6 +134,14 @@ procedure TGamePad.SetDeadZone(const ALeft, ARight: Integer);
 begin
   if FIntf <> nil then
     FIntf.SetDeadZone(ALeft, ARight);
+end;
+
+procedure TGamePad.Vibrate(
+  const ALeftMotor, ARightMotor: Word;
+  const ADuration: Integer);
+begin
+  if (FIntf <> nil) and (ADuration > 0) then
+    FIntf.Vibrate(ALeftMotor, ARightMotor, ADuration);
 end;
 
 end.

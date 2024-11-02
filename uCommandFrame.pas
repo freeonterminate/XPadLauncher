@@ -145,19 +145,6 @@ begin
     end;
   end;
 
-  {
-  if Length(Buttons) > 1 then
-  begin
-    var R := TRectangle(FOrgGrouping.Clone(laySeq));
-    FGroupingRects.Add(R);
-
-    R.SetBounds(MinX, 0, MaxX - MinX, H);
-    R.Parent := laySeq;
-    R.Visible := True;
-    R.SendToBack;
-  end;
-  }
-
   laySeq.Width := MaxX;
 
   CreateGroupingRect;

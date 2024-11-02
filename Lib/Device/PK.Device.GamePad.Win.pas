@@ -4,13 +4,33 @@ interface
 
 uses
   Winapi.Windows
+  , Winapi.DirectInput
+  , Winapi.ActiveX
+  , System.Classes
   , System.SysUtils
   , System.Types
+  , System.Generics.Collections
   , PK.Device.GamePad.Types
   ;
 
 type
   TWinGamePad = class(TGamePadIntf)
+  private type
+    TDeviceInfo = record
+    private
+      FPadInfo: TGamePadInfo;
+    public
+      constructor Create(const AInfo: PDIDeviceInstance);
+    end;
+    TDeviceInfos = TList<TDeviceInfo>;
+  private class var
+    FDeviceInfos: TDeviceInfos;
+  private
+    class constructor CreateClass;
+    class destructor DestroyClass;
+    class function CallbackFunc(
+      lpddi: PDIDEVICEINSTANCE;
+      pvRef: Pointer): BOOL; static; stdcall;
   private var
     FControllerIndex: Integer;
     FStatus: TGamePadButtons;
@@ -19,14 +39,20 @@ type
     FDeadZoneRight: Integer;
   public
     constructor Create; reintroduce;
-    procedure SetDeadZone(const ALeft, ARight: Integer); override;
-    procedure SetControllerIndex(const AIndex: Integer); override;
     function GetControllerIndex: Integer; override;
     function Check: TGamePadButtons; override;
     function CheckStick(const AThumb: TGamePadButton): TPoint; override;
     function CheckTrigger(const AThumb: TGamePadButton): Integer; override;
     function IsClicked(const AButton: TGamePadButton): Boolean; override;
+    procedure Vibrate(
+      const ALeftMotor, ARightMotor: Word;
+      const ADuration: Integer); override;
+
+    procedure SetDeadZone(const ALeft, ARight: Integer); override;
+    procedure SetControllerIndex(const AIndex: Integer); override;
     function GetStatus: TGamePadButtons; override;
+    function GetGamePadInfoCount: Integer; override;
+    function GetGamePadInfos(const AIndex: Integer): TGamePadInfo; override;
   end;
 
   TWinGamePadFactory = class(TGamePadFactory)
@@ -38,13 +64,15 @@ implementation
 
 uses
   System.Math
+  , System.Variants
   , FMX.Platform
+  , PK.HardInfo.WMI.Win
   , PK.Utils.Log
   ;
 
 type
   // XINPUT_GAMEPAD Structure
-  TXInpuTWinGamePad = packed record
+  TXInputGamePad = packed record
     wButtons: Word;
     bLeftTrigger: Byte;
     bRightTrigger: Byte;
@@ -57,7 +85,30 @@ type
   // XINPUT_STATE Structure
   TXInputState = packed record
     dwPacketNumber: DWORD;
-    Gamepad: TXInpuTWinGamePad;
+    Gamepad: TXInputGamePad;
+  end;
+
+  // XINPUT_VIBRATION 構造体
+  TXInputVibration = packed record
+    wLeftMotorSpeed: Word;  // 左モーターの振動強度 (0-65535)
+    wRightMotorSpeed: Word; // 右モーターの振動強度 (0-65535)
+  end;
+
+  TXInputCapabilities = packed record
+    &Type: Byte;
+    SubType: Byte;
+    Flags: Word;
+    Gamepad: TXInputGamePad;
+    Vibration: TXInputVibration;
+  end;
+
+  TXInputCapabilitiesEx = packed record
+    Capabilities: TXInputCapabilities;
+    VendorId: Word;
+    ProductId: Word;
+    ProductVersion: Word;
+    Reserved1: Word;
+    Reserved2: DWORD;
   end;
 
 const
@@ -89,6 +140,20 @@ function XInputGetState(
   var State: TXInputState): DWORD; stdcall;
   external XINPUT_DLL name 'XInputGetState';
 
+function XInputSetState(
+  dwUserIndex: DWORD;
+  var pVibration: TXInputVibration): DWORD; stdcall;
+  external XINPUT_DLL name 'XInputSetState';
+
+{$WARNINGS OFF}
+function XInputGetCapabilitiesEx(
+  dwVerion: DWORD;
+  dwUserIndex: DWORD;
+  dwFlags: DWORD;
+  var pCapabilitiesEx: TXInputCapabilitiesEx): DWORD; stdcall;
+  external XINPUT_DLL index 108;
+{$WARNINGS ON}
+
 procedure RegisterGamePadWin;
 begin
   TPlatformServices.Current.AddPlatformService(
@@ -103,7 +168,133 @@ begin
   Result := TWinGamePad.Create;
 end;
 
+{ TWinGamePad.TDeviceInfo }
+
+constructor TWinGamePad.TDeviceInfo.Create(const AInfo: PDIDeviceInstance);
+begin
+  var VIdPId := AInfo^.guidProduct.D1;
+  FPadInfo.VendorId := LoWord(VIdPId);
+  FPadInfo.ProductId := HiWord(VIdPId);
+
+  FPadInfo.Id := AInfo.guidInstance.ToString;
+
+  FPadInfo.Caption := AInfo.tszInstanceName;
+
+  var Target :=
+    Format('VID_%.4x&PID_%.4x', [FPadInfo.VendorId, FPadInfo.ProductId]);
+  var Target2 :=
+    Format('%.4x_PID&%.4x', [FPadInfo.VendorId, FPadInfo.ProductId]);
+  var DeviceCaption := '';
+
+  {
+  Log.d(Target);
+  Log.d(Target2);
+  Log.d('');
+  }
+
+  TWMI.GetPropertyEx(
+    'Win32_PnPEntity',
+    ['Caption', 'DeviceID', 'PNPClass'],
+    procedure(const iProps: TWMI.TWbemPropDic)
+
+      function GetProps(const AName: String): String;
+      begin
+        try
+          if iProps[AName] <> Null then
+            Result := iProps[AName]
+          else
+            Result := '';
+        except
+          Result := '';
+        end;
+      end;
+
+    begin
+      var Caption := GetProps('Caption');
+      var DeviceID := GetProps('DeviceID');
+      var PNPClass := GetProps('PNPClass');
+
+      //Log.d(DeviceID + '  ' + PNPClass);
+
+      if
+        (
+          (PNPClass = 'USB') or
+          (PNPClass = 'HIDClass') or
+          (PNPClass = 'XboxComposite')
+        ) and
+        (
+          (DeviceID.Contains(Target) and not DeviceID.Contains('HID\')) or
+          DeviceID.Contains(Target2)
+        )
+      then
+      begin
+        //Log.d(DeviceId);
+
+        if DeviceID.StartsWith('BTHENUM') then
+        begin
+          var Index := DeviceID.IndexOf(Target2);
+          if Index > -1 then
+          begin
+            Inc(Index, Target2.Length);
+            var Path1 := DeviceID.Substring(Index, 13);
+            var Path2 := DeviceID.Substring(Index + 13, 12);
+
+            var BTarget :=
+              Format(
+                'BTHENUM\DEV_%s%sBLUETOOTHDEVICE_%s',
+                [Path2, Path1, Path2]
+              );
+
+            TWMI.GetPropertyEx(
+              'Win32_PnPEntity',
+              ['Caption', 'DeviceID'],
+              procedure(const iProps: TWMI.TWbemPropDic)
+              begin
+                try
+                  var DeviceID := iProps['DeviceID'];
+
+                  if DeviceID = BTarget then
+                    Caption := iProps['Caption'];
+                except
+                end;
+              end
+            );
+          end;
+        end;
+
+        var Ist := False;
+        for var Info in FDeviceInfos do
+          if Info.FPadInfo.Caption = Caption then
+          begin
+            Ist := True;
+          end;
+
+        if not Ist then
+          DeviceCaption := Caption;
+      end;
+    end
+  );
+
+  if
+    (not DeviceCaption.IsEmpty) and
+    (not DeviceCaption.Contains('USB')) and
+    (not DeviceCaption.Contains('Bluetooth'))
+  then
+    FPadInfo.Caption := DeviceCaption;
+
+  //Log.d(DeviceCaption + ': ' + FPadInfo.Caption + ': ');
+end;
+
 { TWinGamePad }
+
+class function TWinGamePad.CallbackFunc(
+  lpddi: PDIDEVICEINSTANCE;
+  pvRef: Pointer): BOOL;
+begin
+  //Writeln('Called');
+  FDeviceInfos.Add(TDeviceInfo.Create(lpddi));
+  Result := DIENUM_CONTINUE;
+end;
 
 function TWinGamePad.Check: TGamePadButtons;
   // Stick
@@ -368,9 +559,66 @@ begin
   FDeadZoneRight := XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
 end;
 
+class constructor TWinGamePad.CreateClass;
+begin
+  FDeviceInfos := TDeviceInfos.Create;
+
+  // COMライブラリの初期化
+  if Succeeded(CoInitialize(nil)) then
+    try
+      var DirectInput: IDirectInput8 := nil;
+
+      // DirectInput8オブジェクトの作成
+      if
+        Failed(
+          DirectInput8Create(
+            GetModuleHandle(nil),
+            DIRECTINPUT_VERSION,
+            IID_IDirectInput8,
+            DirectInput,
+            nil
+          )
+        )
+      then
+      begin
+        Exit;
+      end;
+
+      // デバイスの列挙
+      DirectInput.EnumDevices(
+        DI8DEVCLASS_GAMECTRL,
+        @CallbackFunc,
+        nil,
+        DIEDFL_ALLDEVICES
+      )
+    finally
+      CoUninitialize;     // COMのクリーンアップ
+    end;
+end;
+
+class destructor TWinGamePad.DestroyClass;
+begin
+  FDeviceInfos.Free;
+end;
+
 function TWinGamePad.GetControllerIndex: Integer;
 begin
   Result := FControllerIndex;
+end;
+
+function TWinGamePad.GetGamePadInfoCount: Integer;
+begin
+  Result := FDeviceInfos.Count;
+end;
+
+function TWinGamePad.GetGamePadInfos(const AIndex: Integer): TGamePadInfo;
+begin
+  if (AIndex < 0) or (AIndex >= FDeviceInfos.Count) then
+    Exit(GAMEPADINFO_NONE);
+
+  var Info := FDeviceInfos[AIndex];
+
+  Result := Info.FPadInfo;
 end;
 
 function TWinGamePad.GetStatus: TGamePadButtons;
@@ -392,6 +640,28 @@ procedure TWinGamePad.SetDeadZone(const ALeft, ARight: Integer);
 begin
   FDeadZoneLeft := ALeft;
   FDeadZoneRight := ARight;
+end;
+
+procedure TWinGamePad.Vibrate(
+  const ALeftMotor, ARightMotor: Word;
+  const ADuration: Integer);
+begin
+  TThread.CreateAnonymousThread(
+    procedure
+    begin
+      var Vibration: TXInputVibration;
+
+      Vibration.wLeftMotorSpeed := ALeftMotor;
+      Vibration.wRightMotorSpeed := ARightMotor;
+      XInputSetState(FControllerIndex, Vibration);
+
+      Sleep(ADuration);
+
+      Vibration.wLeftMotorSpeed := 0;
+      Vibration.wRightMotorSpeed := 0;
+      XInputSetState(FControllerIndex, Vibration);
+    end
+  ).Start;
 end;
 
 initialization
