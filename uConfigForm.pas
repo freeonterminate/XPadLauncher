@@ -142,7 +142,7 @@ begin
   if not FInitializing then
     FPad.Vibrate($ffff, $ffff, 200);
 
-  Config.ControllerId := FPad.GamePadInfos[FPad.ControllerIndex].Id;
+  Config.ControllerIndex := FPad.ControllerIndex;
 end;
 
 procedure TfrmConfig.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -187,26 +187,12 @@ begin
         FImageList,
         lstbxSequences);
 
-    var ControllerId := Config.ControllerId;
-    var ControllerIndex := 0;
+    for var i := 0 to 8 do
+      cmbbxControllerIndex.Items.Add(
+        Format('#%d - %s', [i + 1, FPad.GamePadInfos[i].Caption])
+      );
 
-    for var i := 0 to FPad.GamePadInfoCount do
-    begin
-      var Info := FPad.GamePadInfos[i];
-      var Cpation := Info.Caption;
-
-      if not Cpation.IsEmpty then
-        cmbbxControllerIndex.Items.Add(Cpation);
-
-      if Info.Id = ControllerId then
-        ControllerIndex := i;
-    end;
-
-    // 情報としてはあるものの生きていない場合
-    if ControllerIndex >= cmbbxControllerIndex.Items.Count then
-      ControllerIndex := 0;
-
-    FPad.ControllerIndex := ControllerIndex;
+    FPad.ControllerIndex := Config.ControllerIndex;
     cmbbxControllerIndex.ItemIndex := FPad.ControllerIndex;
 
     timerUpdate.Enabled := True;
