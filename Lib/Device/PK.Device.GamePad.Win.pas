@@ -16,6 +16,7 @@ uses
 type
   TWinGamePad = class(TGamePadIntf)
   private type
+
     TDeviceInfo = record
     private
       FPadInfo: TGamePadInfo;
@@ -23,6 +24,7 @@ type
       constructor Create(const AInfo: PDIDeviceInstance);
     end;
     TDeviceInfos = TList<TDeviceInfo>;
+
   private class var
     FDeviceInfos: TDeviceInfos;
   private
@@ -131,8 +133,7 @@ const
   XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE  = 7849;
   XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE = 8689;
 
-// Import XInputGetState
-const
+  // Import XInputGetState
   XINPUT_DLL = 'xinput1_4.dll';
 
 function XInputGetState(
@@ -190,7 +191,7 @@ begin
   Log.d(Target);
   Log.d(Target2);
   Log.d('');
-  }
+  //}
 
   TWMI.GetPropertyEx(
     'Win32_PnPEntity',
@@ -252,7 +253,6 @@ begin
               begin
                 try
                   var DeviceID := iProps['DeviceID'];
-
                   if DeviceID = BTarget then
                     Caption := iProps['Caption'];
                 except
@@ -293,7 +293,12 @@ class function TWinGamePad.CallbackFunc(
 begin
   //Writeln('Called');
   FDeviceInfos.Add(TDeviceInfo.Create(lpddi));
-  Result := DIENUM_CONTINUE;
+
+  // XInput 認識デバイス数を超えていたら中止
+  if FDeviceInfos.Count < PUInt32(pvRef)^ then
+    Result := DIENUM_CONTINUE
+  else
+    Result := DIENUM_STOP;
 end;
 
 function TWinGamePad.Check: TGamePadButtons;
@@ -563,6 +568,18 @@ class constructor TWinGamePad.CreateClass;
 begin
   FDeviceInfos := TDeviceInfos.Create;
 
+  // XInput の数を調べる
+  var Count: UInt32 := 0;
+  for var i := 0 to 15 do // GameInput 実装環境では 16 まで拡張される
+  begin
+    var State: TXInputState;
+    if XInputGetState(i, State) <> ERROR_SUCCESS then
+    begin
+      Count := i;
+      Break;
+    end;
+  end;
+
   // COMライブラリの初期化
   if Succeeded(CoInitialize(nil)) then
     try
@@ -588,11 +605,12 @@ begin
       DirectInput.EnumDevices(
         DI8DEVCLASS_GAMECTRL,
         @CallbackFunc,
-        nil,
+        @Count,
         DIEDFL_ALLDEVICES
       )
     finally
-      CoUninitialize;     // COMのクリーンアップ
+      // COMのクリーンアップ
+      CoUninitialize;
     end;
 end;
 
