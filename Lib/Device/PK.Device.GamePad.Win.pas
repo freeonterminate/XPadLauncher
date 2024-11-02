@@ -291,13 +291,18 @@ class function TWinGamePad.CallbackFunc(
   lpddi: PDIDEVICEINSTANCE;
   pvRef: Pointer): BOOL;
 begin
-  //Writeln('Called');
+  Result := DIENUM_CONTINUE;
+
+  //Log.d(lpddi^.dwDevType.ToHexString(8));
+
+  // XInput デバイス以外を弾く
+  if (lpddi^.dwDevType and $ff) <> DI8DEVTYPE_GAMEPAD then
+    Exit;
+
   FDeviceInfos.Add(TDeviceInfo.Create(lpddi));
 
   // XInput 認識デバイス数を超えていたら中止
-  if FDeviceInfos.Count < PUInt32(pvRef)^ then
-    Result := DIENUM_CONTINUE
-  else
+  if FDeviceInfos.Count >= PUInt32(pvRef)^ then
     Result := DIENUM_STOP;
 end;
 

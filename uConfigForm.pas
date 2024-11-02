@@ -202,6 +202,10 @@ begin
         ControllerIndex := i;
     end;
 
+    // 情報としてはあるものの生きていない場合
+    if ControllerIndex >= cmbbxControllerIndex.Items.Count then
+      ControllerIndex := 0;
+
     FPad.ControllerIndex := ControllerIndex;
     cmbbxControllerIndex.ItemIndex := FPad.ControllerIndex;
 
