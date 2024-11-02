@@ -10,6 +10,7 @@
  *   http://opensource.org/licenses/mit-license.php
  *
  * 2018/08/30 Version 1.0.0
+ * 2024/11/03 Version 2.0.0
  * Programmed by HOSOKAWA Jun (twitter: @pik)
  *)
 
@@ -30,26 +31,15 @@ type
     TWbemPropDic = TDictionary<String, Variant>;
   private type
     TWbemGetPropHandler = reference to procedure(const iProps: TWbemPropDic);
-  private
-    class function GetWbemServices(
-      out oWbemServices: IWbemServices): Boolean; static;
-    class function EnumObjects(
-      const iEnumWbemClassObject: IEnumWbemClassObject;
-      const iPropNames: array of String;
-      const iHandler: TWbemGetPropHandler): Boolean; static;
   public
     class function Exec(
-      const iWQL: String;
-      const iPropName: array of String;
-      const iHandler: TWbemGetPropHandler): Boolean; static;
+      const AWQL: String;
+      const APropName: array of String;
+      const AHandler: TWbemGetPropHandler): Boolean; static;
     class function GetProperty(
-      const iClassName: String;
-      const iPropName: array of String;
-      const iHandler: TWbemGetPropHandler): Boolean; static;
-    class function GetPropertyEx(
-      const iClassName: String;
-      const iPropName: array of String;
-      const iHandler: TWbemGetPropHandler): Boolean; static;
+      const AClassName: String;
+      const APropName: array of String;
+      const AHandler: TWbemGetPropHandler): Boolean; static;
   end;
 
 
@@ -59,137 +49,17 @@ uses
   Winapi.Windows
   , Winapi.ActiveX
   , Winapi.ComAdmin
-  , Winapi.UserEnv
   , System.Win.ComObj
   , System.Variants
-  , PK.Utils.Log
   ;
 
 { TWMI }
 
-class function TWMI.EnumObjects(
-  const iEnumWbemClassObject: IEnumWbemClassObject;
-  const iPropNames: array of String;
-  const iHandler: TWbemGetPropHandler): Boolean;
-var
-  WbemObjects: array [0.. WBEM_MAX_OBJECT_NESTING - 1] of IWbemClassObject;
-  COMResult: HResult;
-  Prop: OleVariant;
-  Count: Cardinal;
-  i, j: Integer;
-  Name: String;
-  Dic: TWbemPropDic;
-begin
-  Result := False;
-
-  while
-    Succeeded(
-      iEnumWbemClassObject.Next(
-        0,
-        1,
-        WbemObjects[0],
-        Count
-      )
-    )
-  do
-  begin
-    if Count = 0 then
-      Break
-    else
-      Result := True;
-
-    Dic := TWbemPropDic.Create;
-    try
-      for i := 0 to Count - 1 do
-      begin
-        Dic.Clear;
-
-        for j := 0 to High(iPropNames) do
-        begin
-          Name := iPropNames[j];
-          WbemObjects[i].Get(PWideChar(WideString(Name)), 0, Prop, nil, nil);
-
-          Dic.AddOrSetValue(Name, Prop);
-        end;
-
-        if Dic.Count > 0 then
-          iHandler(Dic);
-      end;
-    finally
-      Dic.Free;
-    end;
-
-    COMResult := iEnumWbemClassObject.Skip(Integer(WBEM_INFINITE), Count);
-
-    if (Failed(COMResult)) or (COMResult = S_FALSE) then
-      Break;
-  end;
-end;
-
 class function TWMI.Exec(
-  const iWQL: String;
-  const iPropName: array of String;
-  const iHandler: TWbemGetPropHandler): Boolean;
-var
-  WbemServices: IWbemServices;
-  EnumWbemClassObject: IEnumWbemClassObject;
+  const AWQL: String;
+  const APropName: array of String;
+  const AHandler: TWbemGetPropHandler): Boolean;
 begin
-  Result := False;
-
-  // Get WbemServices
-  if not GetWbemServices(WbemServices) then
-    Exit;
-
-  // Get EnumWbem
-  if
-    Failed(
-      WbemServices.ExecQuery(
-        'WQL',
-        PWideChar(WideString(iWQL)),
-        WBEM_FLAG_FORWARD_ONLY,
-        nil,
-        EnumWbemClassObject)
-    )
-  then
-    Exit;
-
-  Result := EnumObjects(EnumWbemClassObject, iPropName, iHandler);
-end;
-
-class function TWMI.GetProperty(
-  const iClassName: String;
-  const iPropName: array of String;
-  const iHandler: TWbemGetPropHandler): Boolean;
-var
-  WbemServices: IWbemServices;
-  EnumWbemClassObject: IEnumWbemClassObject;
-begin
-  Result := False;
-
-  // Get WbemServices
-  if not GetWbemServices(WbemServices) then
-    Exit;
-
-  // Get EnumWbem
-  if
-    Failed(
-      WbemServices.CreateInstanceEnum(
-        PWideChar(WideString(iClassName)),
-        WBEM_FLAG_SHALLOW or WBEM_FLAG_FORWARD_ONLY,
-        nil,
-        EnumWbemClassObject)
-    )
-  then
-    Exit;
-
-  Result := EnumObjects(EnumWbemClassObject, iPropName, iHandler);
-end;
-
-class function TWMI.GetPropertyEx(
-  const iClassName: String;
-  const iPropName: array of String;
-  const iHandler: TWbemGetPropHandler): Boolean;
-begin;
   var WbemLocator: OLEVariant := CreateOleObject('WbemScripting.SWbemLocator');
   var WMIService: OLEVariant :=
     WbemLocator.ConnectServer(
@@ -199,10 +69,7 @@ begin;
       '');
 
   var WbemObjectSet: OLEVariant :=
-    WMIService.ExecQuery(
-      'SELECT * FROM ' + iClassName,
-      'WQL',
-      WBEM_FLAG_FORWARD_ONLY);
+    WMIService.ExecQuery(AWQL, 'WQL', WBEM_FLAG_FORWARD_ONLY);
 
   var Fetched: LongWord;
   var WbemObject: OLEVariant;
@@ -223,13 +90,13 @@ begin;
 
     var Dic := TWbemPropDic.Create;
     try
-      for var  i := 0 to High(iPropName) do
+      for var  i := 0 to High(APropName) do
       begin
         if
           Failed(
             Dispatch.GetIDsOfNames(
               GUID_NULL,
-              @iPropName[i],
+              @APropName[i],
               1,
               LOCALE_USER_DEFAULT,
               @DispIntfID
@@ -255,11 +122,11 @@ begin;
         if Failed(Res) then
           Continue;
 
-        Dic.AddOrSetValue(iPropName[i], Prop);
+        Dic.AddOrSetValue(APropName[i], Prop);
       end;
 
-      if Dic.Count > 0 then
-        iHandler(Dic);
+      if (Dic.Count > 0) and Assigned(AHandler) then
+        AHandler(Dic);
     finally
       Dic.Free;
     end;
@@ -270,45 +137,12 @@ begin;
   Result := True;
 end;
 
-class function TWMI.GetWbemServices(out oWbemServices: IWbemServices): Boolean;
-var
-  WbemLocator: IWbemLocator;
-begin
-  Result := False;
-  oWbemServices := nil;
-
-  if
-    (
-      Failed(
-        CoCreateInstance(
-          CLSID_WbemLocator,
-          nil,
-          CLSCTX_INPROC_SERVER,
-          IID_IWbemLocator,
-          WbemLocator)
-      )
-    )
-  then
-    Exit;
-
-  if
-    (
-      Failed(
-        WbemLocator.ConnectServer(
-          'root\cimv2',
-          '',
-          '',
-          '',
-          0,
-          '',
-          nil,
-          oWbemServices)
-      )
-    )
-  then
-    Exit;
-
-  Result := True;
+class function TWMI.GetProperty(
+  const AClassName: String;
+  const APropName: array of String;
+  const AHandler: TWbemGetPropHandler): Boolean;
+begin;
+  Result := Exec('SELECT * FROM ' + AClassName, APropName, AHandler);
 end;
 
 initialization

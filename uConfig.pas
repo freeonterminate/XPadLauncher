@@ -21,7 +21,7 @@ type
   end;
 
   TJsonCommands = record
-    controllerId: String;
+    controllerIndex: Integer;
     count: Integer;
     items: TArray<TJsonCommand>;
   end;
@@ -35,7 +35,7 @@ type
     class function GetConfigFilePath: String;
   private var
     FItems: TArray<TJsonCommand>;
-    FControllerId: String;
+    FControllerIndex: Integer;
   private
     function GetCount: Integer;
     function GetItems(const AIndex: Integer): TJsonCommand;
@@ -50,9 +50,9 @@ type
     procedure Load;
     property Count: Integer read GetCount;
     property Items[const AIndex: Integer]: TJsonCommand read GetItems; default;
-    property ControllerId: String
-      read FControllerId
-      write FControllerId;
+    property ControllerIndex: Integer
+      read FControllerIndex
+      write FControllerIndex;
   end;
 
 function Config: TConfig;
@@ -232,7 +232,7 @@ begin
       var Commands := S.Deserialize<TJsonCommands>(Json);
 
       FItems := Commands.items;
-      FControllerId := Commands.controllerId;
+      FControllerIndex := Commands.controllerIndex;
     finally
       S.Free;
     end;
@@ -265,7 +265,7 @@ begin
   Commands.count := GetCount;
   SetLength(Commands.items, Commands.count);
 
-  Commands.controllerId := FControllerId;
+  Commands.controllerIndex := FControllerIndex;
 
   for var i := 0 to GetCount - 1 do
     Commands.items[i] := FItems[i];

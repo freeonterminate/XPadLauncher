@@ -172,6 +172,12 @@ end;
 { TWinGamePad.TDeviceInfo }
 
 constructor TWinGamePad.TDeviceInfo.Create(const AInfo: PDIDeviceInstance);
+type
+  TPnPInfo = record
+    FCaption: String;
+    FDeviceID: String;
+    FPNPClass: String;
+  end;
 begin
   var VIdPId := AInfo^.guidProduct.D1;
   FPadInfo.VendorId := LoWord(VIdPId);
@@ -188,21 +194,23 @@ begin
   var DeviceCaption := '';
 
   {
+  Log.d('');
   Log.d(Target);
   Log.d(Target2);
-  Log.d('');
   //}
 
-  TWMI.GetPropertyEx(
+  var PnPInfos: TArray<TPnPInfo>;
+
+  TWMI.GetProperty(
     'Win32_PnPEntity',
     ['Caption', 'DeviceID', 'PNPClass'],
-    procedure(const iProps: TWMI.TWbemPropDic)
+    procedure(const AProps: TWMI.TWbemPropDic)
 
       function GetProps(const AName: String): String;
       begin
         try
-          if iProps[AName] <> Null then
-            Result := iProps[AName]
+          if AProps[AName] <> Null then
+            Result := AProps[AName]
           else
             Result := '';
         except
@@ -211,69 +219,75 @@ begin
       end;
 
     begin
-      var Caption := GetProps('Caption');
-      var DeviceID := GetProps('DeviceID');
-      var PNPClass := GetProps('PNPClass');
+      var Len := Length(PnPInfos);
+      SetLength(PnPInfos, Len + 1);
 
-      //Log.d(DeviceID + '  ' + PNPClass);
-
-      if
-        (
-          (PNPClass = 'USB') or
-          (PNPClass = 'HIDClass') or
-          (PNPClass = 'XboxComposite')
-        ) and
-        (
-          (DeviceID.Contains(Target) and not DeviceID.Contains('HID\')) or
-          DeviceID.Contains(Target2)
-        )
-      then
-      begin
-        //Log.d(DeviceId);
-
-        if DeviceID.StartsWith('BTHENUM') then
-        begin
-          var Index := DeviceID.IndexOf(Target2);
-          if Index > -1 then
-          begin
-            Inc(Index, Target2.Length);
-            var Path1 := DeviceID.Substring(Index, 13);
-            var Path2 := DeviceID.Substring(Index + 13, 12);
-
-            var BTarget :=
-              Format(
-                'BTHENUM\DEV_%s%sBLUETOOTHDEVICE_%s',
-                [Path2, Path1, Path2]
-              );
-
-            TWMI.GetPropertyEx(
-              'Win32_PnPEntity',
-              ['Caption', 'DeviceID'],
-              procedure(const iProps: TWMI.TWbemPropDic)
-              begin
-                try
-                  var DeviceID := iProps['DeviceID'];
-                  if DeviceID = BTarget then
-                    Caption := iProps['Caption'];
-                except
-                end;
-              end
-            );
-          end;
-        end;
-
-        var Ist := False;
-        for var Info in FDeviceInfos do
-          if Info.FPadInfo.Caption = Caption then
-          begin
-            Ist := True;
-          end;
-
-        if not Ist then
-          DeviceCaption := Caption;
-      end;
+      PnPInfos[Len].FCaption := GetProps('Caption');
+      PnPInfos[Len].FDeviceID := GetProps('DeviceID');
+      PnPInfos[Len].FPNPClass := GetProps('PNPClass');
     end
   );
+
+  for var i := 0 to High(PnPInfos) do
+  begin
+    var Info := PnPInfos[i];
+
+    if
+      (
+        (Info.FPNPClass = 'USB') or
+        (Info.FPNPClass = 'HIDClass') or
+        (Info.FPNPClass = 'XboxComposite')
+      ) and
+      (
+        (
+          Info.FDeviceID.Contains(Target) and
+          not Info.FDeviceID.Contains('HID\')
+        ) or
+        Info.FDeviceID.Contains(Target2)
+      )
+    then
+    begin
+      //Log.d(Info.FDeviceId);
+
+      if Info.FDeviceID.StartsWith('BTHENUM') then
+      begin
+        var Index := Info.FDeviceID.IndexOf(Target2);
+        if Index > -1 then
+        begin
+          Inc(Index, Target2.Length);
+          var Path1 := Info.FDeviceID.Substring(Index, 13);
+          var Path2 := Info.FDeviceID.Substring(Index + 13, 12);
+
+          var BTarget :=
+            Format(
+              'BTHENUM\DEV_%s%sBLUETOOTHDEVICE_%s',
+              [Path2, Path1, Path2]
+            );
+
+          for var j := 0 to High(PnPInfos) do
+          begin
+            var Info2 := PnPInfos[j];
+            if Info2.FDeviceID = BTarget then
+            begin
+              Info.FCaption := Info2.FCaption;
+              Break;
+            end;
+          end;
+        end;
+      end;
+
+      var Ist := False;
+      for var DevInfo in FDeviceInfos do
+        if DevInfo.FPadInfo.Caption = Info.FCaption then
+        begin
+          Ist := True;
+          Break;
+        end;
+
+      if not Ist then
+        DeviceCaption := Info.FCaption;
+    end;
+  end;
 
   if
     (not DeviceCaption.IsEmpty) and
@@ -293,17 +307,9 @@ class function TWinGamePad.CallbackFunc(
 begin
   Result := DIENUM_CONTINUE;
 
-  //Log.d(lpddi^.dwDevType.ToHexString(8));
-
   // XInput デバイス以外を弾く
-  if (lpddi^.dwDevType and $ff) <> DI8DEVTYPE_GAMEPAD then
-    Exit;
-
-  FDeviceInfos.Add(TDeviceInfo.Create(lpddi));
-
-  // XInput 認識デバイス数を超えていたら中止
-  if FDeviceInfos.Count >= PUInt32(pvRef)^ then
-    Result := DIENUM_STOP;
+  if (lpddi^.dwDevType and $ff) = DI8DEVTYPE_GAMEPAD then
+    FDeviceInfos.Add(TDeviceInfo.Create(lpddi));
 end;
 
 function TWinGamePad.Check: TGamePadButtons;
@@ -573,18 +579,6 @@ class constructor TWinGamePad.CreateClass;
 begin
   FDeviceInfos := TDeviceInfos.Create;
 
-  // XInput の数を調べる
-  var Count: UInt32 := 0;
-  for var i := 0 to 15 do // GameInput 実装環境では 16 まで拡張される
-  begin
-    var State: TXInputState;
-    if XInputGetState(i, State) <> ERROR_SUCCESS then
-    begin
-      Count := i;
-      Break;
-    end;
-  end;
-
   // COMライブラリの初期化
   if Succeeded(CoInitialize(nil)) then
     try
@@ -610,7 +604,7 @@ begin
       DirectInput.EnumDevices(
         DI8DEVCLASS_GAMECTRL,
         @CallbackFunc,
-        @Count,
+        nil,
         DIEDFL_ALLDEVICES
       )
     finally
@@ -691,3 +685,4 @@ initialization
   RegisterGamePadWin;
 
 end.
+

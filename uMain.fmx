@@ -86,6 +86,7 @@ object frmMain: TfrmMain
   end
   object timerUpdate: TTimer
     Enabled = False
+    Interval = 50
     OnTimer = timerUpdateTimer
     Left = 288
     Top = 16
