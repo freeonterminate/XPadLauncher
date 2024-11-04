@@ -2,10 +2,18 @@
 
 interface
 
+{$DEFINE USE_XINPUT}
+
+//{$DEFINE USE_GAMEINPUT}
+// Can't use GameInput API
+// BUG: Game controllers (Xbox One, Xbox 360, Sony PS5)
+//      - GetGamepadState always returns empty state
+// https://github.com/microsoft/GDK/issues/70
+
 uses
   Winapi.Windows
-  , Winapi.DirectInput
-  , Winapi.ActiveX
+  , Winapi.GameInput
+  , Winapi.XInput
   , System.Classes
   , System.SysUtils
   , System.Types
@@ -21,38 +29,50 @@ type
     private
       FPadInfo: TGamePadInfo;
     public
-      constructor Create(const AInfo: PDIDeviceInstance);
+      constructor Create(const ADevice: PIGameInputDevice);
     end;
     TDeviceInfos = TList<TDeviceInfo>;
 
   private class var
+    FGameInput: PIGameInput;
+    FDevices: TList<PIGameInputDevice>;
     FDeviceInfos: TDeviceInfos;
   private
     class constructor CreateClass;
     class destructor DestroyClass;
-    class function CallbackFunc(
-      lpddi: PDIDEVICEINSTANCE;
-      pvRef: Pointer): BOOL; static; stdcall;
+    class procedure CallbackFunc(
+      callbackToken: GameInputCallbackToken;
+      context: Pointer;
+      device: PIGameInputDevice;
+      timestamp: UInt64;
+      currentStatus: GameInputDeviceStatus;
+      previousStatus: GameInputDeviceStatus); static; stdcall;
   private var
-    FControllerIndex: Integer;
+    FControllerId: String;
+    FTarget: PIGameInputDevice;
+    FTargetIndex: Integer;
     FStatus: TGamePadButtons;
     FPrevStatus: TGamePadButtons;
-    FDeadZoneLeft: Integer;
-    FDeadZoneRight: Integer;
+    FDeadZoneLeft: Single;
+    FDeadZoneRight: Single;
+    FGPadState: GameInputGamepadState;
   public
     constructor Create; reintroduce;
-    function GetControllerIndex: Integer; override;
     function Check: TGamePadButtons; override;
-    function CheckStick(const AThumb: TGamePadButton): TPoint; override;
-    function CheckTrigger(const AThumb: TGamePadButton): Integer; override;
+    function CheckStick(const AThumb: TGamePadButton): TPointF; override;
+    function CheckTrigger(const AThumb: TGamePadButton): Single; override;
+
     function IsClicked(const AButton: TGamePadButton): Boolean; override;
     procedure Vibrate(
-      const ALeftMotor, ARightMotor: Word;
+      const ALeftMotor, ARightMotor: Single;
       const ADuration: Integer); override;
 
-    procedure SetDeadZone(const ALeft, ARight: Integer); override;
-    procedure SetControllerIndex(const AIndex: Integer); override;
+    function GetControllerId: String; override;
+    procedure SetControllerId(const AId: String); override;
+
+    procedure SetDeadZone(const ALeft, ARight: Single); override;
     function GetStatus: TGamePadButtons; override;
+
     function GetGamePadInfoCount: Integer; override;
     function GetGamePadInfos(const AIndex: Integer): TGamePadInfo; override;
   end;
@@ -72,88 +92,24 @@ uses
   , PK.Utils.Log
   ;
 
-type
-  // XINPUT_GAMEPAD Structure
-  TXInputGamePad = packed record
-    wButtons: Word;
-    bLeftTrigger: Byte;
-    bRightTrigger: Byte;
-    sThumbLX: SmallInt;
-    sThumbLY: SmallInt;
-    sThumbRX: SmallInt;
-    sThumbRY: SmallInt;
-  end;
-
-  // XINPUT_STATE Structure
-  TXInputState = packed record
-    dwPacketNumber: DWORD;
-    Gamepad: TXInputGamePad;
-  end;
-
-  // XINPUT_VIBRATION 構造体
-  TXInputVibration = packed record
-    wLeftMotorSpeed: Word;  // 左モーターの振動強度 (0-65535)
-    wRightMotorSpeed: Word; // 右モーターの振動強度 (0-65535)
-  end;
-
-  TXInputCapabilities = packed record
-    &Type: Byte;
-    SubType: Byte;
-    Flags: Word;
-    Gamepad: TXInputGamePad;
-    Vibration: TXInputVibration;
-  end;
-
-  TXInputCapabilitiesEx = packed record
-    Capabilities: TXInputCapabilities;
-    VendorId: Word;
-    ProductId: Word;
-    ProductVersion: Word;
-    Reserved1: Word;
-    Reserved2: DWORD;
-  end;
-
 const
-  XINPUT_GAMEPAD_DPAD_UP        = $0001;
-  XINPUT_GAMEPAD_DPAD_DOWN      = $0002;
-  XINPUT_GAMEPAD_DPAD_LEFT      = $0004;
-  XINPUT_GAMEPAD_DPAD_RIGHT     = $0008;
-  XINPUT_GAMEPAD_START          = $0010;
-  XINPUT_GAMEPAD_BACK           = $0020;
-  XINPUT_GAMEPAD_LEFT_THUMB     = $0040;
-  XINPUT_GAMEPAD_RIGHT_THUMB    = $0080;
-  XINPUT_GAMEPAD_LEFT_SHOULDER  = $0100;
-  XINPUT_GAMEPAD_RIGHT_SHOULDER = $0200;
-  XINPUT_GAMEPAD_A              = $1000;
-  XINPUT_GAMEPAD_B              = $2000;
-  XINPUT_GAMEPAD_X              = $4000;
-  XINPUT_GAMEPAD_Y              = $8000;
-
   // Dead zone
-  XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE  = 7849;
-  XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE = 8689;
+  {$IFDEF USE_XINPUT}
+  GAMEPAD_LEFT_THUMB_DEADZONE  = 7849;
+  GAMEPAD_RIGHT_THUMB_DEADZONE = 8689;
+  {$ENDIF}
 
-  // Import XInputGetState
-  XINPUT_DLL = 'xinput1_4.dll';
+  {$IFDEF USE_GAMEINPUT}
+  GAMEPAD_LEFT_THUMB_DEADZONE  = 0.2;
+  GAMEPAD_RIGHT_THUMB_DEADZONE = 0.2;
+  {$ENDIF}
 
-function XInputGetState(
-  dwUserIndex: DWORD;
-  var State: TXInputState): DWORD; stdcall;
-  external XINPUT_DLL name 'XInputGetState';
-
-function XInputSetState(
-  dwUserIndex: DWORD;
-  var pVibration: TXInputVibration): DWORD; stdcall;
-  external XINPUT_DLL name 'XInputSetState';
-
-{$WARNINGS OFF}
-function XInputGetCapabilitiesEx(
-  dwVerion: DWORD;
-  dwUserIndex: DWORD;
-  dwFlags: DWORD;
-  var pCapabilitiesEx: TXInputCapabilitiesEx): DWORD; stdcall;
-  external XINPUT_DLL index 108;
-{$WARNINGS ON}
+function AppLocalDeviceIDToString(const AID: APP_LOCAL_DEVICE_ID): String;
+begin
+  Result := '';
+  for var i := 0 to High(AID.value) do
+    Result := Result + AID.value[i].ToHexString(2);
+end;
 
 procedure RegisterGamePadWin;
 begin
@@ -171,7 +127,7 @@ end;
 
 { TWinGamePad.TDeviceInfo }
 
-constructor TWinGamePad.TDeviceInfo.Create(const AInfo: PDIDeviceInstance);
+constructor TWinGamePad.TDeviceInfo.Create(const ADevice: PIGameInputDevice);
 type
   TPnPInfo = record
     FCaption: String;
@@ -179,13 +135,25 @@ type
     FPNPClass: String;
   end;
 begin
-  var VIdPId := AInfo^.guidProduct.D1;
-  FPadInfo.VendorId := LoWord(VIdPId);
-  FPadInfo.ProductId := HiWord(VIdPId);
+  var GPadInfo := ADevice^.lpVtbl^.GetDeviceInfo(ADevice);
 
-  FPadInfo.Id := AInfo.guidInstance.ToString;
+  FPadInfo.Id := AppLocalDeviceIDToString(GPadInfo.deviceId);
+  FPadInfo.VendorId := GPadInfo.vendorId;
+  FPadInfo.ProductId := GPadInfo.productId;
 
-  FPadInfo.Caption := AInfo.tszInstanceName;
+  Log.d(Format('%s (%.4x:%.4x)', [FPadInfo.Id, FPadInfo.VendorId, FPadInfo.ProductId]));
+
+  var VIdPId := MakeLong(FPadInfo.VendorId, FPadInfo.ProductId);
+
+  if GPadInfo.displayName <> nil then
+  begin
+    var Name: String;
+    SetLength(Name, GPadInfo.displayName.sizeInBytes);
+    Move(
+      GPadInfo^.displayName^.data,
+      PChar(Name)^,
+      GPadInfo.displayName.sizeInBytes);
+  end;
 
   var Target :=
     Format('VID_%.4x&PID_%.4x', [FPadInfo.VendorId, FPadInfo.ProductId]);
@@ -236,7 +204,8 @@ begin
       (
         (Info.FPNPClass = 'USB') or
         (Info.FPNPClass = 'HIDClass') or
-        (Info.FPNPClass = 'XboxComposite')
+        (Info.FPNPClass = 'XboxComposite') or
+        (Info.FPNPClass = 'XnaComposite')
       ) and
       (
         (
@@ -284,32 +253,40 @@ begin
           Break;
         end;
 
-      if not Ist then
-        DeviceCaption := Info.FCaption;
+      if
+        (not Ist) and
+        (not DeviceCaption.Contains(Info.FCaption)) and
+        (not Info.FCaption.StartsWith('USB'))
+      then
+        DeviceCaption := DeviceCaption + ' or ' + Info.FCaption;
     end;
   end;
 
-  if
-    (not DeviceCaption.IsEmpty) and
-    (not DeviceCaption.Contains('USB')) and
-    (not DeviceCaption.Contains('Bluetooth'))
-  then
-    FPadInfo.Caption := DeviceCaption;
+  if not DeviceCaption.IsEmpty then
+    FPadInfo.Caption := DeviceCaption.Substring(4);
 
-  //Log.d(DeviceCaption + ': ' + FPadInfo.Caption + ': ');
+  Log.d(DeviceCaption + ': ' + FPadInfo.Caption + ': ');
 end;
 
 { TWinGamePad }
 
-class function TWinGamePad.CallbackFunc(
-  lpddi: PDIDEVICEINSTANCE;
-  pvRef: Pointer): BOOL;
+class procedure TWinGamePad.CallbackFunc(
+  callbackToken: GameInputCallbackToken;
+  context: Pointer;
+  device: PIGameInputDevice;
+  timestamp: UInt64;
+  currentStatus: GameInputDeviceStatus;
+  previousStatus: GameInputDeviceStatus);
 begin
-  Result := DIENUM_CONTINUE;
+  Log.d(
+    Format(
+      'Device: %d / %d',
+      [FDeviceInfos.Count, Ord(device^.lpVtbl.GetDeviceStatus(device))]
+    )
+  );
 
-  // XInput デバイス以外を弾く
-  if (lpddi^.dwDevType and $ff) = DI8DEVTYPE_GAMEPAD then
-    FDeviceInfos.Add(TDeviceInfo.Create(lpddi));
+  FDevices.Insert(0, device);
+  FDeviceInfos.Insert(0, TDeviceInfo.Create(device));
 end;
 
 function TWinGamePad.Check: TGamePadButtons;
@@ -385,10 +362,11 @@ function TWinGamePad.Check: TGamePadButtons;
   end;
 
 begin
+  {$IFDEF USE_XINPUT}
   Result := [];
 
   var State: TXInputState;
-  if XInputGetState(FControllerIndex, State) <> ERROR_SUCCESS then
+  if XInputGetState(FTargetIndex, State) <> ERROR_SUCCESS then
     Exit;
 
   FPrevStatus := FStatus;
@@ -409,19 +387,35 @@ begin
   if TGamePadButton.Left in Result then
   begin
     if TGamePadButton.Up in Result then
+    begin
+      Exclude(Result, TGamePadButton.Left);
+      Exclude(Result, TGamePadButton.Up);
       Include(Result, TGamePadButton.LeftUp);
+    end;
 
     if TGamePadButton.Down in Result then
+    begin
+      Exclude(Result, TGamePadButton.Left);
+      Exclude(Result, TGamePadButton.Down);
       Include(Result, TGamePadButton.LeftDown);
+    end;
   end;
 
   if TGamePadButton.Right in Result then
   begin
     if TGamePadButton.Up in Result then
+    begin
+      Exclude(Result, TGamePadButton.Right);
+      Exclude(Result, TGamePadButton.Up);
       Include(Result, TGamePadButton.RightUp);
+    end;
 
     if TGamePadButton.Down in Result then
+    begin
+      Exclude(Result, TGamePadButton.Right);
+      Exclude(Result, TGamePadButton.Down);
       Include(Result, TGamePadButton.RightDown);
+    end;
   end;
 
   // Button
@@ -508,11 +502,172 @@ begin
     Include(Result, TGamePadButton.RStickD);
 
   FStatus := Result;
+  {$ENDIF}
+
+  {$IFDEF USE_GAMEINPUT}
+  Result := [];
+
+  var State: GameInputGamepadState;
+  var Reading: PIGameInputReading := nil;
+
+  if
+    Failed(
+      FGameInput^.lpVtbl^.GetCurrentReading(
+        FGameInput,
+        GameInputKind.GameInputKindGamepad,
+        nil,
+        @Reading
+      )
+    )
+  then
+    Exit;
+
+  try
+    FillChar(State, SizeOf(State), 0);
+    if not Reading^.lpVtbl^.GetGamepadState(Reading, @State) then
+      Exit;
+  finally
+    Reading^.lpVtbl^.Release(Reading);
+  end;
+
+  if
+    (UInt32(State.buttons) = 0) and
+    (State.leftTrigger = 0) and
+    (State.rightTrigger = 0) and
+    (State.leftThumbstickX = 0) and
+    (State.leftThumbstickY = 0) and
+    (State.rightThumbstickX = 0) and
+    (State.rightThumbstickY = 0)
+  then
+    Exit;
+
+  FPrevStatus := FStatus;
+
+  FGPadState := State;
+  var Buttons := UInt32(FGPadState.buttons);
+  Log.d(Buttons.ToHexString(8));
+
+  // Cross Key
+  if (Buttons and Ord(GameInputGamepadDPadUp)) <> 0 then
+    Include(Result, TGamePadButton.Up);
+
+  if (Buttons and Ord(GameInputGamepadDPadDown)) <> 0 then
+    Include(Result, TGamePadButton.Down);
+
+  if (Buttons and Ord(GameInputGamepadDPadLeft)) <> 0 then
+    Include(Result, TGamePadButton.Left);
+
+  if (Buttons and Ord(GameInputGamepadDPadRight)) <> 0 then
+    Include(Result, TGamePadButton.Right);
+
+  if TGamePadButton.Left in Result then
+  begin
+    if TGamePadButton.Up in Result then
+      Include(Result, TGamePadButton.LeftUp);
+
+    if TGamePadButton.Down in Result then
+      Include(Result, TGamePadButton.LeftDown);
+  end;
+
+  if TGamePadButton.Right in Result then
+  begin
+    if TGamePadButton.Up in Result then
+      Include(Result, TGamePadButton.RightUp);
+
+    if TGamePadButton.Down in Result then
+      Include(Result, TGamePadButton.RightDown);
+  end;
+
+  // Button
+  if (Buttons and Ord(GameInputGamepadA)) <> 0 then
+    Include(Result, TGamePadButton.A);
+
+  if (Buttons and Ord(GameInputGamepadB)) <> 0 then
+    Include(Result, TGamePadButton.B);
+
+  if (Buttons and Ord(GameInputGamepadX)) <> 0 then
+    Include(Result, TGamePadButton.X);
+
+  if (Buttons and Ord(GameInputGamepadY)) <> 0 then
+    Include(Result, TGamePadButton.Y);
+
+  // Start / Back
+  if (Buttons and Ord(GameInputGamepadMenu)) <> 0 then
+    Include(Result, TGamePadButton.Start);
+
+  if (Buttons and Ord(GameInputGamepadView)) <> 0 then
+    Include(Result, TGamePadButton.Back);
+
+  // Shoulder (L1, R1)
+  if (Buttons and Ord(GameInputGamepadLeftShoulder)) <> 0 then
+    Include(Result, TGamePadButton.LeftShoulder);
+
+  if (Buttons and Ord(GameInputGamepadRightShoulder)) <> 0 then
+    Include(Result, TGamePadButton.RightShoulder);
+
+  // Trigger (L2, R2)
+  if (FGPadState.leftTrigger > 0) then
+    Include(Result, TGamePadButton.LeftTrigger);
+
+  if (FGPadState.rightTrigger > 0) then
+    Include(Result, TGamePadButton.RightTrigger);
+
+  // Stick Button (L3, R3)
+  if (Buttons and Ord(GameInputGamepadLeftThumbstick)) <> 0 then
+    Include(Result, TGamePadButton.LeftThumb);
+
+  if (Buttons and Ord(GameInputGamepadRightThumbstick)) <> 0 then
+    Include(Result, TGamePadButton.RightThumb);
+
+  // L Stick
+  var LS := CheckStick(TGamePadButton.LeftThumb);
+  Theta := ArcTan2(LS.Y, LS.X);
+
+  if IsLU then
+    Include(Result, TGamePadButton.LStickLU)
+  else if IsLD then
+    Include(Result, TGamePadButton.LStickLD)
+  else if IsRU then
+    Include(Result, TGamePadButton.LStickRU)
+  else if IsRD then
+    Include(Result, TGamePadButton.LStickRD)
+  else if IsL then
+    Include(Result, TGamePadButton.LStickL)
+  else if IsR then
+    Include(Result, TGamePadButton.LStickR)
+  else if IsU then
+    Include(Result, TGamePadButton.LStickU)
+  else if IsD then
+    Include(Result, TGamePadButton.LStickD);
+
+  // R Stick
+  var RS := CheckStick(TGamePadButton.RightThumb);
+  Theta := ArcTan2(RS.Y, RS.X);
+
+  if IsLU then
+    Include(Result, TGamePadButton.RStickLU)
+  else if IsLD then
+    Include(Result, TGamePadButton.RStickLD)
+  else if IsRU then
+    Include(Result, TGamePadButton.RStickRU)
+  else if IsRD then
+    Include(Result, TGamePadButton.RStickRD)
+  else if IsL then
+    Include(Result, TGamePadButton.RStickL)
+  else if IsR then
+    Include(Result, TGamePadButton.RStickR)
+  else if IsU then
+    Include(Result, TGamePadButton.RStickU)
+  else if IsD then
+    Include(Result, TGamePadButton.RStickD);
+
+  FStatus := Result;
+  {$ENDIF}
 end;
 
-function TWinGamePad.CheckStick(const AThumb: TGamePadButton): TPoint;
+function TWinGamePad.CheckStick(const AThumb: TGamePadButton): TPointF;
 
-  procedure GetStickValue(const AThumbX, AThumbY, ADeadZone: Integer);
+  procedure GetStickValue(const AThumbX, AThumbY, ADeadZone: Single);
   begin
     Result.X := AThumbX;
     Result.Y := AThumbY;
@@ -528,8 +683,10 @@ begin
   Result.X := 0;
   Result.Y := 0;
 
+  // 左右スティックの X, Y 軸の値
+  {$IFDEF USE_XINPUT}
   var State: TXInputState;
-  if XInputGetState(FControllerIndex, State) <> ERROR_SUCCESS then
+  if XInputGetState(FTargetIndex, State) <> ERROR_SUCCESS then
     Exit;
 
   // 左右スティックの X, Y 軸の値
@@ -546,14 +703,33 @@ begin
         State.Gamepad.sThumbRY,
         FDeadZoneRight);
   end;
+  {$ENDIF}
+
+  {$IFDEF USE_GAMEINPUT}
+  case AThumb  of
+    TGamePadButton.LeftThumb:
+      GetStickValue(
+        FGPadState.leftThumbstickX,
+        FGPadState.leftThumbstickY,
+        FDeadZoneLeft);
+
+    TGamePadButton.RightThumb:
+      GetStickValue(
+        FGPadState.rightThumbstickX,
+        FGPadState.rightThumbstickY,
+        FDeadZoneRight);
+  end;
+  {$ENDIF}
 end;
 
-function TWinGamePad.CheckTrigger(const AThumb: TGamePadButton): Integer;
+function TWinGamePad.CheckTrigger(const AThumb: TGamePadButton): Single;
 begin
   Result := 0;
 
+  // 左右 Trigger (L2, R2) の値
+  {$IFDEF USE_XINPUT}
   var State: TXInputState;
-  if XInputGetState(FControllerIndex, State) <> ERROR_SUCCESS then
+  if XInputGetState(FTargetIndex, State) <> ERROR_SUCCESS then
     Exit;
 
   // 左右 Trigger (L2, R2) の値
@@ -564,63 +740,76 @@ begin
     TGamePadButton.RightTrigger:
       Result := State.Gamepad.bRightTrigger;
   end;
+  {$ENDIF}
+
+  {$IFDEF USE_GAMEINPUT}
+  case AThumb  of
+    TGamePadButton.LeftTrigger:
+      Result := FGPadState.leftTrigger;
+
+    TGamePadButton.RightTrigger:
+      Result := FGPadState.rightTrigger;
+  end;
+  {$ENDIF}
 end;
 
 constructor TWinGamePad.Create;
 begin
   inherited;
 
-  FControllerIndex := 0;
-  FDeadZoneLeft := XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
-  FDeadZoneRight := XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
+  FControllerId := '';
+  FTarget := nil;
+
+  FDeadZoneLeft := GAMEPAD_LEFT_THUMB_DEADZONE;
+  FDeadZoneRight := GAMEPAD_RIGHT_THUMB_DEADZONE;
 end;
 
 class constructor TWinGamePad.CreateClass;
 begin
   FDeviceInfos := TDeviceInfos.Create;
+  FDevices := TList<PIGameInputDevice>.Create;
 
-  // COMライブラリの初期化
-  if Succeeded(CoInitialize(nil)) then
-    try
-      var DirectInput: IDirectInput8 := nil;
+  var Res := GameInputCreate(@FGameInput);
 
-      // DirectInput8オブジェクトの作成
-      if
-        Failed(
-          DirectInput8Create(
-            GetModuleHandle(nil),
-            DIRECTINPUT_VERSION,
-            IID_IDirectInput8,
-            DirectInput,
-            nil
-          )
-        )
-      then
-      begin
-        Exit;
-      end;
+  if Failed(Res) then
+  begin
+    Log.d('Failed: ' + UInt32(Res).ToHexString(8));
+    Exit;
+  end;
 
-      // デバイスの列挙
-      DirectInput.EnumDevices(
-        DI8DEVCLASS_GAMECTRL,
-        @CallbackFunc,
-        nil,
-        DIEDFL_ALLDEVICES
-      )
-    finally
-      // COMのクリーンアップ
-      CoUninitialize;
-    end;
+  var Token: GameInputCallbackToken;
+
+  Res := FGameInput^.lpVtbl^.RegisterDeviceCallback(
+    FGameInput,
+    nil,
+    GameInputKind.GameInputKindGamepad,
+    GameInputDeviceStatus.GameInputDeviceAnyStatus,
+    GameInputEnumerationKind.GameInputBlockingEnumeration,
+    nil,
+    @CallbackFunc,
+    @Token
+  );
+
+  if Succeeded(Res) then
+    FGameInput^.lpVtbl^.UnregisterCallback(FGameInput, Token, 5000)
+  else
+    Log.d('Failed: ' + UInt32(Res).ToHexString(8));
 end;
 
 class destructor TWinGamePad.DestroyClass;
 begin
   FDeviceInfos.Free;
+
+  for var Device in FDevices do
+    Device^.lpVtbl^.Release(Device);
+
+  FDevices.Free;
+  FGameInput^.lpVtbl^.Release(FGameInput);
 end;
 
-function TWinGamePad.GetControllerIndex: Integer;
+function TWinGamePad.GetControllerId: String;
 begin
-  Result := FControllerIndex;
+  Result := FControllerId;
 end;
 
 function TWinGamePad.GetGamePadInfoCount: Integer;
@@ -648,35 +837,72 @@ begin
   Result := (AButton in FPrevStatus) and not (AButton in FStatus);
 end;
 
-procedure TWinGamePad.SetControllerIndex(const AIndex: Integer);
+procedure TWinGamePad.SetControllerId(const AId: String);
 begin
-  FControllerIndex := AIndex;
+  FControllerId := AId;
+  FTarget := nil;
+
+  for var i := 0 to FDevices.Count - 1 do
+  begin
+    var Device := FDevices[i];
+    var Info := Device^.lpVtbl^.GetDeviceInfo(Device);
+
+    if
+      (Info <> nil) and
+      (AppLocalDeviceIDToString(Info.deviceId) = FControllerId)
+    then
+    begin
+      FTarget := Device;
+      FTargetIndex := i;
+      Break;
+    end;
+  end;
 end;
 
-procedure TWinGamePad.SetDeadZone(const ALeft, ARight: Integer);
+procedure TWinGamePad.SetDeadZone(const ALeft, ARight: Single);
 begin
   FDeadZoneLeft := ALeft;
   FDeadZoneRight := ARight;
 end;
 
 procedure TWinGamePad.Vibrate(
-  const ALeftMotor, ARightMotor: Word;
+  const ALeftMotor, ARightMotor: Single;
   const ADuration: Integer);
 begin
   TThread.CreateAnonymousThread(
     procedure
     begin
-      var Vibration: TXInputVibration;
+      if FTarget <> nil then
+      begin
+        {$IFDEF USE_XINPUT}
+        var Params: TXInputVibration;
+        FillChar(Params, SizeOf(Params), 0);
 
-      Vibration.wLeftMotorSpeed := ALeftMotor;
-      Vibration.wRightMotorSpeed := ARightMotor;
-      XInputSetState(FControllerIndex, Vibration);
+        Params.wLeftMotorSpeed := Trunc(ALeftMotor * $ffff);
+        Params.wRightMotorSpeed := Trunc(ARightMotor * $ffff);
 
-      Sleep(ADuration);
+        XInputSetState(FTargetIndex, Params);
 
-      Vibration.wLeftMotorSpeed := 0;
-      Vibration.wRightMotorSpeed := 0;
-      XInputSetState(FControllerIndex, Vibration);
+        Sleep(ADuration);
+
+        FillChar(Params, SizeOf(Params), 0);
+        XInputSetState(FTargetIndex, Params);
+        {$ENDIF}
+
+        {$IFDEF USE_GAMEINPUT}
+        var Params: GameInputRumbleParams;
+        FillChar(Params, SizeOf(Params), 0);
+
+        Params.leftTrigger := ALeftMotor;
+        Params.rightTrigger := ARightMotor;
+
+        FTarget^.lpVtbl^.SetRumbleState(FTarget, @Params);
+        Sleep(ADuration);
+
+        FillChar(Params, SizeOf(Params), 0);
+        FTarget^.lpVtbl^.SetRumbleState(FTarget, @Params);
+        {$ENDIF}
+      end;
     end
   ).Start;
 end;

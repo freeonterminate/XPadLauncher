@@ -66,25 +66,25 @@ type
 
   IGamePad = interface
   ['{80E4879F-7D6E-418A-A783-1FD39C519EFC}']
-    procedure SetDeadZone(const ALeft, ARight: Integer);
     function Check: TGamePadButtons;
-    function CheckStick(const AThumb: TGamePadButton): TPoint;
-    function CheckTrigger(const AThumb: TGamePadButton): Integer;
+    function CheckStick(const AThumb: TGamePadButton): TPointF;
+    function CheckTrigger(const AThumb: TGamePadButton): Single;
     function IsClicked(const AButton: TGamePadButton): Boolean;
     procedure Vibrate(
-      const ALeftMotor, ARightMotor: Word;
+      const ALeftMotor, ARightMotor: Single;
       const ADuration: Integer);
 
+    procedure SetDeadZone(const ALeft, ARight: Single);
+
     function GetStatus: TGamePadButtons;
-    procedure SetControllerIndex(const AIndex: Integer);
-    function GetControllerIndex: Integer;
+    procedure SetControllerId(const AId: String);
+    function GetControllerId: String;
 
     function GetGamePadInfoCount: Integer;
     function GetGamePadInfos(const AIndex: Integer): TGamePadInfo;
 
     property Status: TGamePadButtons read GetStatus;
-    property ControllerIndex: Integer
-      read GetControllerIndex write SetControllerIndex;
+    property ControllerId: String read GetControllerId write SetControllerId;
 
     property GamePadInfoCount: Integer read GetGamePadInfoCount;
     property GamePadInfos[const AIndex: Integer]: TGamePadInfo
@@ -104,28 +104,27 @@ type
   TGamePadIntf = class abstract(TInterfacedObject, IGamePad)
   private
   protected
-    procedure SetDeadZone(const ALeft, ARight: Integer); virtual; abstract;
-    procedure SetControllerIndex(const AIndex: Integer); virtual; abstract;
-    function GetControllerIndex: Integer; virtual; abstract;
+    procedure SetControllerId(const AId: String); virtual; abstract;
+    function GetControllerId: String; virtual; abstract;
     function GetStatus: TGamePadButtons; virtual; abstract;
     function GetGamePadInfoCount: Integer; virtual; abstract;
     function GetGamePadInfos(
       const AIndex: Integer): TGamePadInfo; virtual; abstract;
   public
     function Check: TGamePadButtons; virtual; abstract;
-    function CheckStick(const AThumb: TGamePadButton): TPoint;
+    function CheckStick(const AThumb: TGamePadButton): TPointF;
       virtual; abstract;
-    function CheckTrigger(const AThumb: TGamePadButton): Integer;
+    function CheckTrigger(const AThumb: TGamePadButton): Single;
       virtual; abstract;
     function IsClicked(const AButton: TGamePadButton): Boolean;
       virtual; abstract;
     procedure Vibrate(
-      const ALeftMotor, ARightMotor: Word;
+      const ALeftMotor, ARightMotor: Single;
       const ADuration: Integer); virtual; abstract;
+    procedure SetDeadZone(const ALeft, ARight: Single); virtual; abstract;
   public
     property Status: TGamePadButtons read GetStatus;
-    property ControllerIndex: Integer
-      read GetControllerIndex write SetControllerIndex;
+    property ControllerId: String read GetControllerId write SetControllerId;
 
     property GamePadInfoCount: Integer read GetGamePadInfoCount;
     property GamePadInfos[const AIndex: Integer]: TGamePadInfo

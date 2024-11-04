@@ -28,7 +28,9 @@ uses
   uCommon in 'uCommon.pas',
   PK.Utils.ScreenHelper in 'Lib\Utils\PK.Utils.ScreenHelper.pas',
   uCommandFrame in 'uCommandFrame.pas' {frameCommand: TFrame},
-  PK.HardInfo.WMI.Win in 'Lib\HardInfo\PK.HardInfo.WMI.Win.pas';
+  PK.HardInfo.WMI.Win in 'Lib\HardInfo\PK.HardInfo.WMI.Win.pas',
+  Winapi.GameInput in 'Lib\Winapi\Winapi.GameInput.pas',
+  Winapi.XInput in 'Lib\Winapi\Winapi.XInput.pas';
 
 {$R *.res}
 

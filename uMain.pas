@@ -57,7 +57,7 @@ begin
   FCommandIndex := 0;
 
   FPad := TGamePad.Create;
-  FPad.ControllerIndex := 1;
+  FPad.ControllerId := Config.ControllerId;
 
   FTrayIcon := TTrayIcon.Create;
   FTrayIcon.AssignPopupMenu(popupMain);

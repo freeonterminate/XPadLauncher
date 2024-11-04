@@ -13,9 +13,9 @@ type
   private var
     FIntf: IGamePad;
   protected
-    procedure SetDeadZone(const ALeft, ARight: Integer); override;
-    procedure SetControllerIndex(const AIndex: Integer); override;
-    function GetControllerIndex: Integer; override;
+    procedure SetDeadZone(const ALeft, ARight: Single); override;
+    procedure SetControllerId(const AId: String); override;
+    function GetControllerId: String; override;
     function GetStatus: TGamePadButtons; override;
     function GetGamePadInfoCount: Integer; override;
     function GetGamePadInfos(const AIndex: Integer): TGamePadInfo; override;
@@ -23,14 +23,14 @@ type
     constructor Create; reintroduce;
 
     function Check: TGamePadButtons; override;
-    function CheckStick(const AThumb: TGamePadButton): TPoint;
+    function CheckStick(const AThumb: TGamePadButton): TPointF;
       override;
-    function CheckTrigger(const AThumb: TGamePadButton): Integer;
+    function CheckTrigger(const AThumb: TGamePadButton): Single;
       override;
     function IsClicked(const AButton: TGamePadButton): Boolean;
       override;
     procedure Vibrate(
-      const ALeftMotor, ARightMotor: Word;
+      const ALeftMotor, ARightMotor: Single;
       const ADuration: Integer); override;
   end;
 
@@ -53,7 +53,7 @@ begin
     Result := FIntf.Check;
 end;
 
-function TGamePad.CheckStick(const AThumb: TGamePadButton): TPoint;
+function TGamePad.CheckStick(const AThumb: TGamePadButton): TPointF;
 begin
   if FIntf = nil then
     Result := Point(0, 0)
@@ -61,7 +61,7 @@ begin
     Result := FIntf.CheckStick(AThumb);
 end;
 
-function TGamePad.CheckTrigger(const AThumb: TGamePadButton): Integer;
+function TGamePad.CheckTrigger(const AThumb: TGamePadButton): Single;
 begin
   if FIntf = nil then
     Result := 0
@@ -85,12 +85,12 @@ begin
     FIntf := nil;
 end;
 
-function TGamePad.GetControllerIndex: Integer;
+function TGamePad.GetControllerId: String;
 begin
   if FIntf = nil then
-    Result := -1
+    Result := ''
   else
-    Result := FIntf.GetControllerIndex;
+    Result := FIntf.GetControllerId;
 end;
 
 function TGamePad.GetGamePadInfoCount: Integer;
@@ -124,20 +124,20 @@ begin
     Result := FIntf.IsClicked(AButton);
 end;
 
-procedure TGamePad.SetControllerIndex(const AIndex: Integer);
+procedure TGamePad.SetControllerId(const AId: String);
 begin
   if FIntf <> nil then
-    FIntf.SetControllerIndex(AIndex);
+    FIntf.SetControllerId(AId);
 end;
 
-procedure TGamePad.SetDeadZone(const ALeft, ARight: Integer);
+procedure TGamePad.SetDeadZone(const ALeft, ARight: Single);
 begin
   if FIntf <> nil then
     FIntf.SetDeadZone(ALeft, ARight);
 end;
 
 procedure TGamePad.Vibrate(
-  const ALeftMotor, ARightMotor: Word;
+  const ALeftMotor, ARightMotor: Single;
   const ADuration: Integer);
 begin
   if (FIntf <> nil) and (ADuration > 0) then

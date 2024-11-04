@@ -20,9 +20,7 @@ type
   private var
     FPad: TGamePad;
     FBuff: TSequence;
-    FIndex: Integer;
     FSequences: TSequences;
-  private
   public
     constructor Create(const AGamePad: TGamePad);
     destructor Destroy; override;
