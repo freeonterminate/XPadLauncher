@@ -45,7 +45,6 @@ implementation
 uses
   uConfig
   , uConfigForm
-  , PK.Utils.ImageListHelper
   {$IFDEF MSWINDOWS}
   , PK.GUI.DarkMode.Win
   {$ENDIF}
