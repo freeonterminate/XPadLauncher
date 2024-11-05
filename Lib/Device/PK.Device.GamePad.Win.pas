@@ -40,6 +40,7 @@ type
   private
     class constructor CreateClass;
     class destructor DestroyClass;
+    class procedure UpdateDeviceList;
     class procedure CallbackFunc(
       callbackToken: GameInputCallbackToken;
       context: Pointer;
@@ -69,6 +70,7 @@ type
 
     function GetControllerId: String; override;
     procedure SetControllerId(const AId: String); override;
+    procedure UpdateGamePadInfo; override;
 
     procedure SetDeadZone(const ALeft, ARight: Single); override;
     function GetStatus: TGamePadButtons; override;
@@ -141,7 +143,14 @@ begin
   FPadInfo.VendorId := GPadInfo.vendorId;
   FPadInfo.ProductId := GPadInfo.productId;
 
-  Log.d(Format('%s (%.4x:%.4x)', [FPadInfo.Id, FPadInfo.VendorId, FPadInfo.ProductId]));
+  {
+  Log.d(
+    Format(
+      '%s (%.4x:%.4x)',
+      [FPadInfo.Id, FPadInfo.VendorId, FPadInfo.ProductId]
+    )
+  );
+  }
 
   var VIdPId := MakeLong(FPadInfo.VendorId, FPadInfo.ProductId);
 
@@ -769,40 +778,12 @@ begin
   FDeviceInfos := TDeviceInfos.Create;
   FDevices := TList<PIGameInputDevice>.Create;
 
-  var Res := GameInputCreate(@FGameInput);
-
-  if Failed(Res) then
-  begin
-    Log.d('Failed: ' + UInt32(Res).ToHexString(8));
-    Exit;
-  end;
-
-  var Token: GameInputCallbackToken;
-
-  Res := FGameInput^.lpVtbl^.RegisterDeviceCallback(
-    FGameInput,
-    nil,
-    GameInputKind.GameInputKindGamepad,
-    GameInputDeviceStatus.GameInputDeviceAnyStatus,
-    GameInputEnumerationKind.GameInputBlockingEnumeration,
-    nil,
-    @CallbackFunc,
-    @Token
-  );
-
-  if Succeeded(Res) then
-    FGameInput^.lpVtbl^.UnregisterCallback(FGameInput, Token, 5000)
-  else
-    Log.d('Failed: ' + UInt32(Res).ToHexString(8));
+  UpdateDeviceList;
 end;
 
 class destructor TWinGamePad.DestroyClass;
 begin
   FDeviceInfos.Free;
-
-  for var Device in FDevices do
-    Device^.lpVtbl^.Release(Device);
-
   FDevices.Free;
   FGameInput^.lpVtbl^.Release(FGameInput);
 end;
@@ -863,6 +844,41 @@ procedure TWinGamePad.SetDeadZone(const ALeft, ARight: Single);
 begin
   FDeadZoneLeft := ALeft;
   FDeadZoneRight := ARight;
+end;
+
+class procedure TWinGamePad.UpdateDeviceList;
+begin
+  FDevices.Clear;
+  FDeviceInfos.Clear;
+
+  if FGameInput <> nil then
+    FGameInput^.lpVtbl^.Release(FGameInput);
+
+  if Failed(GameInputCreate(@FGameInput)) then
+    Exit;
+
+  var Token: GameInputCallbackToken;
+
+  var Res := FGameInput^.lpVtbl^.RegisterDeviceCallback(
+    FGameInput,
+    nil,
+    GameInputKind.GameInputKindGamepad,
+    GameInputDeviceStatus.GameInputDeviceAnyStatus,
+    GameInputEnumerationKind.GameInputBlockingEnumeration,
+    nil,
+    @CallbackFunc,
+    @Token
+  );
+
+  if Succeeded(Res) then
+    FGameInput^.lpVtbl^.UnregisterCallback(FGameInput, Token, 5000)
+  else
+    Log.d('Failed: ' + UInt32(Res).ToHexString(8));
+end;
+
+procedure TWinGamePad.UpdateGamePadInfo;
+begin
+  UpdateDeviceList;
 end;
 
 procedure TWinGamePad.Vibrate(

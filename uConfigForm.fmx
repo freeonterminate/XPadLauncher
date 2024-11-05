@@ -657,11 +657,24 @@ object frmConfig: TfrmConfig
         end
         object cmbbxControllerIndex: TComboBox
           Align = Client
-          Size.Width = 335.600006103515600000
+          Margins.Right = 4.000000000000000000
+          Size.Width = 301.600006103515600000
           Size.Height = 32.000000000000000000
           Size.PlatformDefault = False
           TabOrder = 1
           OnChange = cmbbxControllerIndexChange
+        end
+        object btnControllerUpdate: TButton
+          Align = Right
+          Position.X = 383.600006103515600000
+          Size.Width = 30.000000000000000000
+          Size.Height = 32.000000000000000000
+          Size.PlatformDefault = False
+          StyleLookup = 'refreshtoolbutton'
+          TabOrder = 2
+          Text = 'btnControllerUpdate'
+          TextSettings.Trimming = None
+          OnClick = btnControllerUpdateClick
         end
       end
     end

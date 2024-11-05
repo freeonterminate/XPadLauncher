@@ -82,6 +82,7 @@ type
 
     function GetGamePadInfoCount: Integer;
     function GetGamePadInfos(const AIndex: Integer): TGamePadInfo;
+    procedure UpdateGamePadInfo;
 
     property Status: TGamePadButtons read GetStatus;
     property ControllerId: String read GetControllerId write SetControllerId;
@@ -102,7 +103,6 @@ type
   end;
 
   TGamePadIntf = class abstract(TInterfacedObject, IGamePad)
-  private
   protected
     procedure SetControllerId(const AId: String); virtual; abstract;
     function GetControllerId: String; virtual; abstract;
@@ -110,6 +110,7 @@ type
     function GetGamePadInfoCount: Integer; virtual; abstract;
     function GetGamePadInfos(
       const AIndex: Integer): TGamePadInfo; virtual; abstract;
+    procedure UpdateGamePadInfo; virtual; abstract;
   public
     function Check: TGamePadButtons; virtual; abstract;
     function CheckStick(const AThumb: TGamePadButton): TPointF;

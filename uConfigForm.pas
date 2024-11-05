@@ -83,6 +83,7 @@ type
     layContollerIndexBase: TLayout;
     lblControllerIndex: TLabel;
     cmbbxControllerIndex: TComboBox;
+    btnControllerUpdate: TButton;
     procedure FormDestroy(Sender: TObject);
     procedure timerUpdateTimer(Sender: TObject);
     procedure rectSeqAddButtonMouseDown(Sender: TObject; Button: TMouseButton;
@@ -90,6 +91,7 @@ type
     procedure btnCloseClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure cmbbxControllerIndexChange(Sender: TObject);
+    procedure btnControllerUpdateClick(Sender: TObject);
   private var
     FInitializing: Boolean;
     FPad: TGamePad;
@@ -97,6 +99,7 @@ type
     FCommandFrames: TCommandFrames;
   private
     procedure Init(const APad: TGamePad; const AImageList: TImageList);
+    procedure UpdateDeviceList;
   public
   end;
 
@@ -131,6 +134,11 @@ procedure TfrmConfig.btnCloseClick(Sender: TObject);
 begin
   FCommandFrames.Save;
   Close;
+end;
+
+procedure TfrmConfig.btnControllerUpdateClick(Sender: TObject);
+begin
+  UpdateDeviceList;
 end;
 
 procedure TfrmConfig.cmbbxControllerIndexChange(Sender: TObject);
@@ -187,22 +195,9 @@ begin
         FImageList,
         lstbxSequences);
 
-    var Index := 0;
-    for var i := 0 to FPad.GamePadInfoCount - 1 do
-    begin
-      var Info := FPad.GamePadInfos[i];
-      if Info.Id = Config.ControllerId then
-      begin
-        Index := i;
-      end;
-
-      cmbbxControllerIndex.Items.Add(
-        Format('#%d - %s', [i + 1, FPad.GamePadInfos[i].Caption])
-      );
-    end;
+    UpdateDeviceList;
 
     FPad.ControllerId := Config.ControllerId;
-    cmbbxControllerIndex.ItemIndex := Index;
 
     timerUpdate.Enabled := True;
   finally
@@ -305,6 +300,27 @@ begin
   finally
     layButtons.EndUpdate;
   end;
+end;
+
+procedure TfrmConfig.UpdateDeviceList;
+begin
+  FPad.UpdateGamePadInfo;
+
+  cmbbxControllerIndex.Clear;
+
+  var Index := 0;
+  for var i := 0 to FPad.GamePadInfoCount - 1 do
+  begin
+    var Info := FPad.GamePadInfos[i];
+    if Info.Id = Config.ControllerId then
+      Index := i;
+
+    cmbbxControllerIndex.Items.Add(
+      Format('#%d - %s', [i + 1, FPad.GamePadInfos[i].Caption])
+    );
+  end;
+
+  cmbbxControllerIndex.ItemIndex := Index;
 end;
 
 end.

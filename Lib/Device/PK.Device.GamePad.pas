@@ -32,6 +32,8 @@ type
     procedure Vibrate(
       const ALeftMotor, ARightMotor: Single;
       const ADuration: Integer); override;
+
+    procedure UpdateGamePadInfo; override;
   end;
 
 implementation
@@ -134,6 +136,12 @@ procedure TGamePad.SetDeadZone(const ALeft, ARight: Single);
 begin
   if FIntf <> nil then
     FIntf.SetDeadZone(ALeft, ARight);
+end;
+
+procedure TGamePad.UpdateGamePadInfo;
+begin
+  if FIntf <> nil then
+    FIntf.UpdateGamePadInfo;
 end;
 
 procedure TGamePad.Vibrate(
