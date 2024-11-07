@@ -24,12 +24,21 @@ uses
 type
   TWinGamePad = class(TGamePadIntf)
   private type
+    TPnPInfo = record
+      FCaption: String;
+      FDeviceID: String;
+      FPNPClass: String;
+    end;
+    TPnPInfoArray = TArray<TPnPInfo>;
+    PPnPInfoArray = ^TPnPInfoArray;
 
     TDeviceInfo = record
     private
       FPadInfo: TGamePadInfo;
     public
-      constructor Create(const ADevice: PIGameInputDevice);
+      constructor Create(
+        const APnPInfos: TPnPInfoArray;
+        const ADevice: PIGameInputDevice);
     end;
     TDeviceInfos = TList<TDeviceInfo>;
 
@@ -129,13 +138,9 @@ end;
 
 { TWinGamePad.TDeviceInfo }
 
-constructor TWinGamePad.TDeviceInfo.Create(const ADevice: PIGameInputDevice);
-type
-  TPnPInfo = record
-    FCaption: String;
-    FDeviceID: String;
-    FPNPClass: String;
-  end;
+constructor TWinGamePad.TDeviceInfo.Create(
+  const APnPInfos: TPnPInfoArray;
+  const ADevice: PIGameInputDevice);
 begin
   var GPadInfo := ADevice^.lpVtbl^.GetDeviceInfo(ADevice);
 
@@ -176,38 +181,9 @@ begin
   Log.d(Target2);
   //}
 
-  var PnPInfos: TArray<TPnPInfo>;
-
-  TWMI.GetProperty(
-    'Win32_PnPEntity',
-    ['Caption', 'DeviceID', 'PNPClass'],
-    procedure(const AProps: TWMI.TWbemPropDic)
-
-      function GetProps(const AName: String): String;
-      begin
-        try
-          if AProps[AName] <> Null then
-            Result := AProps[AName]
-          else
-            Result := '';
-        except
-          Result := '';
-        end;
-      end;
-
-    begin
-      var Len := Length(PnPInfos);
-      SetLength(PnPInfos, Len + 1);
-
-      PnPInfos[Len].FCaption := GetProps('Caption');
-      PnPInfos[Len].FDeviceID := GetProps('DeviceID');
-      PnPInfos[Len].FPNPClass := GetProps('PNPClass');
-    end
-  );
-
-  for var i := 0 to High(PnPInfos) do
+  for var i := 0 to High(APnPInfos) do
   begin
-    var Info := PnPInfos[i];
+    var Info := APnPInfos[i];
 
     if
       (
@@ -242,9 +218,9 @@ begin
               [Path2, Path1, Path2]
             );
 
-          for var j := 0 to High(PnPInfos) do
+          for var j := 0 to High(APnPInfos) do
           begin
-            var Info2 := PnPInfos[j];
+            var Info2 := APnPInfos[j];
             if Info2.FDeviceID = BTarget then
             begin
               Info.FCaption := Info2.FCaption;
@@ -254,16 +230,7 @@ begin
         end;
       end;
 
-      var Ist := False;
-      for var DevInfo in FDeviceInfos do
-        if DevInfo.FPadInfo.Caption = Info.FCaption then
-        begin
-          Ist := True;
-          Break;
-        end;
-
       if
-        (not Ist) and
         (not DeviceCaption.Contains(Info.FCaption)) and
         (not Info.FCaption.StartsWith('USB'))
       then
@@ -287,15 +254,8 @@ class procedure TWinGamePad.CallbackFunc(
   currentStatus: GameInputDeviceStatus;
   previousStatus: GameInputDeviceStatus);
 begin
-  Log.d(
-    Format(
-      'Device: %d / %d',
-      [FDeviceInfos.Count, Ord(device^.lpVtbl.GetDeviceStatus(device))]
-    )
-  );
-
-  FDevices.Insert(0, device);
-  FDeviceInfos.Insert(0, TDeviceInfo.Create(device));
+  FDevices.Add(device);
+  FDeviceInfos.Add(TDeviceInfo.Create(PPnPInfoArray(context)^, device));
 end;
 
 function TWinGamePad.Check: TGamePadButtons;
@@ -796,6 +756,11 @@ end;
 function TWinGamePad.GetGamePadInfoCount: Integer;
 begin
   Result := FDeviceInfos.Count;
+
+  {$IFDEF USE_XINPUT}
+  if Result > 4 then
+    Result := 4;
+  {$ENDIF}
 end;
 
 function TWinGamePad.GetGamePadInfos(const AIndex: Integer): TGamePadInfo;
@@ -857,6 +822,35 @@ begin
   if Failed(GameInputCreate(@FGameInput)) then
     Exit;
 
+  var PnPInfos: TPnPInfoArray;
+
+  TWMI.GetProperty(
+    'Win32_PnPEntity',
+    ['Caption', 'DeviceID', 'PNPClass'],
+    procedure(const AProps: TWMI.TWbemPropDic)
+
+      function GetProps(const AName: String): String;
+      begin
+        try
+          if AProps[AName] <> Null then
+            Result := AProps[AName]
+          else
+            Result := '';
+        except
+          Result := '';
+        end;
+      end;
+
+    begin
+      var Len := Length(PnPInfos);
+      SetLength(PnPInfos, Len + 1);
+
+      PnPInfos[Len].FCaption := GetProps('Caption');
+      PnPInfos[Len].FDeviceID := GetProps('DeviceID');
+      PnPInfos[Len].FPNPClass := GetProps('PNPClass');
+    end
+  );
+
   var Token: GameInputCallbackToken;
 
   var Res := FGameInput^.lpVtbl^.RegisterDeviceCallback(
@@ -865,13 +859,16 @@ begin
     GameInputKind.GameInputKindGamepad,
     GameInputDeviceStatus.GameInputDeviceAnyStatus,
     GameInputEnumerationKind.GameInputBlockingEnumeration,
-    nil,
+    @PnPInfos,
     @CallbackFunc,
     @Token
   );
 
   if Succeeded(Res) then
-    FGameInput^.lpVtbl^.UnregisterCallback(FGameInput, Token, 5000)
+  begin
+    FGameInput^.lpVtbl^.UnregisterCallback(FGameInput, Token, 5000);
+    SetLength(PnPInfos, 0);
+  end
   else
     Log.d('Failed: ' + UInt32(Res).ToHexString(8));
 end;

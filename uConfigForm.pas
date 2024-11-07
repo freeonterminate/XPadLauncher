@@ -148,7 +148,7 @@ begin
   FPad.ControllerId := FPad.GamePadInfos[cmbbxControllerIndex.ItemIndex].Id;
 
   if not FInitializing then
-    FPad.Vibrate(0.5, 0.5, 200);
+    FPad.Vibrate(1.0, 1.0, 200);
 
   Config.ControllerId := FPad.ControllerId;
 end;
