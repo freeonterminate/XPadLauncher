@@ -658,23 +658,92 @@ object frmConfig: TfrmConfig
         object cmbbxControllerIndex: TComboBox
           Align = Client
           Margins.Right = 4.000000000000000000
-          Size.Width = 301.600006103515600000
+          Size.Width = 269.600006103515600000
           Size.Height = 32.000000000000000000
           Size.PlatformDefault = False
           TabOrder = 1
           OnChange = cmbbxControllerIndexChange
+          OnPopup = cmbbxControllerIndexPopup
         end
         object btnControllerUpdate: TButton
           Align = Right
-          Position.X = 383.600006103515600000
+          Padding.Left = 6.000000000000000000
+          Padding.Top = 8.000000000000000000
+          Padding.Right = 6.000000000000000000
+          Padding.Bottom = 8.000000000000000000
+          Position.X = 351.600006103515600000
           Size.Width = 30.000000000000000000
           Size.Height = 32.000000000000000000
           Size.PlatformDefault = False
-          StyleLookup = 'refreshtoolbutton'
+          StyleLookup = 'transparentcirclebuttonstyle'
           TabOrder = 2
           Text = 'btnControllerUpdate'
           TextSettings.Trimming = None
           OnClick = btnControllerUpdateClick
+          object Path1: TPath
+            Align = Client
+            Data.Path = {
+              2800000000000000000000440000404402000000D34DE8430000404402000000
+              022BD24339B43C4402000000AC1CBF436F12374401000000D9CEA74358B94244
+              020000009CF2C1438E654B4402000000FEA0E043EA03504402000000FFFFFF43
+              00005044020000001A2F2C440000504402000000000050441A2F2C4402000000
+              00005044000000440100000000004044000000440200000000004044BA492344
+              02000000BA492344000040440200000000000044000040440300000000000044
+              0000404400000000000000440000404302000000CBA1A7430000404302000000
+              00004043CBA1A743020000000000404300000044010000000000804300000044
+              02000000000080438C6CB943020000008B6CB943000080430200000000000044
+              000080430200000016D90B4400008043020000007FEA16448D97864302000000
+              AA71204423DB91430100000094182C44A01A754302000000B3061F44C4695243
+              0200000082AF0F4452F03F430200000001000044000040430300000000000044
+              0000404300000000000030440000004401000000000060440000004401000000
+              000048440000C043030000000000304400000044000000000000A04300000044
+              010000000000004300000044010000000000604300002044030000000000A043
+              00000044}
+            Fill.Color = claWhite
+            HitTest = False
+            Size.Width = 18.000000000000000000
+            Size.Height = 16.000000000000000000
+            Size.PlatformDefault = False
+            Stroke.Kind = None
+          end
+        end
+        object btControllerVibe: TButton
+          Align = MostRight
+          Padding.Left = 8.000000000000000000
+          Padding.Top = 6.000000000000000000
+          Padding.Right = 8.000000000000000000
+          Padding.Bottom = 6.000000000000000000
+          Position.X = 381.600006103515600000
+          Size.Width = 32.000000000000000000
+          Size.Height = 32.000000000000000000
+          Size.PlatformDefault = False
+          StyleLookup = 'transparentcirclebuttonstyle'
+          TabOrder = 3
+          Text = 'btControllerVibe'
+          TextSettings.Trimming = None
+          OnClick = btControllerVibeClick
+          object imgControllerVibeIcon: TImage
+            MultiResBitmap.Height = 24
+            MultiResBitmap.Width = 24
+            MultiResBitmap = <
+              item
+                Width = 24
+                Height = 24
+                PNG = {
+                  89504E470D0A1A0A0000000D4948445200000018000000180806000000E0773D
+                  F80000000473424954080808087C086488000000444944415448896360180503
+                  0D18FFFFFFFF1FCE616464C4A5905C754CD470253E30F42D60C12648CD7819FA
+                  41346AC108B0006B3EC097F6495537F48388E6168C82810700E738142C924B1E
+                  D50000000049454E44AE426082}
+                FileName = 'D:\Source\Delphi\Advent\2024\XPadLauncher\Images\vibe.png'
+              end>
+            Align = Client
+            HitTest = False
+            Size.Width = 16.000000000000000000
+            Size.Height = 20.000000000000000000
+            Size.PlatformDefault = False
+            WrapMode = Stretch
+          end
         end
       end
     end

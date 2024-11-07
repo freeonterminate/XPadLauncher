@@ -46,6 +46,7 @@ type
     Reserved1: Word;
     Reserved2: DWORD;
   end;
+  PXInputCapabilitiesEx = ^TXInputCapabilitiesEx;
 
 const
   XINPUT_GAMEPAD_DPAD_UP        = $0001;
@@ -72,20 +73,20 @@ const
 
 function XInputGetState(
   dwUserIndex: DWORD;
-  var State: TXInputState): DWORD; stdcall;
+  var State: TXInputState): HRESULT; stdcall;
   external XINPUT_DLL name 'XInputGetState';
 
 function XInputSetState(
   dwUserIndex: DWORD;
-  var pVibration: TXInputVibration): DWORD; stdcall;
+  var pVibration: TXInputVibration): HRESULT; stdcall;
   external XINPUT_DLL name 'XInputSetState';
 
 {$WARNINGS OFF}
 function XInputGetCapabilitiesEx(
-  dwVerion: DWORD;
+  dwVersion: DWORD;
   dwUserIndex: DWORD;
   dwFlags: DWORD;
-  var pCapabilitiesEx: TXInputCapabilitiesEx): DWORD; stdcall;
+  pCapabilitiesEx: PXInputCapabilitiesEx): HRESULT; stdcall;
   external XINPUT_DLL index 108;
 {$WARNINGS ON}
 

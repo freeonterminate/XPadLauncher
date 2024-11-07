@@ -84,6 +84,9 @@ type
     lblControllerIndex: TLabel;
     cmbbxControllerIndex: TComboBox;
     btnControllerUpdate: TButton;
+    btControllerVibe: TButton;
+    imgControllerVibeIcon: TImage;
+    Path1: TPath;
     procedure FormDestroy(Sender: TObject);
     procedure timerUpdateTimer(Sender: TObject);
     procedure rectSeqAddButtonMouseDown(Sender: TObject; Button: TMouseButton;
@@ -92,8 +95,10 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure cmbbxControllerIndexChange(Sender: TObject);
     procedure btnControllerUpdateClick(Sender: TObject);
+    procedure btControllerVibeClick(Sender: TObject);
+    procedure cmbbxControllerIndexPopup(Sender: TObject);
   private var
-    FInitializing: Boolean;
+    FUpdating: Boolean;
     FPad: TGamePad;
     FImageList: TImageList;
     FCommandFrames: TCommandFrames;
@@ -111,6 +116,7 @@ implementation
 
 uses
   System.DateUtils
+  , FMX.Pickers
   , PK.Device.GamePad.Types
   , PK.Utils.Log
   , uButtonIndexes
@@ -128,7 +134,15 @@ begin
   end;
 end;
 
+type
+  TOpenPopup = class(TPopup) end;
+
 { TfrmConfig }
+
+procedure TfrmConfig.btControllerVibeClick(Sender: TObject);
+begin
+  FPad.Vibrate(1.0, 1.0, 200);
+end;
 
 procedure TfrmConfig.btnCloseClick(Sender: TObject);
 begin
@@ -147,10 +161,77 @@ begin
 
   FPad.ControllerId := FPad.GamePadInfos[cmbbxControllerIndex.ItemIndex].Id;
 
-  if not FInitializing then
-    FPad.Vibrate(1.0, 1.0, 200);
+  if not FUpdating then
+    btControllerVibeClick(nil);
 
   Config.ControllerId := FPad.ControllerId;
+end;
+
+procedure TfrmConfig.cmbbxControllerIndexPopup(Sender: TObject);
+
+  function ListUp(const AObject: TFmxObject): Boolean;
+  begin
+    Result := False;
+
+    if AObject is TCustomListBox then
+    begin
+      TCustomListBox(AObject).ShowScrollBars := False;
+      Exit(True);
+    end;
+
+    for var i := 0 to AObject.ChildrenCount - 1 do
+      if ListUp(AObject.Children[i]) then
+      begin
+        Result := True;
+        Break;
+      end;
+  end;
+
+begin
+  // ComboBox のスクロールバーを消す
+
+  // ListPicker
+  var RType := SharedContext.GetType(cmbbxControllerIndex.ClassType);
+  if RType = nil then
+    Exit;
+
+  var RField := RType.GetField('FListPicker');
+  if RField = nil then
+    Exit;
+
+  var Picker: TCustomListPicker := nil;
+  if
+    not RField.GetValue(cmbbxControllerIndex)
+    .TryAsType<TCustomListPicker>(Picker, False)
+  then
+    Exit;
+
+  // PopupListPicker
+  RType := SharedContext.GetType(Picker.ClassType);
+  if RType = nil then
+    Exit;
+
+  RField := RType.GetField('FPopupListPicker');
+  if RField = nil then
+    Exit;
+
+  var ListPicker: TPopup := nil;
+  if
+    not RField.GetValue(Picker)
+    .TryAsType<TPopup>(ListPicker, False)
+  then
+    Exit;
+
+  // Form
+  var Form := TCustomPopupForm(TOpenPopup(ListPicker).PopupForm);
+  if Form = nil then
+    Exit;
+
+  for var i := 0 to Form.ChildrenCount - 1 do
+  begin
+    if ListUp(Form.Children[i]) then
+      Break;
+  end;
 end;
 
 procedure TfrmConfig.FormClose(Sender: TObject; var Action: TCloseAction);
@@ -165,44 +246,39 @@ end;
 
 procedure TfrmConfig.Init(const APad: TGamePad; const AImageList: TImageList);
 begin
-  FInitializing := True;
-  try
-    FPad := APad;
-    FImageList := AImageList;
+  FPad := APad;
+  FImageList := AImageList;
 
-    glpA.Images := FImageList;
-    glpB.Images := FImageList;
-    glpX.Images := FImageList;
-    glpY.Images := FImageList;
+  glpA.Images := FImageList;
+  glpB.Images := FImageList;
+  glpX.Images := FImageList;
+  glpY.Images := FImageList;
 
-    glpBack.Images := FImageList;
-    glpStart.Images := FImageList;
+  glpBack.Images := FImageList;
+  glpStart.Images := FImageList;
 
-    glpCR.Images := FImageList;
-    glpLStick.Images := FImageList;
-    glpRStick.Images := FImageList;
+  glpCR.Images := FImageList;
+  glpLStick.Images := FImageList;
+  glpRStick.Images := FImageList;
 
-    glpLB.Images := FImageList;
-    glpLS.Images := FImageList;
-    glpLT.Images := FImageList;
-    glpRB.Images := FImageList;
-    glpRS.Images := FImageList;
-    glpRT.Images := FImageList;
+  glpLB.Images := FImageList;
+  glpLS.Images := FImageList;
+  glpLT.Images := FImageList;
+  glpRB.Images := FImageList;
+  glpRS.Images := FImageList;
+  glpRT.Images := FImageList;
 
-    FCommandFrames :=
-      TCommandFrames.Create(
-        FPad,
-        FImageList,
-        lstbxSequences);
+  FCommandFrames :=
+    TCommandFrames.Create(
+      FPad,
+      FImageList,
+      lstbxSequences);
 
-    UpdateDeviceList;
+  UpdateDeviceList;
 
-    FPad.ControllerId := Config.ControllerId;
+  FPad.ControllerId := Config.ControllerId;
 
-    timerUpdate.Enabled := True;
-  finally
-    FInitializing := False;
-  end;
+  timerUpdate.Enabled := True;
 end;
 
 procedure TfrmConfig.rectSeqAddButtonMouseDown(Sender: TObject;
@@ -304,23 +380,36 @@ end;
 
 procedure TfrmConfig.UpdateDeviceList;
 begin
-  FPad.UpdateGamePadInfo;
+  FUpdating := True;
+  try
+    FPad.UpdateGamePadInfo;
 
-  cmbbxControllerIndex.Clear;
+    cmbbxControllerIndex.BeginUpdate;
+    try
+      cmbbxControllerIndex.Clear;
 
-  var Index := 0;
-  for var i := 0 to FPad.GamePadInfoCount - 1 do
-  begin
-    var Info := FPad.GamePadInfos[i];
-    if Info.Id = Config.ControllerId then
-      Index := i;
+      var Index := 0;
+      for var i := 0 to FPad.GamePadInfoCount - 1 do
+      begin
+        var Info := FPad.GamePadInfos[i];
+        var Caption := Info.Caption;
 
-    cmbbxControllerIndex.Items.Add(
-      Format('#%d - %s', [i + 1, FPad.GamePadInfos[i].Caption])
-    );
+        if Info.Index < 0 then
+          Caption := '(none)';
+
+        if Info.Id = Config.ControllerId then
+          Index := i;
+
+        cmbbxControllerIndex.Items.Add(Format('#%d - %s', [i + 1, Caption]));
+      end;
+
+      cmbbxControllerIndex.ItemIndex := Index;
+    finally
+      cmbbxControllerIndex.EndUpdate;
+    end;
+  finally
+    FUpdating := False;
   end;
-
-  cmbbxControllerIndex.ItemIndex := Index;
 end;
 
 end.

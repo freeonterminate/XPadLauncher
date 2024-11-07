@@ -35,6 +35,7 @@ type
     TDeviceInfo = record
     private
       FPadInfo: TGamePadInfo;
+      FIndex: Integer;
     public
       constructor Create(
         const APnPInfos: TPnPInfoArray;
@@ -44,8 +45,10 @@ type
 
   private class var
     FGameInput: PIGameInput;
-    FDevices: TList<PIGameInputDevice>;
     FDeviceInfos: TDeviceInfos;
+    {$IFDEF USE_XINPUT}
+    FValidDeviceCount: Integer;
+    {$ENDIF}
   private
     class constructor CreateClass;
     class destructor DestroyClass;
@@ -59,7 +62,9 @@ type
       previousStatus: GameInputDeviceStatus); static; stdcall;
   private var
     FControllerId: String;
+    {$IFDEF USE_GAMEINPUT}
     FTarget: PIGameInputDevice;
+    {$ENDIF}
     FTargetIndex: Integer;
     FStatus: TGamePadButtons;
     FPrevStatus: TGamePadButtons;
@@ -157,8 +162,6 @@ begin
   );
   }
 
-  var VIdPId := MakeLong(FPadInfo.VendorId, FPadInfo.ProductId);
-
   if GPadInfo.displayName <> nil then
   begin
     var Name: String;
@@ -241,7 +244,8 @@ begin
   if not DeviceCaption.IsEmpty then
     FPadInfo.Caption := DeviceCaption.Substring(4);
 
-  Log.d(DeviceCaption + ': ' + FPadInfo.Caption + ': ');
+  Log.d('');
+  Log.d(FPadInfo.Caption + ': ' + FPadInfo.Id);
 end;
 
 { TWinGamePad }
@@ -254,8 +258,47 @@ class procedure TWinGamePad.CallbackFunc(
   currentStatus: GameInputDeviceStatus;
   previousStatus: GameInputDeviceStatus);
 begin
-  FDevices.Add(device);
-  FDeviceInfos.Add(TDeviceInfo.Create(PPnPInfoArray(context)^, device));
+  var Info := TDeviceInfo.Create(PPnPInfoArray(context)^, device);
+
+  {$IFDEF USE_XINPUT}
+  var Ist := False;
+  var Cap: TXInputCapabilitiesEx;
+  for var i := 3 downto 0 do
+  begin
+    FillChar(Cap, SizeOf(Cap), 0);
+    var Res := XInputGetCapabilitiesEx(1, i, 0, @Cap);
+
+    if
+      Succeeded(Res) and
+      (Cap.VendorId = Info.FPadInfo.VendorId) and
+      (Cap.ProductId = Info.FPadInfo.ProductId)
+    then
+    begin
+      Info.FIndex := i;
+      FDeviceInfos[i] := Info;
+      Log.d('Index: ' + i.ToString);
+      Ist := True;
+      Break;
+    end;
+  end;
+
+  if not Ist then
+    for var i := 0 to 3 do
+    begin
+      if FDeviceInfos[i].FPadInfo.Index < 0 then
+      begin
+        Info.FIndex := i;
+        FDeviceInfos[i] := Info;
+        Log.d('Abnormal Index: ' + i.ToString);
+        Break;
+      end;
+    end;
+  {$ENDIF}
+
+  {$IFDEF USE_GAMEINPUT}
+  Info.FIndex := FDeviceInfos.Count - 1;
+  FDeviceInfos.Add(Info);
+  {$ENDIF}
 end;
 
 function TWinGamePad.Check: TGamePadButtons;
@@ -727,7 +770,9 @@ begin
   inherited;
 
   FControllerId := '';
+  {$IFDEF USE_GAMEINPUT}
   FTarget := nil;
+  {$ENDIF}
 
   FDeadZoneLeft := GAMEPAD_LEFT_THUMB_DEADZONE;
   FDeadZoneRight := GAMEPAD_RIGHT_THUMB_DEADZONE;
@@ -736,15 +781,12 @@ end;
 class constructor TWinGamePad.CreateClass;
 begin
   FDeviceInfos := TDeviceInfos.Create;
-  FDevices := TList<PIGameInputDevice>.Create;
-
   UpdateDeviceList;
 end;
 
 class destructor TWinGamePad.DestroyClass;
 begin
   FDeviceInfos.Free;
-  FDevices.Free;
   FGameInput^.lpVtbl^.Release(FGameInput);
 end;
 
@@ -755,17 +797,18 @@ end;
 
 function TWinGamePad.GetGamePadInfoCount: Integer;
 begin
-  Result := FDeviceInfos.Count;
-
   {$IFDEF USE_XINPUT}
-  if Result > 4 then
-    Result := 4;
+  Result := FValidDeviceCount;
+  {$ENDIF}
+
+  {$IFDEF USE_GAMEINPUT}
+  Result := FDeviceInfos.Count;
   {$ENDIF}
 end;
 
 function TWinGamePad.GetGamePadInfos(const AIndex: Integer): TGamePadInfo;
 begin
-  if (AIndex < 0) or (AIndex >= FDeviceInfos.Count) then
+  if (AIndex < 0) or (AIndex >= GetGamePadInfoCount) then
     Exit(GAMEPADINFO_NONE);
 
   var Info := FDeviceInfos[AIndex];
@@ -786,20 +829,12 @@ end;
 procedure TWinGamePad.SetControllerId(const AId: String);
 begin
   FControllerId := AId;
-  FTarget := nil;
 
-  for var i := 0 to FDevices.Count - 1 do
+  for var Info in FDeviceInfos do
   begin
-    var Device := FDevices[i];
-    var Info := Device^.lpVtbl^.GetDeviceInfo(Device);
-
-    if
-      (Info <> nil) and
-      (AppLocalDeviceIDToString(Info.deviceId) = FControllerId)
-    then
+    if Info.FPadInfo.Id = AId then
     begin
-      FTarget := Device;
-      FTargetIndex := i;
+      FTargetIndex := Info.FIndex;
       Break;
     end;
   end;
@@ -813,14 +848,25 @@ end;
 
 class procedure TWinGamePad.UpdateDeviceList;
 begin
-  FDevices.Clear;
   FDeviceInfos.Clear;
+
+  {$IFDEF USE_XINPUT}
+  FValidDeviceCount := 0;
+  {$ENDIF}
 
   if FGameInput <> nil then
     FGameInput^.lpVtbl^.Release(FGameInput);
 
   if Failed(GameInputCreate(@FGameInput)) then
     Exit;
+
+  {$IFDEF USE_XINPUT}
+  var DeviceInfo: TDeviceInfo;
+  DeviceInfo.FPadInfo := GAMEPADINFO_NONE;
+
+  for var i := 0 to 3 do
+    FDeviceInfos.Add(DeviceInfo);
+  {$ENDIF}
 
   var PnPInfos: TPnPInfoArray;
 
@@ -871,6 +917,13 @@ begin
   end
   else
     Log.d('Failed: ' + UInt32(Res).ToHexString(8));
+
+  {$IFDEF USE_XINPUT}
+  FValidDeviceCount := 0;
+  for var i := 0 to 3 do
+    if FDeviceInfos[i].FPadInfo.Index > -1 then
+      FValidDeviceCount := i + 1;
+  {$ENDIF}
 end;
 
 procedure TWinGamePad.UpdateGamePadInfo;
@@ -885,24 +938,24 @@ begin
   TThread.CreateAnonymousThread(
     procedure
     begin
+      {$IFDEF USE_XINPUT}
+      var Params: TXInputVibration;
+      FillChar(Params, SizeOf(Params), 0);
+
+      Params.wLeftMotorSpeed := Trunc(ALeftMotor * $ffff);
+      Params.wRightMotorSpeed := Trunc(ARightMotor * $ffff);
+
+      XInputSetState(FTargetIndex, Params);
+
+      Sleep(ADuration);
+
+      FillChar(Params, SizeOf(Params), 0);
+      XInputSetState(FTargetIndex, Params);
+      {$ENDIF}
+
+      {$IFDEF USE_GAMEINPUT}
       if FTarget <> nil then
       begin
-        {$IFDEF USE_XINPUT}
-        var Params: TXInputVibration;
-        FillChar(Params, SizeOf(Params), 0);
-
-        Params.wLeftMotorSpeed := Trunc(ALeftMotor * $ffff);
-        Params.wRightMotorSpeed := Trunc(ARightMotor * $ffff);
-
-        XInputSetState(FTargetIndex, Params);
-
-        Sleep(ADuration);
-
-        FillChar(Params, SizeOf(Params), 0);
-        XInputSetState(FTargetIndex, Params);
-        {$ENDIF}
-
-        {$IFDEF USE_GAMEINPUT}
         var Params: GameInputRumbleParams;
         FillChar(Params, SizeOf(Params), 0);
 
@@ -914,8 +967,8 @@ begin
 
         FillChar(Params, SizeOf(Params), 0);
         FTarget^.lpVtbl^.SetRumbleState(FTarget, @Params);
-        {$ENDIF}
       end;
+      {$ENDIF}
     end
   ).Start;
 end;
