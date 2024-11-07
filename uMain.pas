@@ -30,8 +30,9 @@ type
   private
     FTrayIcon: TTrayIcon;
     FPad: TGamePad;
-    FCommands: TArray<TGamePadButton>;
+    FCommands: TArray<TArray<TGamePadButton>>;
     FCommandIndex: Integer;
+    FPrevTime: TDateTime;
   public
   end;
 
@@ -43,7 +44,8 @@ implementation
 {$R *.fmx}
 
 uses
-  uConfig
+  System.DateUtils
+  , uConfig
   , uConfigForm
   {$IFDEF MSWINDOWS}
   , PK.GUI.DarkMode.Win
@@ -116,6 +118,36 @@ procedure TfrmMain.timerUpdateTimer(Sender: TObject);
 begin
   if not menuEnabled.IsChecked then
     Exit;
+
+  var Cur := Now;
+  if MilliSecondsBetween(Cur, FPrevTime) > 50 then
+    FCommandIndex := 0
+  else
+    Inc(FCommandIndex);
+
+  FCommands[FCommandIndex] := FPad.GetStatusAsArray(FPad.Check);
+
+  for var i := 0 to Config.Count - 1 do
+  begin
+    var Seq := Config.Sequence[i];
+    if Length(Seq) <> Length(FCommands) then
+      Continue;
+
+    var Same := True;
+    for var j := 0 to High(Seq) do
+      if Seq[j] <> FCommands[j] then
+      begin
+        Same := False;
+        Break;
+      end;
+
+    if Same then
+    begin
+      // コマンド発動
+    end;
+  end;
+
+  FPrevTime := Cur;
 end;
 
 end.

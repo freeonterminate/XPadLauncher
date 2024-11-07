@@ -118,9 +118,9 @@ uses
   System.DateUtils
   , FMX.Pickers
   , PK.Device.GamePad.Types
-  , PK.Utils.Log
-  , uButtonIndexes
+  , uConfigImageListUtils
   , uConfig
+  , PK.Utils.Log
   ;
 
 procedure ShowConfig(const APad: TGamePad; const AImageList: TImageList);
@@ -159,6 +159,10 @@ procedure TfrmConfig.cmbbxControllerIndexChange(Sender: TObject);
 begin
   cmbbxControllerIndex.Hint := cmbbxControllerIndex.Text;
 
+  var Info := FPad.GamePadInfos[cmbbxControllerIndex.ItemIndex];
+  if not Info.Valid then
+    Exit;
+
   FPad.ControllerId := FPad.GamePadInfos[cmbbxControllerIndex.ItemIndex].Id;
 
   if not FUpdating then
@@ -189,6 +193,7 @@ procedure TfrmConfig.cmbbxControllerIndexPopup(Sender: TObject);
 
 begin
   // ComboBox のスクロールバーを消す
+  // 恐らく Style 側の不備
 
   // ListPicker
   var RType := SharedContext.GetType(cmbbxControllerIndex.ClassType);
@@ -227,6 +232,7 @@ begin
   if Form = nil then
     Exit;
 
+  // ListBox を探す
   for var i := 0 to Form.ChildrenCount - 1 do
   begin
     if ListUp(Form.Children[i]) then
@@ -394,7 +400,7 @@ begin
         var Info := FPad.GamePadInfos[i];
         var Caption := Info.Caption;
 
-        if Info.Index < 0 then
+        if not Info.Valid then
           Caption := '(none)';
 
         if Info.Id = Config.ControllerId then

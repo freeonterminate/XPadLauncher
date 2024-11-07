@@ -6,8 +6,9 @@ uses
   uConfigForm in 'uConfigForm.pas' {frmConfig},
   uMain in 'uMain.pas' {frmMain},
   uCommandInputForm in 'uCommandInputForm.pas' {frmInputCommand},
+  uCommandFrame in 'uCommandFrame.pas' {frameCommand: TFrame},
   uXPadCommand in 'uXPadCommand.pas',
-  uButtonIndexes in 'uButtonIndexes.pas',
+  uConfigImageListUtils in 'uConfigImageListUtils.pas',
   PK.Device.GamePad.Types in 'Lib\Device\PK.Device.GamePad.Types.pas',
   PK.Device.GamePad in 'Lib\Device\PK.Device.GamePad.pas',
   PK.Device.GamePad.Win in 'Lib\Device\PK.Device.GamePad.Win.pas',
@@ -27,7 +28,6 @@ uses
   PK.Graphic.BitmapCodecManagerHelper in 'Lib\Graphics\PK.Graphic.BitmapCodecManagerHelper.pas',
   uCommon in 'uCommon.pas',
   PK.Utils.ScreenHelper in 'Lib\Utils\PK.Utils.ScreenHelper.pas',
-  uCommandFrame in 'uCommandFrame.pas' {frameCommand: TFrame},
   PK.HardInfo.WMI.Win in 'Lib\HardInfo\PK.HardInfo.WMI.Win.pas',
   Winapi.GameInput in 'Lib\Winapi\Winapi.GameInput.pas',
   Winapi.XInput in 'Lib\Winapi\Winapi.XInput.pas';

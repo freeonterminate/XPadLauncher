@@ -261,31 +261,46 @@ begin
   var Info := TDeviceInfo.Create(PPnPInfoArray(context)^, device);
 
   {$IFDEF USE_XINPUT}
-  var Ist := False;
+  // Index を決定する
+  var Found := False;
   var Cap: TXInputCapabilitiesEx;
-  for var i := 3 downto 0 do
-  begin
-    FillChar(Cap, SizeOf(Cap), 0);
-    var Res := XInputGetCapabilitiesEx(1, i, 0, @Cap);
 
-    if
-      Succeeded(Res) and
-      (Cap.VendorId = Info.FPadInfo.VendorId) and
-      (Cap.ProductId = Info.FPadInfo.ProductId)
-    then
+  var VId := Info.FPadInfo.VendorId;
+  var PId := Info.FPadInfo.ProductId;
+
+  for var i := 0 to 1 do
+  begin
+    for var j := 0 to 3 do
     begin
-      Info.FIndex := i;
-      FDeviceInfos[i] := Info;
-      Log.d('Index: ' + i.ToString);
-      Ist := True;
-      Break;
+      FillChar(Cap, SizeOf(Cap), 0);
+
+      if
+        Succeeded(XInputGetCapabilitiesEx(1, j, 0, @Cap)) and
+        (Cap.VendorId = VId) and
+        (Cap.ProductId = PId)
+      then
+      begin
+        Info.FIndex := j;
+        FDeviceInfos[j] := Info;
+        Log.d('Index: ' + j.ToString);
+        Found := True;
+        Break;
+      end;
     end;
+
+    // Xbox One Controller 対策
+    // Xbox One Controller だったら PId を変えてもう一度
+    if (not Found) and (VId = $045e) and (PId = $02ea) then
+      PId := $02ff
+    else
+      Break;
   end;
 
-  if not Ist then
+  // 見つからなかったら先頭から埋める
+  if not Found then
     for var i := 0 to 3 do
     begin
-      if FDeviceInfos[i].FPadInfo.Index < 0 then
+      if not FDeviceInfos[i].FPadInfo.Valid then
       begin
         Info.FIndex := i;
         FDeviceInfos[i] := Info;
@@ -921,7 +936,7 @@ begin
   {$IFDEF USE_XINPUT}
   FValidDeviceCount := 0;
   for var i := 0 to 3 do
-    if FDeviceInfos[i].FPadInfo.Index > -1 then
+    if FDeviceInfos[i].FPadInfo.Valid then
       FValidDeviceCount := i + 1;
   {$ENDIF}
 end;

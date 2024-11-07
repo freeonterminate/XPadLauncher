@@ -91,7 +91,7 @@ implementation
 
 uses
   System.Math
-  , uButtonIndexes
+  , uConfigImageListUtils
   , uCommandInputForm
   ;
 
@@ -136,7 +136,7 @@ begin
       if MinX < 0 then
         MinX := X;
 
-      MaxX := X + H;
+      MaxX := X + H + W + rectSelector.Stroke.Thickness + 2;
 
       G.Parent := laySeq;
       GlyphClickHandler(G);

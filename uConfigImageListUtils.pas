@@ -1,4 +1,4 @@
-﻿unit uButtonIndexes;
+﻿unit uConfigImageListUtils;
 
 interface
 

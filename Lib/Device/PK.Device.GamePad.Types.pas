@@ -45,18 +45,21 @@ type
   TGamePadButtons = set of TGamePadButton;
 
   TGamePadInfo = record
-  private
+  private var
     FId: String;
     FIndex: Integer;
     FCaption: String;
     FVendorId: Word;
     FProductId: Word;
+  private
+    function GetValid: Boolean;
   public
     constructor Create(
       const AId: String;
       const AIndex: Integer;
       const ACaption: String;
       const AVendorId, AProductId: Word);
+    property Valid: Boolean read GetValid;
     property Id: String read FId write FId;
     property Index: Integer read FIndex write FIndex;
     property Caption: String read FCaption write FCaption;
@@ -163,6 +166,11 @@ begin
   FCaption := ACaption;
   FVendorId := AVendorId;
   FProductId := AProductId;
+end;
+
+function TGamePadInfo.GetValid: Boolean;
+begin
+  Result := FIndex > -1;
 end;
 
 { TGamePadIntf }

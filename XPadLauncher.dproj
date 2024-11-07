@@ -314,8 +314,12 @@
         <DCCReference Include="uCommandInputForm.pas">
             <Form>frmInputCommand</Form>
         </DCCReference>
+        <DCCReference Include="uCommandFrame.pas">
+            <Form>frameCommand</Form>
+            <DesignClass>TFrame</DesignClass>
+        </DCCReference>
         <DCCReference Include="uXPadCommand.pas"/>
-        <DCCReference Include="uButtonIndexes.pas"/>
+        <DCCReference Include="uConfigImageListUtils.pas"/>
         <DCCReference Include="Lib\Device\PK.Device.GamePad.Types.pas"/>
         <DCCReference Include="Lib\Device\PK.Device.GamePad.pas"/>
         <DCCReference Include="Lib\Device\PK.Device.GamePad.Win.pas"/>
@@ -335,11 +339,6 @@
         <DCCReference Include="Lib\Graphics\PK.Graphic.BitmapCodecManagerHelper.pas"/>
         <DCCReference Include="uCommon.pas"/>
         <DCCReference Include="Lib\Utils\PK.Utils.ScreenHelper.pas"/>
-        <DCCReference Include="uCommandFrame.pas">
-            <Form>frameCommand</Form>
-            <FormType>fmx</FormType>
-            <DesignClass>TFrame</DesignClass>
-        </DCCReference>
         <DCCReference Include="Lib\HardInfo\PK.HardInfo.WMI.Win.pas"/>
         <DCCReference Include="Lib\Winapi\Winapi.GameInput.pas"/>
         <DCCReference Include="Lib\Winapi\Winapi.XInput.pas"/>

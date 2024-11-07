@@ -35,10 +35,12 @@ type
     class function GetConfigFilePath: String;
   private var
     FItems: TArray<TJsonCommand>;
+    FSeqs: TArray<TArray<TArray<TGamePadButton>>>;
     FControllerId: String;
   private
     function GetCount: Integer;
     function GetItems(const AIndex: Integer): TJsonCommand;
+    function GetSequence(const AIndex: Integer): TArray<TArray<TGamePadButton>>;
   public
     function Add(
       const AName, APath: String;
@@ -50,6 +52,8 @@ type
     procedure Load;
     property Count: Integer read GetCount;
     property Items[const AIndex: Integer]: TJsonCommand read GetItems; default;
+    property Sequence[const AIndex: Integer]: TArray<TArray<TGamePadButton>>
+      read GetSequence;
     property ControllerId: String read FControllerId write FControllerId;
   end;
 
@@ -169,11 +173,13 @@ begin
   end;
 
   FItems := FItems + [Result];
+  FSeqs := FSeqs + [ASequences];
 end;
 
 procedure TConfig.Clear;
 begin
   SetLength(FItems, 0);
+  SetLength(FSeqs, 0);
 end;
 
 class constructor TConfig.CreateClass;
@@ -211,6 +217,15 @@ begin
   end;
 end;
 
+function TConfig.GetSequence(
+  const AIndex: Integer): TArray<TArray<TGamePadButton>>;
+begin
+  if (AIndex > -1) and (AIndex < Length(FSeqs)) then
+    Result := FSeqs[AIndex]
+  else
+    FillChar(Result, SizeOf(Result), 0);
+end;
+
 procedure TConfig.Load;
 begin
   var Path := GetConfigFilePath;
@@ -235,6 +250,21 @@ begin
       S.Free;
     end;
   except
+  end;
+
+  SetLength(FSeqs, Length(FItems));
+  for var i := 0 to High(FItems) do
+  begin
+    var Seq := FItems[i].sequences;
+    SetLength(FSeqs[i], Length(Seq));
+
+    for var j := 0 to High(Seq) do
+    begin
+      SetLength(FSeqs[i][j], Length(Seq[j]));
+
+      for var k := 0 to High(Seq[j]) do
+        FSeqs[i][j][k] := TGamePadButton(Seq[j][k]);
+    end;
   end;
 end;
 
