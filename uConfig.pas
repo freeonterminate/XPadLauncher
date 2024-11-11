@@ -11,11 +11,14 @@ uses
   ;
 
 type
+  TSequence = TArray<TGamePadButtonArray>;
+  TSequenceArray = TArray<TSequence>;
+
   TJsonCommand = record
     name: String;
     path: String;
     image: String;
-    sequences: TArray<TArray<Integer>>;
+    sequence: TSequence;
     [JsonIgnore] procedure GetImage(const AImage: TBitmap);
     [JsonIgnore] procedure SetImage(const AImage: TBitmap);
   end;
@@ -40,20 +43,19 @@ type
   private
     function GetCount: Integer;
     function GetItems(const AIndex: Integer): TJsonCommand;
-    function GetSequence(const AIndex: Integer): TArray<TArray<TGamePadButton>>;
+    function GetSequence(const AIndex: Integer): TSequence;
   public
     function Add(
       const AName, APath: String;
       const AImage: TBitmap;
-      const ASequences: TArray<TArray<TGamePadButton>>): TJsonCommand;
+      const ASequence: TSequence): TJsonCommand;
     procedure Remove(const AInfo: TJsonCommand);
     procedure Clear;
     procedure Save;
     procedure Load;
     property Count: Integer read GetCount;
     property Items[const AIndex: Integer]: TJsonCommand read GetItems; default;
-    property Sequence[const AIndex: Integer]: TArray<TArray<TGamePadButton>>
-      read GetSequence;
+    property Sequence[const AIndex: Integer]: TSequence read GetSequence;
     property ControllerId: String read FControllerId write FControllerId;
   end;
 
@@ -69,6 +71,7 @@ uses
   , PK.Graphic.IconConverter.Win
   , PK.Graphic.IconUtils.Win
   {$ENDIF}
+  , PK.Utils.Log
   ;
 
 function Config: TConfig;
@@ -155,7 +158,7 @@ end;
 function TConfig.Add(
   const AName, APath: String;
   const AImage: TBitmap;
-  const ASequences: TArray<TArray<TGamePadButton>>): TJsonCommand;
+  const ASequence: TSequence): TJsonCommand;
 begin
   Result.name := AName;
   Result.path := APath;
@@ -165,15 +168,15 @@ begin
   else
     Result.SetImage(AImage);
 
-  SetLength(Result.sequences, Length(ASequences));
-  for var i := 0 to High(ASequences) do
+  SetLength(Result.sequence, Length(ASequence));
+  for var i := 0 to High(ASequence) do
   begin
-    for var j := 0 to High(ASequences[i]) do
-      Result.sequences[i] := Result.sequences[i] + [Ord(ASequences[i][j])];
+    for var j := 0 to High(ASequence[i]) do
+      Result.sequence[i] := Result.sequence[i] + [ASequence[i][j]];
   end;
 
   FItems := FItems + [Result];
-  FSeqs := FSeqs + [ASequences];
+  FSeqs := FSeqs + [ASequence];
 end;
 
 procedure TConfig.Clear;
@@ -213,12 +216,11 @@ begin
   begin
     Result.name := '';
     Result.path := '';
-    SetLength(Result.sequences, 0);
+    SetLength(Result.sequence, 0);
   end;
 end;
 
-function TConfig.GetSequence(
-  const AIndex: Integer): TArray<TArray<TGamePadButton>>;
+function TConfig.GetSequence(const AIndex: Integer): TSequence;
 begin
   if (AIndex > -1) and (AIndex < Length(FSeqs)) then
     Result := FSeqs[AIndex]
@@ -244,7 +246,10 @@ begin
     try
       var Commands := S.Deserialize<TJsonCommands>(Json);
 
-      FItems := Commands.items;
+      SetLength(FItems, Length(Commands.items));
+      for var i := 0 to High(Commands.items) do
+        FItems[i] := Commands.items[i];
+
       FControllerId := Commands.controllerId;
     finally
       S.Free;
@@ -255,7 +260,7 @@ begin
   SetLength(FSeqs, Length(FItems));
   for var i := 0 to High(FItems) do
   begin
-    var Seq := FItems[i].sequences;
+    var Seq := FItems[i].sequence;
     SetLength(FSeqs[i], Length(Seq));
 
     for var j := 0 to High(Seq) do
@@ -265,6 +270,33 @@ begin
       for var k := 0 to High(Seq[j]) do
         FSeqs[i][j][k] := TGamePadButton(Seq[j][k]);
     end;
+  end;
+
+  var SB := TStringBuilder.Create;
+  try
+    SB.Append(sLineBreak);
+    for var i := 0 to High(FSeqs) do
+    begin
+      SB.Append('i:');
+      SB.Append(i);
+      var Seqs := FSeqs[i];
+      for var j := 0 to High(Seqs) do
+      begin
+        SB.Append(' j:');
+        SB.Append(j);
+        var Seq := Seqs[j];
+
+        for var k := 0 to High(Seq) do
+        begin
+          SB.Append(' ');
+          SB.Append(Seq[k].ToString);
+        end;
+      end;
+
+      SB.Append(sLineBreak);
+    end;
+  finally
+    SB.Free;
   end;
 end;
 
@@ -290,11 +322,11 @@ begin
     Exit;
 
   var Commands: TJsonCommands;
-  Commands.count := GetCount;
-  SetLength(Commands.items, Commands.count);
 
   Commands.controllerId := FControllerId;
+  Commands.count := GetCount;
 
+  SetLength(Commands.items, Commands.count);
   for var i := 0 to GetCount - 1 do
     Commands.items[i] := FItems[i];
 

@@ -29,20 +29,16 @@ type
     LeftThumb, RightThumb,
     LeftShoulder, RightShoulder,
     LeftTrigger, RightTrigger,
-    A, B, X, Y,
-
-    // エイリアス
-    Menu = Start,
-    View = Back,
-
-    L1 = LeftShoulder,
-    R1 = RightShoulder,
-    L2 = LeftTrigger,
-    R2 = RightTrigger,
-    L3 = LeftThumb,
-    R3 = RightThumb
+    A, B, X, Y
   );
   TGamePadButtons = set of TGamePadButton;
+
+  TGamePadButtonArray = TArray<TGamePadButton>;
+
+  TGamPadButtonHelper = record helper for TGamePadButton
+  public
+    function ToString: String;
+  end;
 
   TGamePadInfo = record
   private var
@@ -79,7 +75,9 @@ type
 
     procedure SetDeadZone(const ALeft, ARight: Single);
 
+    function GetPrevStatus: TGamePadButtons;
     function GetStatus: TGamePadButtons;
+
     procedure SetControllerId(const AId: String);
     function GetControllerId: String;
 
@@ -87,6 +85,7 @@ type
     function GetGamePadInfos(const AIndex: Integer): TGamePadInfo;
     procedure UpdateGamePadInfo;
 
+    property PrevStatus: TGamePadButtons read GetPrevStatus;
     property Status: TGamePadButtons read GetStatus;
     property ControllerId: String read GetControllerId write SetControllerId;
 
@@ -106,9 +105,14 @@ type
   end;
 
   TGamePadIntf = class abstract(TInterfacedObject, IGamePad)
+  private
+    function GetStatusAsArray(
+      const AStatus: TGamePadButtons): TGamePadButtonArray;
+    function GetNewlyPressedButtons: TGamePadButtonArray;
   protected
     procedure SetControllerId(const AId: String); virtual; abstract;
     function GetControllerId: String; virtual; abstract;
+    function GetPrevStatus: TGamePadButtons; virtual; abstract;
     function GetStatus: TGamePadButtons; virtual; abstract;
     function GetGamePadInfoCount: Integer; virtual; abstract;
     function GetGamePadInfos(
@@ -134,11 +138,12 @@ type
     property GamePadInfos[const AIndex: Integer]: TGamePadInfo
       read GetGamePadInfos;
 
-    function GetStatusAsArray(
-      const AStatus: TGamePadButtons): TArray<TGamePadButton>;
     property
-      StatusAsArray[const AStatus: TGamePadButtons]: TArray<TGamePadButton>
-        read GetStatusAsArray;
+      StatusAsArray[const AStatus: TGamePadButtons]: TGamePadButtonArray
+      read GetStatusAsArray;
+
+    property NewlyPressedButtons: TGamePadButtonArray
+      read GetNewlyPressedButtons;
   end;
 
 const
@@ -152,6 +157,16 @@ const
   );
 
 implementation
+
+uses
+  System.TypInfo;
+
+{ TGamPadButtonHelper }
+
+function TGamPadButtonHelper.ToString: String;
+begin
+  Result := GetEnumName(TypeInfo(TGamePadButton), Ord(Self));
+end;
 
 { TGamePadInfo }
 
@@ -175,8 +190,13 @@ end;
 
 { TGamePadIntf }
 
+function TGamePadIntf.GetNewlyPressedButtons: TGamePadButtonArray;
+begin
+  Result := GetStatusAsArray(GetStatus - GetPrevStatus);
+end;
+
 function TGamePadIntf.GetStatusAsArray(
-  const AStatus: TGamePadButtons): TArray<TGamePadButton>;
+  const AStatus: TGamePadButtons): TGamePadButtonArray;
 begin
   Result := [];
 

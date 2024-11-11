@@ -318,8 +318,7 @@
             <Form>frameCommand</Form>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
-        <DCCReference Include="uXPadCommand.pas"/>
-        <DCCReference Include="uConfigImageListUtils.pas"/>
+        <DCCReference Include="uCommandUtils.pas"/>
         <DCCReference Include="Lib\Device\PK.Device.GamePad.Types.pas"/>
         <DCCReference Include="Lib\Device\PK.Device.GamePad.pas"/>
         <DCCReference Include="Lib\Device\PK.Device.GamePad.Win.pas"/>
@@ -337,7 +336,7 @@
         <DCCReference Include="Lib\Utils\PK.Utils.ImageListHelper.pas"/>
         <DCCReference Include="Lib\GUI\PK.GUI.DarkMode.Win.pas"/>
         <DCCReference Include="Lib\Graphics\PK.Graphic.BitmapCodecManagerHelper.pas"/>
-        <DCCReference Include="uCommon.pas"/>
+        <DCCReference Include="uMisc.pas"/>
         <DCCReference Include="Lib\Utils\PK.Utils.ScreenHelper.pas"/>
         <DCCReference Include="Lib\HardInfo\PK.HardInfo.WMI.Win.pas"/>
         <DCCReference Include="Lib\Winapi\Winapi.GameInput.pas"/>
@@ -423,12 +422,6 @@
                 <DeployFile LocalName="Win64\Debug\XPadLauncher.exe" Configuration="Debug" Class="ProjectOutput">
                     <Platform Name="Win64">
                         <RemoteName>XPadLauncher.exe</RemoteName>
-                        <Overwrite>true</Overwrite>
-                    </Platform>
-                </DeployFile>
-                <DeployFile LocalName="Win64\Debug\XPadLauncher.rsm" Configuration="Debug" Class="DebugSymbols">
-                    <Platform Name="Win64">
-                        <RemoteName>XPadLauncher.rsm</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>

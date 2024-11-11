@@ -1,13 +1,20 @@
-﻿unit uCommon;
+﻿unit uMisc;
 
 interface
 
 uses
   System.SysUtils
+  {$IFDEF MSWINDOWS}
+  , Winapi.Windows
+  , Winapi.ShellAPI
+  {$ENDIF}
   , FMX.Graphics
+  , PK.Device.GamePad.Types
   ;
 
+
 procedure GetAppIconImage(const APath: String; const AImage: TBitmap);
+procedure Execute(const APath: String);
 
 implementation
 
@@ -16,6 +23,9 @@ uses
   {$IFDEF MSWINDOWS}
   , PK.Graphic.IconConverter.Win
   , PK.Graphic.IconUtils.Win
+  {$ENDIF}
+  {$IFDEF OSX}
+  , Posix.StdLib
   {$ENDIF}
   ;
 
@@ -33,6 +43,21 @@ begin
       TIconUtils.FreeIcon(Icon);
     end;
   end;
+  {$ENDIF}
+end;
+
+procedure Execute(const APath: String);
+begin
+  {$IFDEF MSWINDOWS}
+  if TFile.Exists(APath) then
+  begin
+    if (ShellExecute(0, 'open', PChar(APath), nil, nil, SW_SHOW) < 32) then
+      WinExec(PAnsiChar(AnsiString(APath)), SW_SHOW)
+  end;
+  {$ENDIF}
+
+  {$IFDEF OSX}
+  _system(PAnsiChar(AnsiString('open '+ APath)));
   {$ENDIF}
 end;
 

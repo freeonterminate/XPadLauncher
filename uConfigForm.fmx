@@ -4,7 +4,7 @@ object frmConfig: TfrmConfig
   Caption = 'Config'
   ClientHeight = 416
   ClientWidth = 800
-  Position = OwnerFormCenter
+  Position = ScreenCenter
   StyleBook = styleAir
   Constraints.MinHeight = 416.000000000000000000
   Constraints.MinWidth = 800.000000000000000000

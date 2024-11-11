@@ -4,9 +4,12 @@ interface
 
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes,
+  System.ImageList,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, PK.TrayIcon, FMX.Menus,
-  System.ImageList, FMX.ImgList, FMX.Objects,
-  PK.Device.GamePad, PK.Device.GamePad.Types;
+  FMX.ImgList, FMX.Objects, FMX.Controls.Presentation, FMX.StdCtrls,
+  PK.Device.GamePad, PK.Device.GamePad.Types,
+  uConfig
+  ;
 
 type
   TfrmMain = class(TForm)
@@ -20,6 +23,9 @@ type
     imglstButtons: TImageList;
     imgLogo: TImage;
     timerUpdate: TTimer;
+    Button1: TButton;
+    menuUpdate: TMenuItem;
+    menuSep3: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure menuExitClick(Sender: TObject);
     procedure menuConfigClick(Sender: TObject);
@@ -27,10 +33,14 @@ type
     procedure FormShow(Sender: TObject);
     procedure timerUpdateTimer(Sender: TObject);
     procedure menuEnabledClick(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+    procedure menuUpdateClick(Sender: TObject);
+  private const
+    COMMAND_BUFFER_COUNT = 32;
   private
     FTrayIcon: TTrayIcon;
     FPad: TGamePad;
-    FCommands: TArray<TArray<TGamePadButton>>;
+    FCommands: TSequence;
     FCommandIndex: Integer;
     FPrevTime: TDateTime;
   public
@@ -45,16 +55,22 @@ implementation
 
 uses
   System.DateUtils
-  , uConfig
-  , uConfigForm
   {$IFDEF MSWINDOWS}
   , PK.GUI.DarkMode.Win
   {$ENDIF}
+  , uConfigForm
+  , uMisc
+  , PK.Utils.Log
   ;
+
+procedure TfrmMain.Button1Click(Sender: TObject);
+begin
+  Close;
+end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
-  SetLength(FCommands, 32);
+  SetLength(FCommands, COMMAND_BUFFER_COUNT);
   FCommandIndex := 0;
 
   FPad := TGamePad.Create;
@@ -82,10 +98,7 @@ end;
 
 procedure TfrmMain.FormShow(Sender: TObject);
 begin
-  {$IFDEF DEBUG}
-  ShowConfig(FPad, imglstButtons);
-  Close;
-  {$ENDIF}
+  SetBounds(0, 0, 100, 100);
 
   {$IFDEF RELEASE}
   FTrayIcon.HideTaskbar;
@@ -114,40 +127,99 @@ begin
   );
 end;
 
+procedure TfrmMain.menuUpdateClick(Sender: TObject);
+begin
+  FPad.UpdateGamePadInfo;
+end;
+
 procedure TfrmMain.timerUpdateTimer(Sender: TObject);
 begin
   if not menuEnabled.IsChecked then
     Exit;
 
-  var Cur := Now;
-  if MilliSecondsBetween(Cur, FPrevTime) > 50 then
-    FCommandIndex := 0
-  else
-    Inc(FCommandIndex);
+  FPad.Check;
+  var Status := FPad.NewlyPressedButtons;
 
-  FCommands[FCommandIndex] := FPad.GetStatusAsArray(FPad.Check);
+  if (FCommands[FCommandIndex] = Status) or (Length(Status) < 1) then
+    Exit;
 
-  for var i := 0 to Config.Count - 1 do
+  var Cur: TDateTime := Now;
+  if MilliSecondsBetween(Cur, FPrevTime) > 500 then
   begin
-    var Seq := Config.Sequence[i];
-    if Length(Seq) <> Length(FCommands) then
-      Continue;
-
-    var Same := True;
-    for var j := 0 to High(Seq) do
-      if Seq[j] <> FCommands[j] then
-      begin
-        Same := False;
-        Break;
-      end;
-
-    if Same then
-    begin
-      // コマンド発動
-    end;
+    FCommandIndex := 0;
+    //Log.d('Rest');
+  end
+  else
+  begin
+    Inc(FCommandIndex);
+    if FCommandIndex >= COMMAND_BUFFER_COUNT then
+      FCommandIndex := 0;
   end;
 
   FPrevTime := Cur;
+
+  FCommands[FCommandIndex] := Status;
+
+  var SB := TStringBuilder.Create;
+  try
+    for var i := 0 to FCommandIndex do
+    begin
+      SB.Append(i);
+      SB.APpend(' ');
+      for var j := 0 to High(FCommands[i]) do
+      begin
+        SB.Append(FCommands[i][j].ToString);
+        SB.APpend(', ');
+      end;
+
+      SB.Append(sLineBreak);
+    end;
+  finally
+    SB.Free;
+  end;
+
+  var FoundIndex := 0;
+  var Found := False;
+  var Seq: TGamePadButtonArray;
+  for var i := 0 to Config.Count - 1 do
+  begin
+    var Seqs := Config.Sequence[i];
+    var LenSeqs := Length(Seqs);
+
+    if (FCommandIndex + 1) <> LenSeqs then
+      Continue;
+
+    Found := True;
+    for var j := 0 to FCommandIndex do
+    begin
+      if Length(Seqs[j]) <> Length(FCommands[j]) then
+      begin
+        Found := False;
+        Break;
+      end;
+
+      Seq := Seqs[j];
+      for var k := 0 to High(Seq) do
+        if FCommands[j][k] <> Seq[k] then
+        begin
+          Found := False;
+          Break;
+        end;
+    end;
+
+    if Found then
+    begin
+      FoundIndex := i;
+      Break;
+    end;
+  end;
+
+  if Found then
+  begin
+    // コマンド発動
+    //Log.d('OK!');
+    Execute(Config.Items[FoundIndex].path);
+  end;
 end;
 
 end.

@@ -230,11 +230,12 @@ begin
 end;
 
 class procedure Log.output(const iPriority: Integer; const iText: String);
-var
 {$IFDEF MSWINDOWS}
+var
   LogBody: String;
 {$ENDIF}
 {$IFDEF ANDROID}
+var
   AppService: IFMXApplicationService;
   M: TMarshaller;
 {$ELSE}

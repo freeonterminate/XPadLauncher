@@ -27,6 +27,7 @@ type
     TPnPInfo = record
       FCaption: String;
       FDeviceID: String;
+      FHardwareID: TArray<String>;
       FPNPClass: String;
     end;
     TPnPInfoArray = TArray<TPnPInfo>;
@@ -70,7 +71,9 @@ type
     FPrevStatus: TGamePadButtons;
     FDeadZoneLeft: Single;
     FDeadZoneRight: Single;
+    {$IFDEF USE_GAMEINPUT}
     FGPadState: GameInputGamepadState;
+    {$ENDIF}
   public
     constructor Create; reintroduce;
     function Check: TGamePadButtons; override;
@@ -87,6 +90,7 @@ type
     procedure UpdateGamePadInfo; override;
 
     procedure SetDeadZone(const ALeft, ARight: Single); override;
+    function GetPrevStatus: TGamePadButtons; override;
     function GetStatus: TGamePadButtons; override;
 
     function GetGamePadInfoCount: Integer; override;
@@ -177,6 +181,7 @@ begin
   var Target2 :=
     Format('%.4x_PID&%.4x', [FPadInfo.VendorId, FPadInfo.ProductId]);
   var DeviceCaption := '';
+  var DeviceId := '';
 
   {
   Log.d('');
@@ -204,9 +209,32 @@ begin
       )
     then
     begin
-      //Log.d(Info.FDeviceId);
+      DeviceId := Info.FDeviceID;
+      //Log.d(DeviceId);
 
-      if Info.FDeviceID.StartsWith('BTHENUM') then
+      // Xbox Wiress controller
+      if DeviceId.StartsWith('BTHLEDEVICE') then
+      begin
+        var ID := Info.FDeviceID.Substring(84, 12);
+        var HIdTarget := Format('BTHLE\DEV_%s', [ID]);
+
+        for var j := 0 to High(APnPInfos) do
+        begin
+          var Info2 := APnPInfos[j];
+
+          //Log.d('* ' + INfo2.FCaption + ': ' + Info2.FDeviceID);
+
+          if Info2.FDeviceID.Contains(HIdTarget) then
+          begin
+            Info.FCaption := Info2.FCaption;
+            DeviceId := Info.FDeviceID;
+            Break;
+          end;
+        end;
+      end;
+
+      // Bluetooth controller
+      if DeviceId.StartsWith('BTHENUM') then
       begin
         var Index := Info.FDeviceID.IndexOf(Target2);
         if Index > -1 then
@@ -227,6 +255,7 @@ begin
             if Info2.FDeviceID = BTarget then
             begin
               Info.FCaption := Info2.FCaption;
+              DeviceId := Info.FDeviceID;
               Break;
             end;
           end;
@@ -244,8 +273,8 @@ begin
   if not DeviceCaption.IsEmpty then
     FPadInfo.Caption := DeviceCaption.Substring(4);
 
-  Log.d('');
-  Log.d(FPadInfo.Caption + ': ' + FPadInfo.Id);
+  //Log.d('');
+  //Log.d(FPadInfo.Caption + ': ' + DeviceId);
 end;
 
 { TWinGamePad }
@@ -282,7 +311,6 @@ begin
       begin
         Info.FIndex := j;
         FDeviceInfos[j] := Info;
-        Log.d('Index: ' + j.ToString);
         Found := True;
         Break;
       end;
@@ -304,7 +332,6 @@ begin
       begin
         Info.FIndex := i;
         FDeviceInfos[i] := Info;
-        Log.d('Abnormal Index: ' + i.ToString);
         Break;
       end;
     end;
@@ -329,7 +356,7 @@ function TWinGamePad.Check: TGamePadButtons;
   const LD = -2.25;
   const RD = -0.75;
 
-  const Delta = 0.5;
+  const Delta = 0.375;
 
   var Theta: Single;
 
@@ -348,14 +375,14 @@ function TWinGamePad.Check: TGamePadButtons;
     Result := InMin(AValue) and InMax(AValue);
   end;
 
-  function IsL: Boolean;
+  function IsL(const ASX: Single): Boolean;
   begin
-    Result := (InMinMax(L1) or InMinMax(L2)) and (Theta <> 0);;
+    Result := (InMinMax(L1) or InMinMax(L2)) and (ASX <> 0);;
   end;
 
-  function IsR: Boolean;
+  function IsR(const ASX: Single): Boolean;
   begin
-    Result := InMinMax(R) and (Theta <> 0);
+    Result := InMinMax(R) and (ASX <> 0);
   end;
 
   function IsU: Boolean;
@@ -498,9 +525,9 @@ begin
     Include(Result, TGamePadButton.LStickRU)
   else if IsRD then
     Include(Result, TGamePadButton.LStickRD)
-  else if IsL then
+  else if IsL(LS.X) then
     Include(Result, TGamePadButton.LStickL)
-  else if IsR then
+  else if IsR(LS.X) then
     Include(Result, TGamePadButton.LStickR)
   else if IsU then
     Include(Result, TGamePadButton.LStickU)
@@ -519,9 +546,9 @@ begin
     Include(Result, TGamePadButton.RStickRU)
   else if IsRD then
     Include(Result, TGamePadButton.RStickRD)
-  else if IsL then
+  else if IsL(RS.X) then
     Include(Result, TGamePadButton.RStickL)
-  else if IsR then
+  else if IsR(RS.X) then
     Include(Result, TGamePadButton.RStickR)
   else if IsU then
     Include(Result, TGamePadButton.RStickU)
@@ -831,6 +858,11 @@ begin
   Result := Info.FPadInfo;
 end;
 
+function TWinGamePad.GetPrevStatus: TGamePadButtons;
+begin
+  Result := FPrevStatus;
+end;
+
 function TWinGamePad.GetStatus: TGamePadButtons;
 begin
   Result := FStatus;
@@ -887,7 +919,7 @@ begin
 
   TWMI.GetProperty(
     'Win32_PnPEntity',
-    ['Caption', 'DeviceID', 'PNPClass'],
+    ['Caption', 'DeviceID', 'HardwareID', 'PNPClass'],
     procedure(const AProps: TWMI.TWbemPropDic)
 
       function GetProps(const AName: String): String;
@@ -909,6 +941,14 @@ begin
       PnPInfos[Len].FCaption := GetProps('Caption');
       PnPInfos[Len].FDeviceID := GetProps('DeviceID');
       PnPInfos[Len].FPNPClass := GetProps('PNPClass');
+
+      var HDIds := AProps['HardwareID'];
+      if VarIsArray(HDIds) then
+        for
+          var i := VarArrayLowBound(HDIds, 1)
+          to VarArrayHighBound(HDIds, 1)
+        do
+          PnPInfos[Len].FHardwareID := PnPInfos[Len].FHardwareID + [HDIds[i]];
     end
   );
 
@@ -929,9 +969,7 @@ begin
   begin
     FGameInput^.lpVtbl^.UnregisterCallback(FGameInput, Token, 5000);
     SetLength(PnPInfos, 0);
-  end
-  else
-    Log.d('Failed: ' + UInt32(Res).ToHexString(8));
+  end;
 
   {$IFDEF USE_XINPUT}
   FValidDeviceCount := 0;

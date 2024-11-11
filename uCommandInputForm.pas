@@ -65,7 +65,7 @@ uses
   System.IOUtils
   , PK.Graphic.BitmapCodecManagerHelper
   , PK.Utils.ScreenHelper
-  , uCommon
+  , uMisc
   ;
 
 procedure ShowInputCommand(

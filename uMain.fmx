@@ -3,9 +3,9 @@ object frmMain: TfrmMain
   Top = 0
   BorderStyle = None
   Caption = 'XPad Launcher'
-  ClientHeight = 92
-  ClientWidth = 376
-  Position = Default
+  ClientHeight = 100
+  ClientWidth = 360
+  Position = ScreenCenter
   FormFactor.Width = 320
   FormFactor.Height = 480
   FormFactor.Devices = [Desktop]
@@ -138,14 +138,24 @@ object frmMain: TfrmMain
     object menuSep1: TMenuItem
       Text = '-'
     end
+    object menuUpdate: TMenuItem
+      Locked = True
+      ShortCut = 16466
+      Text = '&Update DeviceList'
+      OnClick = menuUpdateClick
+    end
     object menuConfig: TMenuItem
-      Text = '&Config'
+      Text = '&Config ...'
       OnClick = menuConfigClick
     end
-    object menuVersion: TMenuItem
-      Text = '&Version'
-    end
     object menuSep2: TMenuItem
+      Locked = True
+      Text = '-'
+    end
+    object menuVersion: TMenuItem
+      Text = '&Version ...'
+    end
+    object menuSep3: TMenuItem
       Text = '-'
     end
     object menuExit: TMenuItem
@@ -160,6 +170,14 @@ object frmMain: TfrmMain
     OnTimer = timerUpdateTimer
     Left = 288
     Top = 16
+  end
+  object Button1: TButton
+    Position.X = 16.000000000000000000
+    Position.Y = 62.000000000000000000
+    TabOrder = 4
+    Text = 'Button1'
+    TextSettings.Trimming = None
+    OnClick = Button1Click
   end
   object imglstButtons: TImageList
     Source = <

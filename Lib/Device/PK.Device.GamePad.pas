@@ -13,9 +13,9 @@ type
   private var
     FIntf: IGamePad;
   protected
-    procedure SetDeadZone(const ALeft, ARight: Single); override;
     procedure SetControllerId(const AId: String); override;
     function GetControllerId: String; override;
+    function GetPrevStatus: TGamePadButtons; override;
     function GetStatus: TGamePadButtons; override;
     function GetGamePadInfoCount: Integer; override;
     function GetGamePadInfos(const AIndex: Integer): TGamePadInfo; override;
@@ -32,6 +32,8 @@ type
     procedure Vibrate(
       const ALeftMotor, ARightMotor: Single;
       const ADuration: Integer); override;
+
+    procedure SetDeadZone(const ALeft, ARight: Single); override;
 
     procedure UpdateGamePadInfo; override;
   end;
@@ -108,6 +110,14 @@ begin
   Result := GAMEPADINFO_NONE;
   if FIntf <> nil then
     Result := FIntf.GetGamePadInfos(AIndex)
+end;
+
+function TGamePad.GetPrevStatus: TGamePadButtons;
+begin
+  if FIntf = nil then
+    Result := []
+  else
+    Result := FIntf.GetPrevStatus;
 end;
 
 function TGamePad.GetStatus: TGamePadButtons;

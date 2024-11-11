@@ -52,6 +52,7 @@ type
     FOrgGrouping: TRectangle;
     FGroupingRects: TList<TRectangle>;
   private
+    procedure AdjustSeqWidth;
     procedure GlyphClickHandler(Sender: TObject);
     procedure SetInfo(const ACommand: TJsonCommand);
     procedure AddCommand(const AButtons: TGamePadButtons);
@@ -91,7 +92,7 @@ implementation
 
 uses
   System.Math
-  , uConfigImageListUtils
+  , uCommandUtils
   , uCommandInputForm
   ;
 
@@ -100,13 +101,10 @@ begin
   if AButtons = [] then
     Exit;
 
-  var MinX: Single := -1;
-  var MaxX: Single := 0;
-
   var H := laySeq.Height;
   var W := H + 8;
 
-  var Buttons := FPad.GetStatusAsArray(AButtons);
+  var Buttons := FPad.StatusAsArray[AButtons];
 
   if Length(Buttons) > 0 then
   begin
@@ -133,11 +131,6 @@ begin
       var X := C * W;
       G.SetBounds(X, 0, H, H);
 
-      if MinX < 0 then
-        MinX := X;
-
-      MaxX := X + H + W + rectSelector.Stroke.Thickness + 2;
-
       G.Parent := laySeq;
       GlyphClickHandler(G);
 
@@ -145,9 +138,14 @@ begin
     end;
   end;
 
-  laySeq.Width := MaxX;
-
+  AdjustSeqWidth;
   CreateGroupingRect;
+end;
+
+procedure TframeCommand.AdjustSeqWidth;
+begin
+  var Gs := FCommands[FCommands.Count - 1];
+  laySeq.Width := Gs[Gs.Count - 1].BoundsRect.Right;
 end;
 
 procedure TframeCommand.btnCommandRemoveClick(Sender: TObject);
@@ -232,8 +230,7 @@ begin
       GlyphClickHandler(Next);
       rectSelector.Parent := Next;
 
-      var Gs := FCommands[FCommands.Count - 1];
-      laySeq.Width := Gs[Gs.Count - 1].BoundsRect.Right;
+      AdjustSeqWidth;
     end;
   end;
 
@@ -431,7 +428,7 @@ begin
     var P := Add;
     P.SetInfo(Item);
 
-    for var Ss in Item.sequences do
+    for var Ss in Item.sequence do
     begin
       var Buttons: TGamePadButtons := [];
       for var S in Ss do
