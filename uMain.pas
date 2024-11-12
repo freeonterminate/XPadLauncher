@@ -55,10 +55,12 @@ implementation
 
 uses
   System.DateUtils
+  , System.Math
   {$IFDEF MSWINDOWS}
   , PK.GUI.DarkMode.Win
   {$ENDIF}
   , uConfigForm
+  , uButtonStatusForm
   , uMisc
   , PK.Utils.Log
   ;
@@ -83,8 +85,10 @@ begin
   FTrayIcon.ChangeIcon('Icon', 'XPad Launcher');
   FTrayIcon.Apply('{A4523C1E-210C-48AE-9A3F-00E0E04DB0BB}');
 
+  imgLogo.Visible := False;
+
   {$IFDEF RELEASE}
-  SetBounds(-MaxInt, -MaxInt, 1, 1);
+  SetBounds(-MaxInt, -MaxInt, 128, 128);
   {$ENDIF}
 
   timerUpdate.Enabled := True;
@@ -98,7 +102,7 @@ end;
 
 procedure TfrmMain.FormShow(Sender: TObject);
 begin
-  SetBounds(0, 0, 100, 100);
+  SetBounds(0, 0, 128, 128);
 
   {$IFDEF RELEASE}
   FTrayIcon.HideTaskbar;
@@ -144,7 +148,7 @@ begin
     Exit;
 
   var Cur: TDateTime := Now;
-  if MilliSecondsBetween(Cur, FPrevTime) > 500 then
+  if MilliSecondsBetween(Cur, FPrevTime) > 300 then
   begin
     FCommandIndex := 0;
     //Log.d('Rest');
@@ -159,7 +163,9 @@ begin
   FPrevTime := Cur;
 
   FCommands[FCommandIndex] := Status;
+  ShowButtonStatus(imglstButtons, Status);
 
+  { // 入力コマンド確認
   var SB := TStringBuilder.Create;
   try
     for var i := 0 to FCommandIndex do
@@ -174,9 +180,12 @@ begin
 
       SB.Append(sLineBreak);
     end;
+
+    Log.d(SB.ToString);
   finally
     SB.Free;
   end;
+  // }
 
   var FoundIndex := 0;
   var Found := False;
@@ -186,25 +195,36 @@ begin
     var Seqs := Config.Sequence[i];
     var LenSeqs := Length(Seqs);
 
-    if (FCommandIndex + 1) <> LenSeqs then
-      Continue;
-
-    Found := True;
-    for var j := 0 to FCommandIndex do
+    for var n := 0 to FCommandIndex - LenSeqs + 1 do
     begin
-      if Length(Seqs[j]) <> Length(FCommands[j]) then
+      Found := True;
+      for var j := 0 to LenSeqs - 1 do
       begin
-        Found := False;
-        Break;
-      end;
+        var ComIndex := j + n;
+        Seq := Seqs[j];
 
-      Seq := Seqs[j];
-      for var k := 0 to High(Seq) do
-        if FCommands[j][k] <> Seq[k] then
+        if Length(Seq) <> Length(FCommands[ComIndex]) then
         begin
           Found := False;
           Break;
         end;
+
+        for var k := 0 to High(Seq) do
+        begin
+          //Log.d([FCommands[ComIndex][k].ToString, ' =?= ', Seq[k].ToString]);
+          if FCommands[ComIndex][k] <> Seq[k] then
+          begin
+            Found := False;
+            Break;
+          end;
+        end;
+
+        if not Found then
+          Break;
+      end;
+
+      if Found then
+        Break;
     end;
 
     if Found then
@@ -217,8 +237,9 @@ begin
   if Found then
   begin
     // コマンド発動
-    //Log.d('OK!');
+    // Log.d('OK!');
     Execute(Config.Items[FoundIndex].path);
+    FCommandIndex := 0;
   end;
 end;
 

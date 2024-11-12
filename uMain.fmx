@@ -3,7 +3,7 @@ object frmMain: TfrmMain
   Top = 0
   BorderStyle = None
   Caption = 'XPad Launcher'
-  ClientHeight = 100
+  ClientHeight = 128
   ClientWidth = 360
   Position = ScreenCenter
   FormFactor.Width = 320
@@ -120,15 +120,15 @@ object frmMain: TfrmMain
       end>
     Margins.Right = 8.000000000000000000
     Margins.Bottom = 2.000000000000000000
-    Position.X = 16.000000000000000000
+    Position.X = 308.000000000000000000
     Position.Y = 16.000000000000000000
     Size.Width = 40.000000000000000000
     Size.Height = 40.000000000000000000
     Size.PlatformDefault = False
   end
   object popupMain: TPopupMenu
-    Left = 112
-    Top = 16
+    Left = 264
+    Top = 64
     object menuEnabled: TMenuItem
       IsChecked = True
       ShortCut = 16453
@@ -168,12 +168,12 @@ object frmMain: TfrmMain
     Enabled = False
     Interval = 50
     OnTimer = timerUpdateTimer
-    Left = 288
+    Left = 264
     Top = 16
   end
   object Button1: TButton
-    Position.X = 16.000000000000000000
-    Position.Y = 62.000000000000000000
+    Position.X = 8.000000000000000000
+    Position.Y = 98.000000000000000000
     TabOrder = 4
     Text = 'Button1'
     TextSettings.Trimming = None
@@ -2559,7 +2559,7 @@ object frmMain: TfrmMain
             SourceRect.Bottom = 64.000000000000000000
           end>
       end>
-    Left = 200
+    Left = 32
     Top = 16
   end
 end

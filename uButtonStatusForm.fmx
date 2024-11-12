@@ -1,0 +1,33 @@
+object frmButtonStatus: TfrmButtonStatus
+  Left = 0
+  Top = 0
+  BorderStyle = None
+  Caption = 'ButtonStatus'
+  ClientHeight = 128
+  ClientWidth = 128
+  Position = OwnerFormCenter
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  DesignerMasterStyle = 0
+  object Rectangle1: TRectangle
+    Align = Contents
+    Fill.Color = claBlack
+    Size.Width = 128.000000000000000000
+    Size.Height = 128.000000000000000000
+    Size.PlatformDefault = False
+    Stroke.Kind = None
+  end
+  object glyphButton: TGlyph
+    Align = Center
+    Size.Width = 64.000000000000000000
+    Size.Height = 64.000000000000000000
+    Size.PlatformDefault = False
+  end
+  object timerClose: TTimer
+    OnTimer = timerCloseTimer
+    Left = 16
+    Top = 8
+  end
+end

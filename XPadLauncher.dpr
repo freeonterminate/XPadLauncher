@@ -7,6 +7,7 @@ uses
   uMain in 'uMain.pas' {frmMain},
   uCommandInputForm in 'uCommandInputForm.pas' {frmInputCommand},
   uCommandFrame in 'uCommandFrame.pas' {frameCommand: TFrame},
+  uButtonStatusForm in 'uButtonStatusForm.pas' {frmButtonStatus},
   uCommandUtils in 'uCommandUtils.pas',
   PK.Device.GamePad.Types in 'Lib\Device\PK.Device.GamePad.Types.pas',
   PK.Device.GamePad in 'Lib\Device\PK.Device.GamePad.pas',
