@@ -84,6 +84,7 @@ type
     function GetGamePadInfoCount: Integer;
     function GetGamePadInfos(const AIndex: Integer): TGamePadInfo;
     procedure UpdateGamePadInfo;
+    function CheckController: Boolean;
 
     property PrevStatus: TGamePadButtons read GetPrevStatus;
     property Status: TGamePadButtons read GetStatus;
@@ -130,6 +131,7 @@ type
       const ALeftMotor, ARightMotor: Single;
       const ADuration: Integer); virtual; abstract;
     procedure SetDeadZone(const ALeft, ARight: Single); virtual; abstract;
+    function CheckController: Boolean; virtual; abstract;
   public
     property Status: TGamePadButtons read GetStatus;
     property ControllerId: String read GetControllerId write SetControllerId;

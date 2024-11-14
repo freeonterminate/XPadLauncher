@@ -88,6 +88,7 @@ type
     function GetControllerId: String; override;
     procedure SetControllerId(const AId: String); override;
     procedure UpdateGamePadInfo; override;
+    function CheckController: Boolean; override;
 
     procedure SetDeadZone(const ALeft, ARight: Single); override;
     function GetPrevStatus: TGamePadButtons; override;
@@ -716,6 +717,56 @@ begin
     Include(Result, TGamePadButton.RStickD);
 
   FStatus := Result;
+  {$ENDIF}
+end;
+
+function TWinGamePad.CheckController: Boolean;
+begin
+  {$IFDEF USE_XINPUT}
+  var Ids: TArray<Integer>;
+  for var i := 0 to FValidDeviceCount - 1 do
+    if FDeviceInfos[i].FPadInfo.Valid then
+      Ids := Ids + [FDeviceInfos[i].FIndex];
+
+  var CurrentIds: TArray<Integer>;
+  var State: TXInputState;
+
+  for var i := 0 to 3 do
+    if XInputGetState(i, State) = ERROR_SUCCESS then
+      CurrentIds := CurrentIds + [i];
+
+  Result := Length(CurrentIds) <> Length(Ids);
+
+  if not Result then
+  begin
+    for var i := 0 to High(CurrentIds) do
+    begin
+      for var j := 0 to High(Ids) do
+      begin
+        if CurrentIds[i] = Ids[j] then
+        begin
+          CurrentIds[i] := -1;
+          Break;
+        end;
+      end;
+    end;
+
+    for var i := 0 to High(CurrentIds) do
+    begin
+      if CurrentIds[i] <> -1 then
+      begin
+        Result := True;
+        Break;
+      end;
+    end;
+  end;
+
+  if Result then
+    UpdateDeviceList;
+  {$ENDIF}
+
+  {$IFDEF USE_GAMEINPUT}
+  UpdateDeviceList;
   {$ENDIF}
 end;
 

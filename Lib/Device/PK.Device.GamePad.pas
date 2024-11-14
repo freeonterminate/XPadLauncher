@@ -36,6 +36,8 @@ type
     procedure SetDeadZone(const ALeft, ARight: Single); override;
 
     procedure UpdateGamePadInfo; override;
+
+    function CheckController: Boolean; override;
   end;
 
 implementation
@@ -55,6 +57,13 @@ begin
     Result := []
   else
     Result := FIntf.Check;
+end;
+
+function TGamePad.CheckController: Boolean;
+begin
+  Result := False;
+  if FIntf <> nil then
+    Result := FIntf.CheckController;
 end;
 
 function TGamePad.CheckStick(const AThumb: TGamePadButton): TPointF;

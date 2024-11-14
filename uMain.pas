@@ -147,7 +147,12 @@ begin
   var Status := FPad.NewlyPressedButtons;
 
   if (FCommands[FCommandIndex] = Status) or (Length(Status) < 1) then
+  begin
+    if FPad.CheckController then
+      FPad.ControllerId := Config.ControllerId;
+
     Exit;
+  end;
 
   var Cur: TDateTime := Now;
   if MilliSecondsBetween(Cur, FPrevTime) > 300 then
