@@ -14,7 +14,7 @@ object frmButtonStatus: TfrmButtonStatus
   DesignerMasterStyle = 0
   object rectBase: TRectangle
     Align = Contents
-    Fill.Color = claBlack
+    Fill.Color = xC0000000
     Size.Width = 128.000000000000000000
     Size.Height = 128.000000000000000000
     Size.PlatformDefault = False
