@@ -238,7 +238,20 @@ begin
   begin
     // コマンド発動
     // Log.d('OK!');
-    Execute(Config.Items[FoundIndex].path);
+    var Item := Config.Items[FoundIndex];
+    var Bmp := TBitmap.Create;
+    try
+      Item.GetImage(Bmp);
+      ShowIcon(
+        Bmp,
+        procedure
+        begin
+          Execute(Item.path);
+        end
+      );
+    finally
+      Bmp.Free;
+    end;
     FCommandIndex := 0;
   end;
 end;

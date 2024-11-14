@@ -5,25 +5,52 @@ object frmButtonStatus: TfrmButtonStatus
   Caption = 'ButtonStatus'
   ClientHeight = 128
   ClientWidth = 128
-  Position = OwnerFormCenter
+  Position = Designed
+  Transparency = True
   FormFactor.Width = 320
   FormFactor.Height = 480
   FormFactor.Devices = [Desktop]
   OnCreate = FormCreate
   DesignerMasterStyle = 0
-  object Rectangle1: TRectangle
+  object rectBase: TRectangle
     Align = Contents
     Fill.Color = claBlack
     Size.Width = 128.000000000000000000
     Size.Height = 128.000000000000000000
     Size.PlatformDefault = False
-    Stroke.Kind = None
+    Stroke.Color = claWhite
+    Stroke.Thickness = 6.000000000000000000
+    XRadius = 16.000000000000000000
+    YRadius = 16.000000000000000000
+    object glyphButton: TGlyph
+      Position.X = 32.000000000000000000
+      Position.Y = 32.000000000000000000
+      Size.Width = 64.000000000000000000
+      Size.Height = 64.000000000000000000
+      Size.PlatformDefault = False
+    end
   end
-  object glyphButton: TGlyph
-    Align = Center
+  object imgIcon: TImage
+    MultiResBitmap = <
+      item
+      end>
+    Position.X = 32.000000000000000000
+    Position.Y = 32.000000000000000000
     Size.Width = 64.000000000000000000
     Size.Height = 64.000000000000000000
     Size.PlatformDefault = False
+    Visible = False
+    object effectBlur: TBlurEffect
+      Softness = 0.300000011920929000
+      object animBlur: TFloatAnimation
+        Duration = 0.200000002980232200
+        OnProcess = animBlurProcess
+        OnFinish = animBlurFinish
+        PropertyName = 'Softness'
+        StartValue = 0.000000000000000000
+        StopValue = 2.000000000000000000
+      end
+    end
   end
   object timerClose: TTimer
     OnTimer = timerCloseTimer
