@@ -37,7 +37,9 @@ type
     procedure menuUpdateClick(Sender: TObject);
   private const
     COMMAND_BUFFER_COUNT = 32;
-  private
+    TIMER_INTERVAL_WAITING = 100;
+    TIMER_INTERVAL_ACTIVE = 50;
+  private var
     FTrayIcon: TTrayIcon;
     FPad: TGamePad;
     FCommands: TSequence;
@@ -162,6 +164,8 @@ begin
 
   FPrevTime := Cur;
 
+  timerUpdate.Interval := TIMER_INTERVAL_ACTIVE;
+
   FCommands[FCommandIndex] := Status;
   ShowButtonStatus(imglstButtons, Status);
 
@@ -253,6 +257,7 @@ begin
       Bmp.Free;
     end;
     FCommandIndex := 0;
+    timerUpdate.Interval := TIMER_INTERVAL_WAITING;
   end;
 end;
 
