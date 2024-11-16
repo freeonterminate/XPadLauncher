@@ -26,10 +26,13 @@
  *     FTray.AssignPopupMenu(PopupMenu1); // Right Click Menu
  *     FTray.RegisterIcon('Bar', BarBmp); // BarBmp is TBitmap Instance
  *     FTray.RegisterOnClick(TrayClick);  // TrayIcon Clicked Event (Win Only)
- *     FTray.Apply('{FED0B67E-7C6E-41C3-A257-E4EB588E3E94}');
+ *     FTray.Apply;
  *   end;
  *
  * 2018/04/17 Version 1.0.0
+ * 2020/11/06 Version 1.1.0  Support Native PopupMenu / Eliminate VCL Components
+ * 2024/11/16 Version 1.2.0  Delete GUID Member (Failed in Windows 11)
+ *
  * Programmed by HOSOKAWA Jun (twitter: @pik)
  *)
 
@@ -61,8 +64,6 @@ type
   public
     constructor Create; reintroduce;
     destructor Destroy; override;
-    procedure Apply(const iGUID: TGUID); overload;
-    procedure Apply(const iGUIDString: String); overload;
     procedure Apply; overload;
     procedure AssignPopupMenu(const iPopupMenu: TPopupMenu);
     procedure AddMenu(const iText: String; const iEvent: TNotifyEvent);
@@ -102,21 +103,10 @@ begin
   {$WARNINGS ON}
 end;
 
-procedure TTrayIcon.Apply(const iGUID: TGUID);
-begin
-  if FTrayIcon <> nil then
-    FTrayIcon.ApplyGUID(iGUID);
-end;
-
 procedure TTrayIcon.Apply;
 begin
   if FTrayIcon <> nil then
     FTrayIcon.Apply;
-end;
-
-procedure TTrayIcon.Apply(const iGUIDString: String);
-begin
-  Apply(TGUID.Create(iGUIDString));
 end;
 
 procedure TTrayIcon.AssignPopupMenu(const iPopupMenu: TPopupMenu);

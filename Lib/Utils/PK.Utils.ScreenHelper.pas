@@ -1,4 +1,21 @@
-﻿unit PK.Utils.ScreenHelper;
+﻿(*
+ * ScreenHelper
+ *
+ * PLATFORMS
+ *   Windows, macOS, iOS, Android
+ *
+ * LICENSE
+ *   Copyright (c) 2024 HOSOKAWA Jun
+ *   Released under the MIT license
+ *   http://opensource.org/licenses/mit-license.php
+ *
+ * HISTORY
+ *   2018/06/23  Ver 1.0.0  Release
+ *
+ * Programmed by HOSOKAWA Jun (twitter: @pik)
+ *)
+
+unit PK.Utils.ScreenHelper;
 
 interface
 

@@ -1,4 +1,21 @@
-﻿unit uCommandFrame;
+﻿(*
+ * XPad Launcher
+ *
+ * PLATFORMS
+ *   Windows
+ *
+ * LICENSE
+ *   Copyright (c) 2024 HOSOKAWA Jun
+ *   Released under the MIT license
+ *   http://opensource.org/licenses/mit-license.php
+ *
+ * HISTORY
+ *   2024/11/16  Ver 1.0.0  Release
+ *
+ * Programmed by HOSOKAWA Jun (twitter: @pik)
+ *)
+
+unit uCommandFrame;
 
 interface
 
@@ -84,7 +101,6 @@ type
     procedure Load;
     procedure Save;
   end;
-
 
 implementation
 
@@ -363,6 +379,7 @@ begin
         SetInfo(ACommand);
     end
   );
+
 end;
 
 procedure TframeCommand.SetInfo(const ACommand: TJsonCommand);

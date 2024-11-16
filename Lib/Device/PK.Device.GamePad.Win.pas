@@ -1,4 +1,21 @@
-﻿unit PK.Device.GamePad.Win;
+﻿(*
+ * GamePad
+ *
+ * PLATFORMS
+ *   Windows
+ *
+ * LICENSE
+ *   Copyright (c) 2024 HOSOKAWA Jun
+ *   Released under the MIT license
+ *   http://opensource.org/licenses/mit-license.php
+ *
+ * HISTORY
+ *   2024/11/16  Ver 1.0.0  Release
+ *
+ * Programmed by HOSOKAWA Jun (twitter: @pik)
+ *)
+
+unit PK.Device.GamePad.Win;
 
 interface
 
@@ -74,6 +91,8 @@ type
     {$IFDEF USE_GAMEINPUT}
     FGPadState: GameInputGamepadState;
     {$ENDIF}
+  private
+    function IsConnected(const AIndex: Integer): Boolean;
   public
     constructor Create; reintroduce;
     function Check: TGamePadButtons; override;
@@ -83,12 +102,14 @@ type
     function IsClicked(const AButton: TGamePadButton): Boolean; override;
     procedure Vibrate(
       const ALeftMotor, ARightMotor: Single;
-      const ADuration: Integer); override;
+      const ADuration: Integer;
+      const AOnComplete: TProc); override;
 
     function GetControllerId: String; override;
     procedure SetControllerId(const AId: String); override;
     procedure UpdateGamePadInfo; override;
     function CheckController: Boolean; override;
+    function Available: Boolean; override;
 
     procedure SetDeadZone(const ALeft, ARight: Single); override;
     function GetPrevStatus: TGamePadButtons; override;
@@ -280,6 +301,13 @@ end;
 
 { TWinGamePad }
 
+function TWinGamePad.Available: Boolean;
+begin
+  Result := IsConnected(FTargetIndex);
+  if not Result then
+    FTargetIndex := -1;
+end;
+
 class procedure TWinGamePad.CallbackFunc(
   callbackToken: GameInputCallbackToken;
   context: Pointer;
@@ -421,7 +449,10 @@ begin
   Result := [];
 
   var State: TXInputState;
-  if XInputGetState(FTargetIndex, State) <> ERROR_SUCCESS then
+  if
+    (FTargetIndex <> -1) and
+    (XInputGetState(FTargetIndex, State) <> ERROR_SUCCESS)
+  then
     Exit;
 
   FPrevStatus := FStatus;
@@ -729,10 +760,9 @@ begin
       Ids := Ids + [FDeviceInfos[i].FIndex];
 
   var CurrentIds: TArray<Integer>;
-  var State: TXInputState;
 
   for var i := 0 to 3 do
-    if XInputGetState(i, State) = ERROR_SUCCESS then
+    if IsConnected(i) then
       CurrentIds := CurrentIds + [i];
 
   Result := Length(CurrentIds) <> Length(Ids);
@@ -762,7 +792,7 @@ begin
   end;
 
   if Result then
-    UpdateDeviceList;
+    UpdateGamePadInfo;
   {$ENDIF}
 
   {$IFDEF USE_GAMEINPUT}
@@ -863,6 +893,7 @@ begin
   inherited;
 
   FControllerId := '';
+  FTargetIndex := -1;
   {$IFDEF USE_GAMEINPUT}
   FTarget := nil;
   {$ENDIF}
@@ -924,9 +955,18 @@ begin
   Result := (AButton in FPrevStatus) and not (AButton in FStatus);
 end;
 
+function TWinGamePad.IsConnected(const AIndex: Integer): Boolean;
+begin
+  var Cap: TXInputCapabilities;
+  Result :=
+    (AIndex <> -1) and
+    (XInputGetCapabilities(AIndex, 0, @Cap) = ERROR_SUCCESS);
+end;
+
 procedure TWinGamePad.SetControllerId(const AId: String);
 begin
   FControllerId := AId;
+  FTargetIndex := -1;
 
   for var Info in FDeviceInfos do
   begin
@@ -1025,19 +1065,23 @@ begin
   {$IFDEF USE_XINPUT}
   FValidDeviceCount := 0;
   for var i := 0 to 3 do
+  begin
     if FDeviceInfos[i].FPadInfo.Valid then
       FValidDeviceCount := i + 1;
+  end;
   {$ENDIF}
 end;
 
 procedure TWinGamePad.UpdateGamePadInfo;
 begin
   UpdateDeviceList;
+  SetControllerId(FControllerId);
 end;
 
 procedure TWinGamePad.Vibrate(
   const ALeftMotor, ARightMotor: Single;
-  const ADuration: Integer);
+  const ADuration: Integer;
+  const AOnComplete: TProc);
 begin
   TThread.CreateAnonymousThread(
     procedure
@@ -1049,12 +1093,14 @@ begin
       Params.wLeftMotorSpeed := Trunc(ALeftMotor * $ffff);
       Params.wRightMotorSpeed := Trunc(ARightMotor * $ffff);
 
-      XInputSetState(FTargetIndex, Params);
+      if FTargetIndex <> -1 then
+        XInputSetState(FTargetIndex, Params);
 
       Sleep(ADuration);
 
       FillChar(Params, SizeOf(Params), 0);
-      XInputSetState(FTargetIndex, Params);
+      if FTargetIndex <> -1 then
+        XInputSetState(FTargetIndex, Params);
       {$ENDIF}
 
       {$IFDEF USE_GAMEINPUT}
@@ -1073,6 +1119,9 @@ begin
         FTarget^.lpVtbl^.SetRumbleState(FTarget, @Params);
       end;
       {$ENDIF}
+
+      if Assigned(AOnComplete) then
+        AOnComplete;
     end
   ).Start;
 end;

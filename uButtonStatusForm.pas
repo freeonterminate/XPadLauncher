@@ -1,4 +1,21 @@
-﻿unit uButtonStatusForm;
+﻿(*
+ * XPad Launcher
+ *
+ * PLATFORMS
+ *   Windows
+ *
+ * LICENSE
+ *   Copyright (c) 2024 HOSOKAWA Jun
+ *   Released under the MIT license
+ *   http://opensource.org/licenses/mit-license.php
+ *
+ * HISTORY
+ *   2024/11/16  Ver 1.0.0  Release
+ *
+ * Programmed by HOSOKAWA Jun (twitter: @pik)
+ *)
+
+unit uButtonStatusForm;
 
 interface
 
@@ -86,7 +103,7 @@ end;
 
 procedure TfrmButtonStatus.animBlurProcess(Sender: TObject);
 const
-  BY = 1.5;
+  BY = 1.25;
   MAX = 2 * BY;
 begin
   var F := (1 + effectBlur.Softness / animBlur.StopValue) * BY;

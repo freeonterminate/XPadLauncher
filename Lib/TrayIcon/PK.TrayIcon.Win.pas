@@ -30,6 +30,8 @@
  *
  * 2018/04/17 Version 1.0.0
  * 2020/11/06 Version 1.1.0  Support Native PopupMenu / Eliminate VCL Components
+ * 2024/11/16 Version 1.2.0  Delete GUID Member (Failed in Windows 11)
+ *
  * Programmed by HOSOKAWA Jun (twitter: @pik)
  *)
 
@@ -63,6 +65,7 @@ uses
   , FMX.Types
   , PK.GUI.NativePopupMenu.Win
   , PK.TrayIcon.Default
+  , PK.Utils.Log
   ;
 
 type
@@ -81,7 +84,6 @@ type
     FHandle: HWND;
     FIcon: HICON;
     FHint: String;
-    FGUID: TGUID;
     FVisible: Boolean;
     FEnabled: Boolean;
     FLButtonPopup: Boolean;
@@ -118,7 +120,6 @@ type
   public
     constructor Create; reintroduce;
     destructor Destroy; override;
-    procedure ApplyGUID(const iGUID: TGUID);
     procedure Apply;
     procedure AssignPopupMenu(const iPopup: TPopupMenu);
     procedure AddMenu(const iText: String; const iEvent: TNotifyEvent);
@@ -170,12 +171,6 @@ end;
 
 procedure TTrayIconWin.Apply;
 begin
-  ApplyGUID(TGUID.Empty);
-end;
-
-procedure TTrayIconWin.ApplyGUID(const iGUID: TGUID);
-begin
-  FGUID := iGUID;
   SetVisible(True);
 end;
 
@@ -404,6 +399,7 @@ end;
 procedure TTrayIconWin.InitNID(var ioNID: TNotifyIconData);
 begin
   ZeroMemory(@ioNID, SizeOf(ioNID));
+
   with ioNID do
   begin
     cbSize := SizeOf;
@@ -411,12 +407,6 @@ begin
     uFlags := NIF_ICON;
     uID := FHandle;
     Wnd := FHandle;
-
-    if not FGUID.IsEmpty then
-    begin
-      guidItem := FGUID;
-      uFlags := uFlags or NIF_GUID;
-    end;
 
     if FHint <> '' then
     begin
@@ -479,13 +469,13 @@ begin
     with NID do
     begin
       uCallbackMessage := IM_NOTIFY;
-      uTimeout := 10000;
-      uVersion := NOTIFYICON_VERSION_4;
-      uFlags := uFlags or NIF_MESSAGE or NIM_SETVERSION;
+      uFlags := uFlags or NIF_MESSAGE;
     end;
 
     if (FVisible) then
-      Shell_NotifyICON(NIM_ADD, @NID)
+    begin
+      Shell_NotifyICON(NIM_ADD, @NID);
+    end
     else
     begin
       NID.uFlags := NID.uFlags and not NIF_GUID;

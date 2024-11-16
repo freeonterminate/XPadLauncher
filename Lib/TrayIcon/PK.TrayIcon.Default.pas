@@ -29,6 +29,9 @@
  *   end;
  *
  * 2018/04/17 Version 1.0.0
+ * 2020/11/06 Version 1.1.0  Support Native PopupMenu / Eliminate VCL Components
+ * 2024/11/16 Version 1.2.0  Delete GUID Member (Failed in Windows 11)
+ *
  * Programmed by HOSOKAWA Jun (twitter: @pik)
  *)
 
@@ -46,7 +49,6 @@ type
   ITrayIcon = interface
     ['{052926DE-A337-4CC0-A9E1-0B1C3EF5FCA2}']
     procedure Apply;
-    procedure ApplyGUID(const iGUID: TGUID);
     procedure AssignPopupMenu(const iPopup: TPopupMenu);
     procedure AddMenu(
       const iName: String;

@@ -1,12 +1,14 @@
 object frmConfig: TfrmConfig
   Left = 0
   Top = 0
+  BorderIcons = [biSystemMenu, biMaximize]
   Caption = 'Config'
-  ClientHeight = 452
+  ClientHeight = 420
   ClientWidth = 800
   Position = ScreenCenter
   StyleBook = styleBlueClear
-  Constraints.MinHeight = 452.000000000000000000
+  FormStyle = StayOnTop
+  Constraints.MinHeight = 420.000000000000000000
   Constraints.MinWidth = 800.000000000000000000
   FormFactor.Width = 320
   FormFactor.Height = 480
@@ -21,7 +23,7 @@ object frmConfig: TfrmConfig
     Padding.Right = 8.000000000000000000
     Padding.Bottom = 8.000000000000000000
     Size.Width = 800.000000000000000000
-    Size.Height = 452.000000000000000000
+    Size.Height = 420.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 0
     object layButtons: TLayout
@@ -30,7 +32,7 @@ object frmConfig: TfrmConfig
       Position.X = 8.000000000000000000
       Position.Y = 44.000000000000000000
       Size.Width = 400.000000000000000000
-      Size.Height = 400.000000000000000000
+      Size.Height = 368.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 0
       TabStop = False
@@ -175,7 +177,7 @@ object frmConfig: TfrmConfig
       object Layout1: TLayout
         Align = Bottom
         Margins.Bottom = -4.000000000000000000
-        Position.Y = 376.000000000000000000
+        Position.Y = 344.000000000000000000
         Size.Width = 400.000000000000000000
         Size.Height = 28.000000000000000000
         Size.PlatformDefault = False
@@ -194,13 +196,13 @@ object frmConfig: TfrmConfig
     object laySequenceBase: TLayout
       Align = Client
       Size.Width = 372.000000000000000000
-      Size.Height = 400.000000000000000000
+      Size.Height = 368.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 1
       object lstbxSequences: TListBox
         Align = Client
         Size.Width = 372.000000000000000000
-        Size.Height = 400.000000000000000000
+        Size.Height = 368.000000000000000000
         Size.PlatformDefault = False
         StyleLookup = 'commandlistboxstyle'
         TabOrder = 0
@@ -209,7 +211,7 @@ object frmConfig: TfrmConfig
         DefaultItemStyles.GroupHeaderStyle = ''
         DefaultItemStyles.GroupFooterStyle = ''
         Viewport.Width = 368.000000000000000000
-        Viewport.Height = 396.000000000000000000
+        Viewport.Height = 364.000000000000000000
         object itemSeqAdd: TListBoxItem
           Size.Width = 368.000000000000000000
           Size.Height = 40.000000000000000000
@@ -800,24 +802,50 @@ object frmConfig: TfrmConfig
       object btnClose: TButton
         Align = Right
         Default = True
+        Padding.Left = 6.000000000000000000
+        Padding.Top = 6.000000000000000000
+        Padding.Right = 4.000000000000000000
+        Padding.Bottom = 6.000000000000000000
+        ModalResult = 1
         Margins.Left = 4.000000000000000000
         Margins.Top = 4.000000000000000000
         Margins.Right = 4.000000000000000000
         Margins.Bottom = 4.000000000000000000
-        Position.X = 660.000000000000000000
+        Position.X = 690.000000000000000000
         Position.Y = 4.000000000000000000
-        Size.Width = 120.000000000000000000
+        Size.Width = 90.000000000000000000
         Size.Height = 24.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 1
-        Text = 'Close and Save'
+        Text = 'OK'
         TextSettings.Trimming = None
-        OnClick = btnCloseClick
+        object Path1: TPath
+          Align = Left
+          Data.Path = {
+            1A0000000000000000800C440000C6430200000000800C449A997E4302000000
+            33B3DF4300000C43020000000000994300000C43020000009A99244300000C43
+            02000000000048429A997E4302000000000048420000C6430200000000004842
+            9A590644020000009A9924430000234402000000000099430000234402000000
+            33B3DF43000023440200000000800C449A5906440200000000800C440000C643
+            0100000000800C440000C6430300000000800C440000C643000000009AD9FA43
+            66269443010000009A59824333530644010000009A5982433353064401000000
+            0180734300A00A44010000009A99DC4266A6D243010000009A1929430040B543
+            010000009A9973430080DA43010000000080DD439A996D43010000009AD9FA43
+            66269443010000009AD9FA4366269443030000009AD9FA4366269443}
+          Fill.Color = claMediumspringgreen
+          HitTest = False
+          Position.X = 6.000000000000000000
+          Position.Y = 6.000000000000000000
+          Size.Width = 12.000000000000000000
+          Size.Height = 12.000000000000000000
+          Size.PlatformDefault = False
+          Stroke.Kind = None
+        end
       end
       object layContollerIndexBase: TLayout
         Align = Client
         Margins.Right = 8.000000000000000000
-        Size.Width = 273.600006103515600000
+        Size.Width = 333.600006103515600000
         Size.Height = 32.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 3
@@ -834,7 +862,7 @@ object frmConfig: TfrmConfig
         object cmbbxControllerIndex: TComboBox
           Align = Client
           Margins.Right = 4.000000000000000000
-          Size.Width = 129.600006103515600000
+          Size.Width = 189.600006103515600000
           Size.Height = 32.000000000000000000
           Size.PlatformDefault = False
           TabOrder = 1
@@ -847,7 +875,7 @@ object frmConfig: TfrmConfig
           Padding.Top = 8.000000000000000000
           Padding.Right = 6.000000000000000000
           Padding.Bottom = 8.000000000000000000
-          Position.X = 211.600006103515600000
+          Position.X = 271.600006103515600000
           Size.Width = 30.000000000000000000
           Size.Height = 32.000000000000000000
           Size.PlatformDefault = False
@@ -856,7 +884,7 @@ object frmConfig: TfrmConfig
           Text = 'btnControllerUpdate'
           TextSettings.Trimming = None
           OnClick = btnControllerUpdateClick
-          object Path1: TPath
+          object pathReload: TPath
             Align = Client
             Data.Path = {
               2800000000000000000000440000404402000000D34DE8430000404402000000
@@ -889,7 +917,7 @@ object frmConfig: TfrmConfig
           Padding.Top = 6.000000000000000000
           Padding.Right = 8.000000000000000000
           Padding.Bottom = 6.000000000000000000
-          Position.X = 241.600006103515600000
+          Position.X = 301.600006103515600000
           Size.Width = 32.000000000000000000
           Size.Height = 32.000000000000000000
           Size.PlatformDefault = False
@@ -926,18 +954,46 @@ object frmConfig: TfrmConfig
         Align = Right
         Cancel = True
         Default = True
+        Padding.Left = 6.000000000000000000
+        Padding.Top = 7.000000000000000000
+        Padding.Right = 2.000000000000000000
+        Padding.Bottom = 5.000000000000000000
+        ModalResult = 2
         Margins.Left = 4.000000000000000000
         Margins.Top = 4.000000000000000000
         Margins.Bottom = 4.000000000000000000
-        Position.X = 536.000000000000000000
+        Position.X = 596.000000000000000000
         Position.Y = 4.000000000000000000
-        Size.Width = 120.000000000000000000
+        Size.Width = 90.000000000000000000
         Size.Height = 24.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 0
-        Text = 'Close no save'
+        Text = 'Cancel'
         TextSettings.Trimming = None
-        OnClick = btnCancelClick
+        object pathCancel: TPath
+          Align = Left
+          Data.Path = {
+            1E0000000000000000800C440000C6430200000000800C449A997E4302000000
+            33B3DF4300000C43020000000000994300000C43020000009A99244300000C43
+            02000000000048429A997E4302000000000048420000C6430200000000004842
+            9A590644020000009A9924430000234402000000000099430000234402000000
+            33B3DF43000023440200000000800C449A5906440200000000800C440000C643
+            0100000000800C440000C6430300000000800C440000C643000000006666B243
+            0000C643010000000080ED43CD8C0044010000009A19D44300400D4401000000
+            000099436666DF4301000000CDCC3B4300400D440100000000000943CD8C0044
+            0100000033337F430000C643010000000000094366E68A4301000000CDCC3B43
+            FFFF624301000000000099439A99AC43010000009A19D4430000634301000000
+            0080ED4366E68A43010000006666B2430000C643010000006666B2430000C643
+            030000006666B2430000C643}
+          Fill.Color = claOrangered
+          HitTest = False
+          Position.X = 6.000000000000000000
+          Position.Y = 7.000000000000000000
+          Size.Width = 12.000000000000000000
+          Size.Height = 12.000000000000000000
+          Size.PlatformDefault = False
+          Stroke.Kind = None
+        end
       end
     end
   end

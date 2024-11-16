@@ -1,4 +1,21 @@
-﻿unit PK.AutoRun.Types;
+﻿(*
+ * AutoRun
+ *
+ * PLATFORMS
+ *   Windows
+ *
+ * LICENSE
+ *   Copyright (c) 2021 HOSOKAWA Jun
+ *   Released under the MIT license
+ *   http://opensource.org/licenses/mit-license.php
+ *
+ * HISTORY
+ *   2017/06/08  Ver 1.0.0  Release
+ *
+ * Programmed by HOSOKAWA Jun (twitter: @pik)
+ *)
+
+unit PK.AutoRun.Types;
 
 interface
 

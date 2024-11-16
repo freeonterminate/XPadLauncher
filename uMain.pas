@@ -1,4 +1,21 @@
-﻿unit uMain;
+﻿(*
+ * XPad Launcher
+ *
+ * PLATFORMS
+ *   Windows
+ *
+ * LICENSE
+ *   Copyright (c) 2024 HOSOKAWA Jun
+ *   Released under the MIT license
+ *   http://opensource.org/licenses/mit-license.php
+ *
+ * HISTORY
+ *   2024/11/16  Ver 1.0.0  Release
+ *
+ * Programmed by HOSOKAWA Jun (twitter: @pik)
+ *)
+
+unit uMain;
 
 interface
 
@@ -34,8 +51,9 @@ type
     procedure imgLogoClick(Sender: TObject);
   private const
     COMMAND_BUFFER_COUNT = 32;
+    COMMAND_LIMIT = 300;
     TIMER_INTERVAL_WAITING = 100;
-    TIMER_INTERVAL_ACTIVE = 50;
+    TIMER_INTERVAL_ACTIVE = 16;
   private var
     FTrayIcon: TTrayIcon;
     FPad: TGamePad;
@@ -78,7 +96,7 @@ begin
   FTrayIcon.LButtonPopup := True;
   FTrayIcon.RegisterIcon('Icon', imgLogo.Bitmap);
   FTrayIcon.ChangeIcon('Icon', 'XPad Launcher');
-  FTrayIcon.Apply('{A4523C1E-210C-48AE-9A3F-00E0E04DB0BB}');
+  FTrayIcon.Apply;
 
   SetBounds(-MaxInt, -MaxInt, 56, 56);
 
@@ -112,7 +130,12 @@ end;
 
 procedure TfrmMain.menuConfigClick(Sender: TObject);
 begin
-  ShowConfig(FPad, imglstButtons);
+  timerUpdate.Enabled := False;
+  try
+    ShowConfig(FPad, imglstButtons);
+  finally
+    timerUpdate.Enabled := True;
+  end;
 end;
 
 procedure TfrmMain.menuEnabledClick(Sender: TObject);
@@ -142,19 +165,21 @@ begin
   if not menuEnabled.IsChecked then
     Exit;
 
+  if not FPad.Available then
+  begin
+    if FPad.CheckController then
+      FPad.ControllerId := Config.ControllerId;
+    Exit;
+  end;
+
   FPad.Check;
   var Status := FPad.NewlyPressedButtons;
 
   if (FCommands[FCommandIndex] = Status) or (Length(Status) < 1) then
-  begin
-    if FPad.CheckController then
-      FPad.ControllerId := Config.ControllerId;
-
     Exit;
-  end;
 
   var Cur: TDateTime := Now;
-  if MilliSecondsBetween(Cur, FPrevTime) > 300 then
+  if MilliSecondsBetween(Cur, FPrevTime) > COMMAND_LIMIT then
   begin
     FCommandIndex := 0;
     //Log.d('Rest');

@@ -1,4 +1,21 @@
-﻿unit PK.Device.GamePad.Types;
+﻿(*
+ * GamePad
+ *
+ * PLATFORMS
+ *   Windows
+ *
+ * LICENSE
+ *   Copyright (c) 2024 HOSOKAWA Jun
+ *   Released under the MIT license
+ *   http://opensource.org/licenses/mit-license.php
+ *
+ * HISTORY
+ *   2024/11/16  Ver 1.0.0  Release
+ *
+ * Programmed by HOSOKAWA Jun (twitter: @pik)
+ *)
+
+unit PK.Device.GamePad.Types;
 
 interface
 
@@ -80,7 +97,8 @@ type
     // 振動させる
     procedure Vibrate(
       const ALeftMotor, ARightMotor: Single;
-      const ADuration: Integer);
+      const ADuration: Integer;
+      const AOnComplete: TProc);
 
     // デッドゾーンを設定する
     procedure SetDeadZone(const ALeft, ARight: Single);
@@ -108,6 +126,9 @@ type
 
     // ゲームパッドの挿抜を確認する（挿抜されていたら UpdateGamePadInfo を呼ぶ）
     function CheckController: Boolean;
+
+    // 有効なゲームパッドが選択されているかを返す
+    function Available: Boolean;
 
     // プロパティ
     property PrevStatus: TGamePadButtons read GetPrevStatus;
@@ -153,9 +174,11 @@ type
       virtual; abstract;
     procedure Vibrate(
       const ALeftMotor, ARightMotor: Single;
-      const ADuration: Integer); virtual; abstract;
+      const ADuration: Integer;
+      const AOnComplete: TProc); virtual; abstract;
     procedure SetDeadZone(const ALeft, ARight: Single); virtual; abstract;
     function CheckController: Boolean; virtual; abstract;
+    function Available: Boolean; virtual; abstract;
   public
     property Status: TGamePadButtons read GetStatus;
     property ControllerId: String read GetControllerId write SetControllerId;

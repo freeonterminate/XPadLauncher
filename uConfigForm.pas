@@ -1,4 +1,21 @@
-﻿unit uConfigForm;
+﻿(*
+ * XPad Launcher
+ *
+ * PLATFORMS
+ *   Windows
+ *
+ * LICENSE
+ *   Copyright (c) 2024 HOSOKAWA Jun
+ *   Released under the MIT license
+ *   http://opensource.org/licenses/mit-license.php
+ *
+ * HISTORY
+ *   2024/11/16  Ver 1.0.0  Release
+ *
+ * Programmed by HOSOKAWA Jun (twitter: @pik)
+ *)
+
+unit uConfigForm;
 
 interface
 
@@ -86,30 +103,32 @@ type
     btnControllerUpdate: TButton;
     btControllerVibe: TButton;
     imgControllerVibeIcon: TImage;
-    Path1: TPath;
+    pathReload: TPath;
     Layout1: TLayout;
     chbxAutoStart: TCheckBox;
     btnCancel: TButton;
+    pathCancel: TPath;
+    Path1: TPath;
     procedure FormDestroy(Sender: TObject);
     procedure timerUpdateTimer(Sender: TObject);
     procedure rectSeqAddButtonMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Single);
-    procedure btnCloseClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure cmbbxControllerIndexChange(Sender: TObject);
     procedure btnControllerUpdateClick(Sender: TObject);
     procedure btControllerVibeClick(Sender: TObject);
     procedure cmbbxControllerIndexPopup(Sender: TObject);
     procedure chbxAutoStartChange(Sender: TObject);
-    procedure btnCancelClick(Sender: TObject);
   private var
     FUpdating: Boolean;
     FPad: TGamePad;
     FImageList: TImageList;
     FCommandFrames: TCommandFrames;
+    FOrgControllerId: String;
   private
     procedure Init(const APad: TGamePad; const AImageList: TImageList);
     procedure UpdateDeviceList;
+    procedure Vibrate(const AProc: TProc);
   public
   end;
 
@@ -146,18 +165,7 @@ type
 
 procedure TfrmConfig.btControllerVibeClick(Sender: TObject);
 begin
-  FPad.Vibrate(1.0, 1.0, 200);
-end;
-
-procedure TfrmConfig.btnCancelClick(Sender: TObject);
-begin
-  Close;
-end;
-
-procedure TfrmConfig.btnCloseClick(Sender: TObject);
-begin
-  FCommandFrames.Save;
-  Close;
+  Vibrate(nil);
 end;
 
 procedure TfrmConfig.btnControllerUpdateClick(Sender: TObject);
@@ -185,8 +193,6 @@ begin
 
   if not FUpdating then
     btControllerVibeClick(nil);
-
-  Config.ControllerId := FPad.ControllerId;
 end;
 
 procedure TfrmConfig.cmbbxControllerIndexPopup(Sender: TObject);
@@ -261,6 +267,14 @@ end;
 procedure TfrmConfig.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   Action := TCloseAction.caFree;
+
+  if ModalResult = mrOK then
+  begin
+    FCommandFrames.Save;
+    Config.ControllerId := FPad.ControllerId;
+  end
+  else
+    FPad.ControllerId := FOrgControllerId;
 end;
 
 procedure TfrmConfig.FormDestroy(Sender: TObject);
@@ -292,7 +306,10 @@ begin
   glpRS.Images := FImageList;
   glpRT.Images := FImageList;
 
-  ClientHeight := Trunc(Constraints.MinHeight - (Height - ClientHeight));
+  var BorderH := Height - ClientHeight;
+  var MinH := Constraints.MinHeight;
+  Constraints.MinHeight := MinH + BorderH;
+  ClientHeight := Trunc(MinH);
 
   chbxAutoStart.IsChecked := TConfig.AutoRun.Registered;
 
@@ -302,9 +319,9 @@ begin
       FImageList,
       lstbxSequences);
 
-  UpdateDeviceList;
+  FOrgControllerId := FPad.ControllerId;
 
-  FPad.ControllerId := Config.ControllerId;
+  UpdateDeviceList;
 
   timerUpdate.Enabled := True;
 end;
@@ -318,6 +335,9 @@ end;
 
 procedure TfrmConfig.timerUpdateTimer(Sender: TObject);
 begin
+  if not FPad.Available then
+    Exit;
+
   var S := FPad.Check;
 
   layButtons.BeginUpdate;
@@ -416,7 +436,7 @@ begin
     try
       cmbbxControllerIndex.Clear;
 
-      var Index := 0;
+      var Index := -1;
       for var i := 0 to FPad.GamePadInfoCount - 1 do
       begin
         var Info := FPad.GamePadInfos[i];
@@ -425,7 +445,7 @@ begin
         if not Info.Valid then
           Caption := '(none)';
 
-        if Info.Id = Config.ControllerId then
+        if Info.Id = FPad.ControllerId then
           Index := i;
 
         cmbbxControllerIndex.Items.Add(Format('#%d - %s', [i + 1, Caption]));
@@ -438,6 +458,11 @@ begin
   finally
     FUpdating := False;
   end;
+end;
+
+procedure TfrmConfig.Vibrate(const AProc: TProc);
+begin
+ FPad.Vibrate(1.0, 1.0, 200, AProc);
 end;
 
 end.

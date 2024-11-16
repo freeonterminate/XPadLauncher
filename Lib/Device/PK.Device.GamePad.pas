@@ -1,4 +1,21 @@
-﻿unit PK.Device.GamePad;
+﻿(*
+ * GamePad
+ *
+ * PLATFORMS
+ *   Windows
+ *
+ * LICENSE
+ *   Copyright (c) 2024 HOSOKAWA Jun
+ *   Released under the MIT license
+ *   http://opensource.org/licenses/mit-license.php
+ *
+ * HISTORY
+ *   2024/11/16  Ver 1.0.0  Release
+ *
+ * Programmed by HOSOKAWA Jun (twitter: @pik)
+ *)
+
+unit PK.Device.GamePad;
 
 interface
 
@@ -31,13 +48,13 @@ type
       override;
     procedure Vibrate(
       const ALeftMotor, ARightMotor: Single;
-      const ADuration: Integer); override;
+      const ADuration: Integer;
+      const AOnComplete: TProc); override;
 
     procedure SetDeadZone(const ALeft, ARight: Single); override;
-
     procedure UpdateGamePadInfo; override;
-
     function CheckController: Boolean; override;
+    function Available: Boolean; override;
   end;
 
 implementation
@@ -50,6 +67,14 @@ uses
   ;
 
 { TGamePad }
+
+function TGamePad.Available: Boolean;
+begin
+  if FIntf = nil then
+    Result := False
+  else
+    Result := FIntf.Available;
+end;
 
 function TGamePad.Check: TGamePadButtons;
 begin
@@ -165,10 +190,11 @@ end;
 
 procedure TGamePad.Vibrate(
   const ALeftMotor, ARightMotor: Single;
-  const ADuration: Integer);
+  const ADuration: Integer;
+  const AOnComplete: TProc);
 begin
   if (FIntf <> nil) and (ADuration > 0) then
-    FIntf.Vibrate(ALeftMotor, ARightMotor, ADuration);
+    FIntf.Vibrate(ALeftMotor, ARightMotor, ADuration, AOnComplete);
 end;
 
 end.

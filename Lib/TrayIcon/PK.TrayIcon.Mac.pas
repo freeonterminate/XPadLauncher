@@ -29,6 +29,9 @@
  *   end;
  *
  * 2018/04/17 Version 1.0.0
+ * 2020/11/06 Version 1.1.0  Support Native PopupMenu / Eliminate VCL Components
+ * 2024/11/16 Version 1.2.0  Delete GUID Member (Failed in Windows 11)
+ *
  * Programmed by HOSOKAWA Jun (twitter: @pik)
  *)
 
@@ -108,7 +111,6 @@ type
   public
     constructor Create; reintroduce;
     destructor Destroy; override;
-    procedure ApplyGUID(const iGUID: TGUID);
     procedure Apply;
     procedure AddMenu(const iText: String; const iEvent: TNotifyEvent);
     procedure EnableMenu(const iText: String; const iEnabled: Boolean);
@@ -172,11 +174,6 @@ end;
 procedure TTrayIconMac.Apply;
 begin
   FStatusItem.setMenu(FMenu);
-end;
-
-procedure TTrayIconMac.ApplyGUID(const iGUID: TGUID);
-begin
-  Apply;
 end;
 
 procedure TTrayIconMac.AssignPopupMenu(const iPopup: TPopupMenu);

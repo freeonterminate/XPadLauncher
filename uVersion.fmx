@@ -4,7 +4,7 @@ object frmVersion: TfrmVersion
   BorderIcons = [biSystemMenu]
   BorderStyle = Single
   Caption = 'XPadLauncher Version'
-  ClientHeight = 240
+  ClientHeight = 224
   ClientWidth = 360
   Position = ScreenCenter
   StyleBook = styleBlueClear
@@ -17,7 +17,7 @@ object frmVersion: TfrmVersion
   object layRoot: TLayout
     Align = Contents
     Size.Width = 360.000000000000000000
-    Size.Height = 240.000000000000000000
+    Size.Height = 224.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 0
     object layTopClient: TLayout
@@ -25,7 +25,7 @@ object frmVersion: TfrmVersion
       Padding.Top = 8.000000000000000000
       Padding.Right = 8.000000000000000000
       Size.Width = 280.000000000000000000
-      Size.Height = 206.000000000000000000
+      Size.Height = 190.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 0
       object lblTitle: TLabel
@@ -48,6 +48,7 @@ object frmVersion: TfrmVersion
           Size.Width = 280.000000000000000000
           Size.Height = 2.000000000000000000
           Size.PlatformDefault = False
+          Stroke.Color = claAqua
         end
       end
       object lblVersion: TLabel
@@ -72,38 +73,34 @@ object frmVersion: TfrmVersion
           'Copryright 2024, piksware.'
           'MIT License.'
           ''
+          'Input Prompts (Pixel art)'
+          'https://kenney.nl/assets/input-prompts'
+          'kenney_input-prompts'
+          ''
           'Winapi.GameInput.pas: translated by Chet.'
           'Chet'
+          'https://github.com/neslib/Chet'
           'Copyright (c) 2018 by Erik van Bilsen'
           ''
           'Regal Blue Clear Style'
+          'https://delphistyles.com/fmx/index.html'
           'by DelphiStyles.com')
+        ReadOnly = True
         Align = Client
         Margins.Top = 8.000000000000000000
         Margins.Bottom = 8.000000000000000000
         Size.Width = 272.000000000000000000
-        Size.Height = 108.000000000000000000
+        Size.Height = 117.000000000000000000
         Size.PlatformDefault = False
         TabOrder = 2
         Viewport.Width = 242.000000000000000000
-        Viewport.Height = 100.000000000000000000
-      end
-      object lblDelphi: TLabel
-        Align = Top
-        Margins.Top = 4.000000000000000000
-        Margins.Bottom = 4.000000000000000000
-        Position.Y = 61.000000000000000000
-        Size.Width = 272.000000000000000000
-        Size.Height = 17.000000000000000000
-        Size.PlatformDefault = False
-        Text = 'Built with Delphi 12.2'
-        TabOrder = 3
+        Viewport.Height = 109.000000000000000000
       end
     end
     object layTopLeft: TLayout
       Align = Left
       Size.Width = 80.000000000000000000
-      Size.Height = 206.000000000000000000
+      Size.Height = 190.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 1
       object imgIcon: TImage
@@ -452,17 +449,32 @@ object frmVersion: TfrmVersion
         Margins.Left = 8.000000000000000000
         Margins.Top = 8.000000000000000000
         Margins.Right = 8.000000000000000000
-        Margins.Bottom = 8.000000000000000000
+        Margins.Bottom = 4.000000000000000000
         Position.X = 8.000000000000000000
         Position.Y = 88.000000000000000000
         Size.Width = 64.000000000000000000
         Size.Height = 64.000000000000000000
         Size.PlatformDefault = False
       end
+      object lblDelphi: TLabel
+        Align = Top
+        AutoSize = True
+        Margins.Left = 8.000000000000000000
+        Margins.Right = 8.000000000000000000
+        Margins.Bottom = 4.000000000000000000
+        Position.X = 8.000000000000000000
+        Position.Y = 156.000000000000000000
+        Size.Width = 64.000000000000000000
+        Size.Height = 32.000000000000000000
+        Size.PlatformDefault = False
+        TextSettings.HorzAlign = Center
+        Text = 'Built with Delphi 12.2'
+        TabOrder = 3
+      end
     end
     object layClientButtonBase: TLayout
       Align = Bottom
-      Position.Y = 206.000000000000000000
+      Position.Y = 190.000000000000000000
       Size.Width = 360.000000000000000000
       Size.Height = 34.000000000000000000
       Size.PlatformDefault = False
@@ -27961,7 +27973,7 @@ object frmVersion: TfrmVersion
           00000000000000C804401453697A652E506C6174666F726D44656661756C7408
           0756697369626C650800000000}
       end>
-    Left = 28
-    Top = 168
+    Left = 276
+    Top = 104
   end
 end

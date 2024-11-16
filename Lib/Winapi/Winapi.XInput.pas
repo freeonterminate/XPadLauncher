@@ -1,4 +1,21 @@
-﻿unit Winapi.XInput;
+﻿(*
+ * Windows XInput
+ *
+ * PLATFORMS
+ *   Windows
+ *
+ * LICENSE
+ *   Copyright (c) 2024 HOSOKAWA Jun
+ *   Released under the MIT license
+ *   http://opensource.org/licenses/mit-license.php
+ *
+ * HISTORY
+ *   2024/11/03  Ver 1.0.0  Release
+ *
+ * Programmed by HOSOKAWA Jun (twitter: @pik)
+ *)
+
+unit Winapi.XInput;
 
 interface
 
@@ -37,6 +54,7 @@ type
     Gamepad: TXInputGamePad;
     Vibration: TXInputVibration;
   end;
+  PXInputCapabilities = ^TXInputCapabilities;
 
   TXInputCapabilitiesEx = packed record
     Capabilities: TXInputCapabilities;
@@ -80,6 +98,12 @@ function XInputSetState(
   dwUserIndex: DWORD;
   var pVibration: TXInputVibration): HRESULT; stdcall;
   external XINPUT_DLL name 'XInputSetState';
+
+function XInputGetCapabilities(
+  dwUserIndex: DWORD;
+  dwFlags: DWORD;
+  pCapabilitiesEx: PXInputCapabilities): HRESULT; stdcall;
+  external XINPUT_DLL name 'XInputGetCapabilities';
 
 {$WARNINGS OFF}
 function XInputGetCapabilitiesEx(
