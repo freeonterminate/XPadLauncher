@@ -6,6 +6,7 @@ object frmInputCommand: TfrmInputCommand
   Caption = 'Input Command '
   ClientHeight = 112
   ClientWidth = 468
+  Position = OwnerFormCenter
   FormStyle = StayOnTop
   FormFactor.Width = 320
   FormFactor.Height = 480
@@ -185,7 +186,6 @@ object frmInputCommand: TfrmInputCommand
       object btnCancel: TButton
         Align = Right
         Cancel = True
-        Default = True
         ModalResult = 2
         Position.X = 364.000000000000000000
         Position.Y = 4.000000000000000000
@@ -199,7 +199,7 @@ object frmInputCommand: TfrmInputCommand
       end
       object btnOK: TButton
         Align = Right
-        Cancel = True
+        Default = True
         ModalResult = 1
         Margins.Right = 8.000000000000000000
         Position.X = 256.000000000000000000

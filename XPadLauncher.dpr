@@ -3,12 +3,15 @@
 uses
   System.StartUpCopy,
   FMX.Forms,
-  uConfigForm in 'uConfigForm.pas' {frmConfig},
   uMain in 'uMain.pas' {frmMain},
+  uButtonStatusForm in 'uButtonStatusForm.pas' {frmButtonStatus},
+  uConfigForm in 'uConfigForm.pas' {frmConfig},
   uCommandInputForm in 'uCommandInputForm.pas' {frmInputCommand},
   uCommandFrame in 'uCommandFrame.pas' {frameCommand: TFrame},
-  uButtonStatusForm in 'uButtonStatusForm.pas' {frmButtonStatus},
+  uVersion in 'uVersion.pas' {frmVersion},
   uCommandUtils in 'uCommandUtils.pas',
+  uConfig in 'uConfig.pas',
+  uMisc in 'uMisc.pas',
   PK.Device.GamePad.Types in 'Lib\Device\PK.Device.GamePad.Types.pas',
   PK.Device.GamePad in 'Lib\Device\PK.Device.GamePad.pas',
   PK.Device.GamePad.Win in 'Lib\Device\PK.Device.GamePad.Win.pas',
@@ -22,15 +25,16 @@ uses
   PK.TrayIcon.Mac in 'Lib\TrayIcon\PK.TrayIcon.Mac.pas',
   PK.TrayIcon in 'Lib\TrayIcon\PK.TrayIcon.pas',
   PK.GUI.NativePopupMenu.Win in 'Lib\GUI\PK.GUI.NativePopupMenu.Win.pas',
-  uConfig in 'uConfig.pas',
   PK.Utils.ImageListHelper in 'Lib\Utils\PK.Utils.ImageListHelper.pas',
   PK.GUI.DarkMode.Win in 'Lib\GUI\PK.GUI.DarkMode.Win.pas',
   PK.Graphic.BitmapCodecManagerHelper in 'Lib\Graphics\PK.Graphic.BitmapCodecManagerHelper.pas',
-  uMisc in 'uMisc.pas',
   PK.Utils.ScreenHelper in 'Lib\Utils\PK.Utils.ScreenHelper.pas',
   PK.HardInfo.WMI.Win in 'Lib\HardInfo\PK.HardInfo.WMI.Win.pas',
   Winapi.GameInput in 'Lib\Winapi\Winapi.GameInput.pas',
-  Winapi.XInput in 'Lib\Winapi\Winapi.XInput.pas';
+  Winapi.XInput in 'Lib\Winapi\Winapi.XInput.pas',
+  PK.AutoRun in 'Lib\AutoRun\PK.AutoRun.Pas',
+  PK.AutoRun.Types in 'Lib\AutoRun\PK.AutoRun.Types.pas',
+  PK.AutoRun.Win in 'Lib\AutoRun\PK.AutoRun.Win.pas';
 
 {$R *.res}
 
@@ -43,7 +47,7 @@ begin
 
       Application.Initialize;
       Application.CreateForm(TfrmMain, frmMain);
-  Application.Run;
+      Application.Run;
     finally
       UnregisterInstance;
     end;

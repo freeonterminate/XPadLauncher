@@ -107,7 +107,7 @@ constructor TfrmInputCommand.CreateWithParam(
   const ACommand: TJsonCommand;
   const ADoneProc: TInputCommandDoneProc);
 begin
-  inherited Create(nil);
+  inherited Create(AParent);
 
   FParent := AParent;
 

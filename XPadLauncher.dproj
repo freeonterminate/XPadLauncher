@@ -4,7 +4,7 @@
         <ProjectVersion>20.2</ProjectVersion>
         <FrameworkType>FMX</FrameworkType>
         <Base>True</Base>
-        <Config Condition="'$(Config)'==''">Debug</Config>
+        <Config Condition="'$(Config)'==''">Release</Config>
         <Platform Condition="'$(Platform)'==''">Win64</Platform>
         <TargetedPlatforms>693267</TargetedPlatforms>
         <AppType>Application</AppType>
@@ -108,7 +108,7 @@
         <Icon_MainIcon>$(BDS)\bin\delphi_PROJECTICON.ico</Icon_MainIcon>
         <Icns_MainIcns>$(BDS)\bin\delphi_PROJECTICNS.icns</Icns_MainIcns>
         <SanitizedProjectName>XPadLauncher</SanitizedProjectName>
-        <DCC_UnitSearchPath>.\Lib;.\Lib\Device;.\Lib\Graphics;.\Lib\GUI;.\Lib\TrayIcon;.\Lib\Utils;.\Lib\HardInfo;.\Lib\Winapi;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_UnitSearchPath>.\Lib;.\Lib\AutoRun;.\Lib\Device;.\Lib\Graphics;.\Lib\GUI;.\Lib\TrayIcon;.\Lib\Utils;.\Lib\HardInfo;.\Lib\Winapi;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Base_Android)'!=''">
         <DCC_UsePackage>fmx;emshosting;DbxCommonDriver;bindengine;IndyIPCommon;emsclient;FireDACCommonDriver;IndyProtocols;IndyIPClient;dbxcds;FmxTeeUI;emsedge;bindcompfmx;FireDACSqliteDriver;DbxClientDriver;soapmidas;fmxFireDAC;dbexpress;inet;DataSnapCommon;fmxase;dbrtl;FireDACDBXDriver;CustomIPTransport;DBXInterBaseDriver;IndySystem;bindcomp;FireDACCommon;emsserverresource;inetstn;IndyCore;RESTBackendComponents;bindcompdbx;rtl;RESTComponents;DBXSqliteDriver;IndyIPServer;dsnapxml;DataSnapClient;DataSnapProviderClient;DataSnapFireDAC;emsclientfiredac;FireDAC;FireDACDSDriver;xmlrtl;tethering;dsnap;CloudService;DataSnapNativeClient;FMXTee;soaprtl;soapserver;FireDACIBDriver;$(DCC_UsePackage)</DCC_UsePackage>
@@ -260,7 +260,7 @@
         <DCC_Namespace>Winapi;System.Win;Data.Win;Datasnap.Win;Web.Win;Soap.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
         <BT_BuildType>Debug</BT_BuildType>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
-        <VerInfo_Keys>CompanyName=;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProgramID=com.embarcadero.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=piksware;FileDescription=$(MSBuildProjectName);FileVersion=1.0.0.0;InternalName=XPadLauncher;LegalCopyright=Copyright 2024, piksware.;LegalTrademarks=XPadLauncher;OriginalFilename=XPadLauncher.exe;ProgramID=com.piksware.$(MSBuildProjectName);ProductName=$(MSBuildProjectName);ProductVersion=1.0.0.0;Comments=App Launcher with GamePad.</VerInfo_Keys>
         <VerInfo_Locale>1033</VerInfo_Locale>
         <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
         <UWP_DelphiLogo44>$(BDS)\bin\Artwork\Windows\UWP\delphi_UwpDefault_44.png</UWP_DelphiLogo44>
@@ -288,6 +288,7 @@
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
         <VerInfo_Locale>1033</VerInfo_Locale>
+        <Icon_MainIcon>Images\Icon\XPadLauncherIcon.ico</Icon_MainIcon>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
@@ -305,11 +306,14 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="uConfigForm.pas">
-            <Form>frmConfig</Form>
-        </DCCReference>
         <DCCReference Include="uMain.pas">
             <Form>frmMain</Form>
+        </DCCReference>
+        <DCCReference Include="uButtonStatusForm.pas">
+            <Form>frmButtonStatus</Form>
+        </DCCReference>
+        <DCCReference Include="uConfigForm.pas">
+            <Form>frmConfig</Form>
         </DCCReference>
         <DCCReference Include="uCommandInputForm.pas">
             <Form>frmInputCommand</Form>
@@ -318,10 +322,12 @@
             <Form>frameCommand</Form>
             <DesignClass>TFrame</DesignClass>
         </DCCReference>
-        <DCCReference Include="uButtonStatusForm.pas">
-            <Form>frmButtonStatus</Form>
+        <DCCReference Include="uVersion.pas">
+            <Form>frmVersion</Form>
         </DCCReference>
         <DCCReference Include="uCommandUtils.pas"/>
+        <DCCReference Include="uConfig.pas"/>
+        <DCCReference Include="uMisc.pas"/>
         <DCCReference Include="Lib\Device\PK.Device.GamePad.Types.pas"/>
         <DCCReference Include="Lib\Device\PK.Device.GamePad.pas"/>
         <DCCReference Include="Lib\Device\PK.Device.GamePad.Win.pas"/>
@@ -335,15 +341,16 @@
         <DCCReference Include="Lib\TrayIcon\PK.TrayIcon.Mac.pas"/>
         <DCCReference Include="Lib\TrayIcon\PK.TrayIcon.pas"/>
         <DCCReference Include="Lib\GUI\PK.GUI.NativePopupMenu.Win.pas"/>
-        <DCCReference Include="uConfig.pas"/>
         <DCCReference Include="Lib\Utils\PK.Utils.ImageListHelper.pas"/>
         <DCCReference Include="Lib\GUI\PK.GUI.DarkMode.Win.pas"/>
         <DCCReference Include="Lib\Graphics\PK.Graphic.BitmapCodecManagerHelper.pas"/>
-        <DCCReference Include="uMisc.pas"/>
         <DCCReference Include="Lib\Utils\PK.Utils.ScreenHelper.pas"/>
         <DCCReference Include="Lib\HardInfo\PK.HardInfo.WMI.Win.pas"/>
         <DCCReference Include="Lib\Winapi\Winapi.GameInput.pas"/>
         <DCCReference Include="Lib\Winapi\Winapi.XInput.pas"/>
+        <DCCReference Include="Lib\AutoRun\PK.AutoRun.Pas"/>
+        <DCCReference Include="Lib\AutoRun\PK.AutoRun.Types.pas"/>
+        <DCCReference Include="Lib\AutoRun\PK.AutoRun.Win.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

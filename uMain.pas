@@ -23,9 +23,6 @@ type
     imglstButtons: TImageList;
     imgLogo: TImage;
     timerUpdate: TTimer;
-    Button1: TButton;
-    menuUpdate: TMenuItem;
-    menuSep3: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure menuExitClick(Sender: TObject);
     procedure menuConfigClick(Sender: TObject);
@@ -33,8 +30,8 @@ type
     procedure FormShow(Sender: TObject);
     procedure timerUpdateTimer(Sender: TObject);
     procedure menuEnabledClick(Sender: TObject);
-    procedure Button1Click(Sender: TObject);
-    procedure menuUpdateClick(Sender: TObject);
+    procedure menuVersionClick(Sender: TObject);
+    procedure imgLogoClick(Sender: TObject);
   private const
     COMMAND_BUFFER_COUNT = 32;
     TIMER_INTERVAL_WAITING = 100;
@@ -63,14 +60,10 @@ uses
   {$ENDIF}
   , uConfigForm
   , uButtonStatusForm
+  , uVersion
   , uMisc
   , PK.Utils.Log
   ;
-
-procedure TfrmMain.Button1Click(Sender: TObject);
-begin
-  Close;
-end;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
@@ -87,11 +80,16 @@ begin
   FTrayIcon.ChangeIcon('Icon', 'XPad Launcher');
   FTrayIcon.Apply('{A4523C1E-210C-48AE-9A3F-00E0E04DB0BB}');
 
-  imgLogo.Visible := False;
+  SetBounds(-MaxInt, -MaxInt, 56, 56);
 
-  {$IFDEF RELEASE}
-  SetBounds(-MaxInt, -MaxInt, 128, 128);
-  {$ENDIF}
+  if Config.IsFirstRun then
+    TThread.ForceQueue(
+      nil,
+      procedure
+      begin
+        menuConfigClick(nil);
+      end
+    );
 
   timerUpdate.Enabled := True;
 end;
@@ -104,11 +102,12 @@ end;
 
 procedure TfrmMain.FormShow(Sender: TObject);
 begin
-  SetBounds(0, 0, 128, 128);
-
-  {$IFDEF RELEASE}
   FTrayIcon.HideTaskbar;
-  {$ENDIF}
+end;
+
+procedure TfrmMain.imgLogoClick(Sender: TObject);
+begin
+  Close;
 end;
 
 procedure TfrmMain.menuConfigClick(Sender: TObject);
@@ -133,9 +132,9 @@ begin
   );
 end;
 
-procedure TfrmMain.menuUpdateClick(Sender: TObject);
+procedure TfrmMain.menuVersionClick(Sender: TObject);
 begin
-  FPad.UpdateGamePadInfo;
+  ShowVersion;
 end;
 
 procedure TfrmMain.timerUpdateTimer(Sender: TObject);
@@ -203,6 +202,9 @@ begin
   begin
     var Seqs := Config.Sequence[i];
     var LenSeqs := Length(Seqs);
+
+    if LenSeqs = 0 then
+      Continue;
 
     for var n := 0 to FCommandIndex - LenSeqs + 1 do
     begin

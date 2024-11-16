@@ -65,27 +65,51 @@ type
 
   IGamePad = interface
   ['{80E4879F-7D6E-418A-A783-1FD39C519EFC}']
+    // ゲームパッドの入力を得る
     function Check: TGamePadButtons;
+
+    // ゲームパッドのスティックの値を得る
     function CheckStick(const AThumb: TGamePadButton): TPointF;
+
+    // ゲームパッドのトリガーの値を得る
     function CheckTrigger(const AThumb: TGamePadButton): Single;
+
+    // ボタンがクリック（押して離されたか）を判定
     function IsClicked(const AButton: TGamePadButton): Boolean;
+
+    // 振動させる
     procedure Vibrate(
       const ALeftMotor, ARightMotor: Single;
       const ADuration: Integer);
 
+    // デッドゾーンを設定する
     procedure SetDeadZone(const ALeft, ARight: Single);
 
+    // １つ前のボタンの状態を返す
     function GetPrevStatus: TGamePadButtons;
+
+    // Check を呼んだ時の入力を返す
     function GetStatus: TGamePadButtons;
 
+    // ゲームパッドの固有値をセットする
     procedure SetControllerId(const AId: String);
+
+    // ゲームパッドの固有値を返す
     function GetControllerId: String;
 
+    // ゲームパッドの数を返す
     function GetGamePadInfoCount: Integer;
+
+    // ゲームパッドの情報を返す
     function GetGamePadInfos(const AIndex: Integer): TGamePadInfo;
+
+    // ゲームパッドの情報を更新する
     procedure UpdateGamePadInfo;
+
+    // ゲームパッドの挿抜を確認する（挿抜されていたら UpdateGamePadInfo を呼ぶ）
     function CheckController: Boolean;
 
+    // プロパティ
     property PrevStatus: TGamePadButtons read GetPrevStatus;
     property Status: TGamePadButtons read GetStatus;
     property ControllerId: String read GetControllerId write SetControllerId;
@@ -140,10 +164,12 @@ type
     property GamePadInfos[const AIndex: Integer]: TGamePadInfo
       read GetGamePadInfos;
 
+    // ボタンの押下値を配列で返す
     property
       StatusAsArray[const AStatus: TGamePadButtons]: TGamePadButtonArray
       read GetStatusAsArray;
 
+    // 新たに押されたボタンを配列で返す
     property NewlyPressedButtons: TGamePadButtonArray
       read GetNewlyPressedButtons;
   end;

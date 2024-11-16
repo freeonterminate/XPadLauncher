@@ -7,6 +7,7 @@ uses
   , System.Classes
   , System.JSON.Serializers
   , FMX.Graphics
+  , PK.AutoRun
   , PK.Device.GamePad.Types
   ;
 
@@ -32,6 +33,7 @@ type
   TConfig = class
   private class var
     FInstance: TConfig;
+    FAutoRun: TAutoRun;
   public
     class constructor CreateClass;
     class destructor DestroyClass;
@@ -40,6 +42,7 @@ type
     FItems: TArray<TJsonCommand>;
     FSeqs: TArray<TArray<TArray<TGamePadButton>>>;
     FControllerId: String;
+    FIsFirstRun: Boolean;
   private
     function GetCount: Integer;
     function GetItems(const AIndex: Integer): TJsonCommand;
@@ -51,12 +54,15 @@ type
       const ASequence: TSequence): TJsonCommand;
     procedure Remove(const AInfo: TJsonCommand);
     procedure Clear;
+    function ExistsConfigJson: Boolean;
     procedure Save;
     procedure Load;
     property Count: Integer read GetCount;
     property Items[const AIndex: Integer]: TJsonCommand read GetItems; default;
     property Sequence[const AIndex: Integer]: TSequence read GetSequence;
     property ControllerId: String read FControllerId write FControllerId;
+    property IsFirstRun: Boolean read FIsFirstRun;
+    class property AutoRun: TAutoRun read FAutoRun;
   end;
 
 function Config: TConfig;
@@ -188,15 +194,22 @@ end;
 class constructor TConfig.CreateClass;
 begin
   FInstance := TConfig.Create;
+  FInstance.FIsFirstRun := not FInstance.ExistsConfigJson;
   FInstance.Load;
+  FAutoRun := TAutoRun.Create('XPadLauncher');
 end;
 
 class destructor TConfig.DestroyClass;
 begin
+  FAutoRun.Free;
   FInstance.Save;
   FInstance.Free;
 end;
 
+function TConfig.ExistsConfigJson: Boolean;
+begin
+  Result := TFile.Exists(GetConfigFilePath);
+end;
 class function TConfig.GetConfigFilePath: String;
 begin
   Result :=
@@ -230,13 +243,12 @@ end;
 
 procedure TConfig.Load;
 begin
-  var Path := GetConfigFilePath;
-
   SetLength(FItems, 0);
 
-  if not TFile.Exists(Path) then
+  if not ExistsConfigJson then
     Exit;
 
+  var Path := GetConfigFilePath;
   var Json := TFile.ReadAllText(Path, TEncoding.UTF8);
   if Json.IsEmpty then
     Exit;

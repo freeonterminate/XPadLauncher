@@ -28,7 +28,7 @@ type
   TfrmConfig = class(TForm)
     timerUpdate: TTimer;
     glpA: TGlyph;
-    styleAir: TStyleBook;
+    styleBlueClear: TStyleBook;
     glpB: TGlyph;
     glpX: TGlyph;
     glpY: TGlyph;
@@ -87,6 +87,9 @@ type
     btControllerVibe: TButton;
     imgControllerVibeIcon: TImage;
     Path1: TPath;
+    Layout1: TLayout;
+    chbxAutoStart: TCheckBox;
+    btnCancel: TButton;
     procedure FormDestroy(Sender: TObject);
     procedure timerUpdateTimer(Sender: TObject);
     procedure rectSeqAddButtonMouseDown(Sender: TObject; Button: TMouseButton;
@@ -97,6 +100,8 @@ type
     procedure btnControllerUpdateClick(Sender: TObject);
     procedure btControllerVibeClick(Sender: TObject);
     procedure cmbbxControllerIndexPopup(Sender: TObject);
+    procedure chbxAutoStartChange(Sender: TObject);
+    procedure btnCancelClick(Sender: TObject);
   private var
     FUpdating: Boolean;
     FPad: TGamePad;
@@ -144,6 +149,11 @@ begin
   FPad.Vibrate(1.0, 1.0, 200);
 end;
 
+procedure TfrmConfig.btnCancelClick(Sender: TObject);
+begin
+  Close;
+end;
+
 procedure TfrmConfig.btnCloseClick(Sender: TObject);
 begin
   FCommandFrames.Save;
@@ -153,6 +163,14 @@ end;
 procedure TfrmConfig.btnControllerUpdateClick(Sender: TObject);
 begin
   UpdateDeviceList;
+end;
+
+procedure TfrmConfig.chbxAutoStartChange(Sender: TObject);
+begin
+  if chbxAutoStart.IsChecked then
+    TConfig.AutoRun.Register
+  else
+    TConfig.AutoRun.Unregister;
 end;
 
 procedure TfrmConfig.cmbbxControllerIndexChange(Sender: TObject);
@@ -273,6 +291,10 @@ begin
   glpRB.Images := FImageList;
   glpRS.Images := FImageList;
   glpRT.Images := FImageList;
+
+  ClientHeight := Trunc(Constraints.MinHeight - (Height - ClientHeight));
+
+  chbxAutoStart.IsChecked := TConfig.AutoRun.Registered;
 
   FCommandFrames :=
     TCommandFrames.Create(
