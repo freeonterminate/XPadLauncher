@@ -10,7 +10,7 @@
  *   http://opensource.org/licenses/mit-license.php
  *
  * HISTORY
- *   2024/11/16  Ver 1.0.0  Release
+ *   2024/11/18  Ver 1.0.0  Release
  *
  * Programmed by HOSOKAWA Jun (twitter: @pik)
  *)
@@ -139,12 +139,10 @@ implementation
 {$R *.fmx}
 
 uses
-  System.DateUtils
-  , FMX.Pickers
+  FMX.Pickers
   , PK.Device.GamePad.Types
   , uCommandUtils
   , uConfig
-  , PK.Utils.Log
   ;
 
 procedure ShowConfig(const APad: TGamePad; const AImageList: TImageList);

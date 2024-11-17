@@ -10,7 +10,7 @@
  *   http://opensource.org/licenses/mit-license.php
  *
  * HISTORY
- *   2024/11/16  Ver 1.0.0  Release
+ *   2024/11/18  Ver 1.0.0  Release
  *
  * Programmed by HOSOKAWA Jun (twitter: @pik)
  *)
@@ -20,12 +20,20 @@ unit uMain;
 interface
 
 uses
-  System.SysUtils, System.Types, System.UITypes, System.Classes,
-  System.ImageList,
-  FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, PK.TrayIcon, FMX.Menus,
-  FMX.ImgList, FMX.Objects, FMX.Controls.Presentation, FMX.StdCtrls,
-  PK.Device.GamePad, PK.Device.GamePad.Types,
-  uConfig
+  System.SysUtils
+  , System.Classes
+  , System.ImageList
+  , FMX.Types
+  , FMX.Forms
+  , FMX.Controls
+  , FMX.Graphics
+  , PK.TrayIcon
+  , FMX.Menus
+  , FMX.ImgList
+  , FMX.Objects
+  , PK.Device.GamePad
+  , PK.Device.GamePad.Types
+  , uConfig
   ;
 
 type
@@ -72,15 +80,14 @@ implementation
 
 uses
   System.DateUtils
-  , System.Math
+
   {$IFDEF MSWINDOWS}
-  , PK.GUI.DarkMode.Win
+
   {$ENDIF}
   , uConfigForm
   , uButtonStatusForm
   , uVersion
   , uMisc
-  , PK.Utils.Log
   ;
 
 procedure TfrmMain.FormCreate(Sender: TObject);
@@ -225,7 +232,7 @@ begin
   var Seq: TGamePadButtonArray;
   for var i := 0 to Config.Count - 1 do
   begin
-    var Seqs := Config.Sequence[i];
+    var Seqs := Config.SortedSequence[i];
     var LenSeqs := Length(Seqs);
 
     if LenSeqs = 0 then
@@ -265,7 +272,7 @@ begin
 
     if Found then
     begin
-      FoundIndex := i;
+      FoundIndex := Config.SortedIndexToIndex(i);
       Break;
     end;
   end;
@@ -273,21 +280,34 @@ begin
   if Found then
   begin
     // コマンド発動
-    // Log.d('OK!');
-    var Item := Config.Items[FoundIndex];
-    var Bmp := TBitmap.Create;
-    try
-      Item.GetImage(Bmp);
-      ShowIcon(
-        Bmp,
-        procedure
-        begin
-          Execute(Item.path);
-        end
-      );
-    finally
-      Bmp.Free;
-    end;
+    TThread.CreateAnonymousThread(
+      procedure
+      begin
+        Sleep(100);
+
+        TThread.Synchronize(
+          nil,
+          procedure
+          begin
+            var Item := Config.Items[FoundIndex];
+            var Bmp := TBitmap.Create;
+            try
+              Item.GetImage(Bmp);
+              ShowIcon(
+                Bmp,
+                procedure
+                begin
+                  Execute(Item.path);
+                end
+              );
+            finally
+              Bmp.Free;
+            end;
+          end
+        );
+      end
+    ).Start;
+
     FCommandIndex := 0;
     timerUpdate.Interval := TIMER_INTERVAL_WAITING;
   end;

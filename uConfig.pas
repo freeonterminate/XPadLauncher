@@ -10,7 +10,7 @@
  *   http://opensource.org/licenses/mit-license.php
  *
  * HISTORY
- *   2024/11/16  Ver 1.0.0  Release
+ *   2024/11/18  Ver 1.0.0  Release
  *
  * Programmed by HOSOKAWA Jun (twitter: @pik)
  *)
@@ -57,13 +57,16 @@ type
     class function GetConfigFilePath: String;
   private var
     FItems: TArray<TJsonCommand>;
-    FSeqs: TArray<TArray<TArray<TGamePadButton>>>;
+    FSeqs: TSequenceArray;
+    FSortedSeqs: TSequenceArray;
     FControllerId: String;
     FIsFirstRun: Boolean;
   private
+    procedure CreateSortedSeqs;
     function GetCount: Integer;
     function GetItems(const AIndex: Integer): TJsonCommand;
     function GetSequence(const AIndex: Integer): TSequence;
+    function GetSortedSequence(const AIndex: Integer): TSequence;
   public
     function Add(
       const AName, APath: String;
@@ -74,9 +77,12 @@ type
     function ExistsConfigJson: Boolean;
     procedure Save;
     procedure Load;
+    function SortedIndexToIndex(const ASortedIndex: Integer): Integer;
     property Count: Integer read GetCount;
     property Items[const AIndex: Integer]: TJsonCommand read GetItems; default;
     property Sequence[const AIndex: Integer]: TSequence read GetSequence;
+    property SortedSequence[const AIndex: Integer]: TSequence
+      read GetSortedSequence;
     property ControllerId: String read FControllerId write FControllerId;
     property IsFirstRun: Boolean read FIsFirstRun;
     class property AutoRun: TAutoRun read FAutoRun;
@@ -88,6 +94,8 @@ implementation
 
 uses
   System.IOUtils
+  , System.Generics.Collections
+  , System.Generics.Defaults
   , System.NetEncoding
   , System.JSON.Types
   {$IFDEF MSWINDOWS}
@@ -200,12 +208,14 @@ begin
 
   FItems := FItems + [Result];
   FSeqs := FSeqs + [ASequence];
+  CreateSortedSeqs;
 end;
 
 procedure TConfig.Clear;
 begin
   SetLength(FItems, 0);
   SetLength(FSeqs, 0);
+  SetLength(FSortedSeqs, 0);
 end;
 
 class constructor TConfig.CreateClass;
@@ -214,6 +224,27 @@ begin
   FInstance.FIsFirstRun := not FInstance.ExistsConfigJson;
   FInstance.Load;
   FAutoRun := TAutoRun.Create('XPadLauncher');
+end;
+
+procedure TConfig.CreateSortedSeqs;
+begin
+  SetLength(FSortedSeqs, 0);
+
+  var Len := Length(FSeqs);
+  SetLength(FSortedSeqs, Len);
+  //TArray.Copy<TSequenceArray>(FSeqs, FSortedSeqs, 0, 0, Len);
+  for var i := 0 to High(FSeqs) do
+    FSortedSeqs[i] := FSeqs[i];
+
+  TArray.Sort<TSequence>(
+    FSortedSeqs,
+    TComparer<TSequence>.Construct(
+      function(const L, R: TSequence): Integer
+      begin
+        Result := Length(R) - Length(L);
+      end
+    )
+  );
 end;
 
 class destructor TConfig.DestroyClass;
@@ -254,6 +285,14 @@ function TConfig.GetSequence(const AIndex: Integer): TSequence;
 begin
   if (AIndex > -1) and (AIndex < Length(FSeqs)) then
     Result := FSeqs[AIndex]
+  else
+    FillChar(Result, SizeOf(Result), 0);
+end;
+
+function TConfig.GetSortedSequence(const AIndex: Integer): TSequence;
+begin
+  if (AIndex > -1) and (AIndex < Length(FSeqs)) then
+    Result := FSortedSeqs[AIndex]
   else
     FillChar(Result, SizeOf(Result), 0);
 end;
@@ -301,6 +340,10 @@ begin
     end;
   end;
 
+  CreateSortedSeqs;
+
+  // 確認
+  {
   var SB := TStringBuilder.Create;
   try
     SB.Append(sLineBreak);
@@ -327,6 +370,7 @@ begin
   finally
     SB.Free;
   end;
+  // }
 end;
 
 procedure TConfig.Remove(const AInfo: TJsonCommand);
@@ -372,6 +416,17 @@ begin
     end;
   except
   end;
+end;
+
+function TConfig.SortedIndexToIndex(const ASortedIndex: Integer): Integer;
+begin
+  Result := -1;
+  for var i := 0 to High(FSeqs) do
+    if FSortedSeqs[ASortedIndex] = FSeqs[i] then
+    begin
+      Result := i;
+      Break;
+    end;
 end;
 
 end.

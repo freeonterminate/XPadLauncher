@@ -10,7 +10,7 @@
  *   http://opensource.org/licenses/mit-license.php
  *
  * HISTORY
- *   2024/11/16  Ver 1.0.0  Release
+ *   2024/11/18  Ver 1.0.0  Release
  *
  * Programmed by HOSOKAWA Jun (twitter: @pik)
  *)
@@ -23,9 +23,19 @@ uses
   {$IFDEF MSWINDOWS}
   Winapi.Windows,
   {$ENDIF}
-  System.SysUtils, System.Types, System.UITypes, System.Classes,
-  FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.ImgList,
-  FMX.Objects, PK.Device.GamePad.Types, FMX.Ani, FMX.Effects;
+  System.SysUtils
+  , System.Classes
+  , System.Types
+  , FMX.Controls
+  , FMX.Ani
+  , FMX.Effects
+  , FMX.Forms
+  , FMX.Graphics
+  , FMX.ImgList
+  , FMX.Objects
+  , FMX.Types
+  , PK.Device.GamePad.Types
+  ;
 
 type
   TfrmButtonStatus = class(TForm)
@@ -73,9 +83,7 @@ uses
   uCommandUtils
   {$IFDEF MSWINDOWS}
   , FMX.Platform.Win
-  , FMX.Helpers.Win
   {$ENDIF}
-  , PK.Utils.Log
   ;
 
 procedure ShowIcon(const AIcon: TBitmap; const AProc: TProc);

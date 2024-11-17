@@ -10,7 +10,7 @@
  *   http://opensource.org/licenses/mit-license.php
  *
  * HISTORY
- *   2024/11/16  Ver 1.0.0  Release
+ *   2024/11/18  Ver 1.0.0  Release
  *
  * Programmed by HOSOKAWA Jun (twitter: @pik)
  *)
@@ -20,11 +20,24 @@ unit uCommandFrame;
 interface
 
 uses
-  System.SysUtils, System.Types, System.UITypes, System.Classes,
-  System.Generics.Collections,
-  FMX.Types, FMX.Graphics, FMX.Controls, FMX.Forms, FMX.Dialogs, FMX.StdCtrls,
-  FMX.Objects, FMX.Layouts, FMX.Controls.Presentation, FMX.ImgList, FMX.ListBox,
-  PK.Device.GamePad, PK.Device.GamePad.Types, uConfig;
+  System.SysUtils
+  , System.Types
+  , System.Classes
+  , System.Generics.Collections
+  , FMX.Types
+  , FMX.Graphics
+  , FMX.Controls
+  , FMX.Controls.Presentation
+  , FMX.Forms
+  , FMX.StdCtrls
+  , FMX.Objects
+  , FMX.Layouts
+  , FMX.ImgList
+  , FMX.ListBox
+  , PK.Device.GamePad
+  , PK.Device.GamePad.Types
+  , uConfig
+  ;
 
 type
   TCommandFrames = class;
@@ -107,8 +120,7 @@ implementation
 {$R *.fmx}
 
 uses
-  System.Math
-  , uCommandUtils
+  uCommandUtils
   , uCommandInputForm
   ;
 

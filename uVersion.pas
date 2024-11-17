@@ -10,7 +10,7 @@
  *   http://opensource.org/licenses/mit-license.php
  *
  * HISTORY
- *   2024/11/16  Ver 1.0.0  Release
+ *   2024/11/18  Ver 1.0.0  Release
  *
  * Programmed by HOSOKAWA Jun (twitter: @pik)
  *)
@@ -20,10 +20,15 @@ unit uVersion;
 interface
 
 uses
-  System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
-  FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.Memo.Types,
-  FMX.ScrollBox, FMX.Memo, FMX.StdCtrls, FMX.Objects, FMX.Controls.Presentation,
-  FMX.Layouts;
+  System.Classes
+  , FMX.Types
+  , FMX.Controls
+  , FMX.Forms
+  , FMX.Memo
+  , FMX.StdCtrls
+  , FMX.Objects
+  , FMX.Layouts, FMX.Memo.Types, FMX.ScrollBox, FMX.Controls.Presentation
+  ;
 
 type
   TfrmVersion = class(TForm)

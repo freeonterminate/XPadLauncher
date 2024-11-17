@@ -10,7 +10,7 @@
  *   http://opensource.org/licenses/mit-license.php
  *
  * HISTORY
- *   2024/11/16  Ver 1.0.0  Release
+ *   2024/11/18  Ver 1.0.0  Release
  *
  * Programmed by HOSOKAWA Jun (twitter: @pik)
  *)
@@ -20,10 +20,22 @@ unit uCommandInputForm;
 interface
 
 uses
-  System.SysUtils, System.Types, System.UITypes, System.Classes,
-  FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.Edit,
-  FMX.StdCtrls, FMX.Objects, FMX.Controls.Presentation, FMX.Layouts,
-  uConfig;
+  System.SysUtils
+  , System.Types
+  , System.UITypes
+  , System.Classes
+  , FMX.Types
+  , FMX.Controls
+  , FMX.Forms
+  , FMX.Graphics
+  , FMX.Dialogs
+  , FMX.Edit
+  , FMX.StdCtrls
+  , FMX.Objects
+  , FMX.Controls.Presentation
+  , FMX.Layouts
+  , uConfig
+  ;
 
 type
   TInputCommandDoneProc =
@@ -80,8 +92,6 @@ implementation
 
 uses
   System.IOUtils
-  , PK.Graphic.BitmapCodecManagerHelper
-  , PK.Utils.ScreenHelper
   , uMisc
   ;
 
