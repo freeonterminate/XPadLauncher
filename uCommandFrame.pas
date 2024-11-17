@@ -173,6 +173,7 @@ begin
     begin
       FParent.FItems.Remove(This);
       This.Free;
+      This.FItem.Free;
     end
   );
 end;
