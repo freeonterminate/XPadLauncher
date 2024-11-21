@@ -105,7 +105,7 @@ begin
   FTrayIcon.ChangeIcon('Icon', 'XPad Launcher');
   FTrayIcon.Apply;
 
-  SetBounds(-MaxInt, -MaxInt, 56, 56);
+  SetBounds(-MaxInt, -MaxInt, 1, 1);
 
   if Config.IsFirstRun then
     TThread.ForceQueue(

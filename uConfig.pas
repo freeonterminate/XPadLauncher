@@ -232,7 +232,6 @@ begin
 
   var Len := Length(FSeqs);
   SetLength(FSortedSeqs, Len);
-  //TArray.Copy<TSequenceArray>(FSeqs, FSortedSeqs, 0, 0, Len);
   for var i := 0 to High(FSeqs) do
     FSortedSeqs[i] := FSeqs[i];
 

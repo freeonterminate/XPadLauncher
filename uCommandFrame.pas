@@ -173,7 +173,8 @@ end;
 procedure TframeCommand.AdjustSeqWidth;
 begin
   var Gs := FCommands[FCommands.Count - 1];
-  laySeq.Width := Gs[Gs.Count - 1].BoundsRect.Right;
+  laySeq.Width :=
+    Gs[Gs.Count - 1].BoundsRect.Right + rectSelector.Stroke.Thickness + 4;
 end;
 
 procedure TframeCommand.btnCommandRemoveClick(Sender: TObject);
