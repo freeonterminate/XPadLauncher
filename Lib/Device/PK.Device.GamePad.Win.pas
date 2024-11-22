@@ -35,8 +35,8 @@ uses
   {$IFDEF USE_XINPUT}
   , Winapi.DirectInput
   , WinApi.ActiveX
-  , Winapi.XInput
   {$ENDIF}
+  , Winapi.XInput
   , System.Classes
   , System.SysUtils
   , System.Types
@@ -87,8 +87,10 @@ type
     class constructor CreateClass;
     class destructor DestroyClass;
     class procedure UpdateDeviceList;
+    {$IFDEF USE_XINPUT}
     class function EnumDevicesCallback(
       lpddi: PDIDEVICEINSTANCE; pvRef: Pointer): BOOL; static; stdcall;
+    {$ENDIF}
     {$IFDEF USE_GAMEINPUT}
     class procedure CallbackFunc(
       callbackToken: GameInputCallbackToken;
@@ -158,17 +160,19 @@ uses
   , PK.Utils.Log
   ;
 
+{$IFDEF USE_XINPUT}
 const
   // Dead zone
-  {$IFDEF USE_XINPUT}
   GAMEPAD_LEFT_THUMB_DEADZONE  = 7849;
   GAMEPAD_RIGHT_THUMB_DEADZONE = 8689;
-  {$ENDIF}
+{$ENDIF}
 
-  {$IFDEF USE_GAMEINPUT}
+{$IFDEF USE_GAMEINPUT}
+const
+  // Dead zone
   GAMEPAD_LEFT_THUMB_DEADZONE  = 0.2;
   GAMEPAD_RIGHT_THUMB_DEADZONE = 0.2;
-  {$ENDIF}
+{$ENDIF}
 
 {$IFDEF USE_GAMEINPUT}
 function AppLocalDeviceIDToString(const AID: APP_LOCAL_DEVICE_ID): String;
@@ -214,14 +218,6 @@ begin
     )
   );
   }
-
-  Create(
-    APnPInfos,
-    GPadInfo.vendorId,
-    GPadInfo.productId,
-    AppLocalDeviceIDToString(GPadInfo.deviceId),
-    ''
-  );
 end;
 {$ENDIF}
 
@@ -621,7 +617,7 @@ begin
 
   FGPadState := State;
   var Buttons := UInt32(FGPadState.buttons);
-  Log.d(Buttons.ToHexString(8));
+  //Log.d(Buttons.ToHexString(8));
 
   // Cross Key
   if (Buttons and Ord(GameInputGamepadDPadUp)) <> 0 then
@@ -707,9 +703,9 @@ begin
     Include(Result, TGamePadButton.LStickRU)
   else if IsRD then
     Include(Result, TGamePadButton.LStickRD)
-  else if IsL then
+  else if IsL(LS.X) then
     Include(Result, TGamePadButton.LStickL)
-  else if IsR then
+  else if IsR(LS.X) then
     Include(Result, TGamePadButton.LStickR)
   else if IsU then
     Include(Result, TGamePadButton.LStickU)
@@ -728,9 +724,9 @@ begin
     Include(Result, TGamePadButton.RStickRU)
   else if IsRD then
     Include(Result, TGamePadButton.RStickRD)
-  else if IsL then
+  else if IsL(RS.X) then
     Include(Result, TGamePadButton.RStickL)
-  else if IsR then
+  else if IsR(RS.X) then
     Include(Result, TGamePadButton.RStickR)
   else if IsU then
     Include(Result, TGamePadButton.RStickU)
@@ -786,7 +782,9 @@ begin
   {$ENDIF}
 
   {$IFDEF USE_GAMEINPUT}
+  var C := FDeviceInfos.Count;
   UpdateDeviceList;
+  Result := FDeviceInfos.Count <> C;
   {$ENDIF}
 end;
 
@@ -903,6 +901,7 @@ begin
   UpdateDeviceList;
 end;
 
+{$IFDEF USE_XINPUT}
 class procedure TWinGamePad.CreateDevice(
   const APnPInfos: TPnPInfoArray;
   const AVId, APId: Word;
@@ -943,19 +942,8 @@ begin
     else
       Break;
   end;
-
-  // 見つからなかったら先頭から埋める
-  if not Found then
-    for var i := 0 to 3 do
-    begin
-      if not FDeviceInfos[i].FPadInfo.Valid then
-      begin
-        Info.FIndex := i;
-        FDeviceInfos[i] := Info;
-        Break;
-      end;
-    end;
 end;
+{$ENDIF}
 
 class destructor TWinGamePad.DestroyClass;
 begin
@@ -967,6 +955,7 @@ begin
   {$ENDIF}
 end;
 
+{$IFDEF USE_XINPUT}
 class function TWinGamePad.EnumDevicesCallback(
   lpddi: PDIDEVICEINSTANCE;
   pvRef: Pointer): BOOL;
@@ -996,6 +985,7 @@ begin
 
   Result := DIENUM_CONTINUE; // 列挙を続行
 end;
+{$ENDIF}
 
 function TWinGamePad.GetControllerId: String;
 begin
@@ -1143,14 +1133,12 @@ begin
   {$ENDIF}
 
   {$IFDEF USE_XINPUT}
-  // COMライブラリの初期化
   if Failed(CoInitialize(nil)) then
     Exit;
 
   var DirectInput: IDirectInput8;
 
   try
-    // DirectInput8オブジェクトの作成
     if
       Failed(
         DirectInput8Create(
@@ -1183,8 +1171,8 @@ begin
       Exit;
     end;
   finally
-    DirectInput := nil; // DirectInputオブジェクトの解放
-    CoUninitialize;     // COMのクリーンアップ
+    DirectInput := nil;
+    CoUninitialize;
   end;
 
   FValidDeviceCount := 0;
