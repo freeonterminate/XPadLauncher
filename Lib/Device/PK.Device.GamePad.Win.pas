@@ -10,7 +10,7 @@
  *   http://opensource.org/licenses/mit-license.php
  *
  * HISTORY
- *   2024/11/16  Ver 1.0.0  Release
+ *   2024/11/23  Ver 1.0.0  Release
  *
  * Programmed by HOSOKAWA Jun (twitter: @pik)
  *)
@@ -29,8 +29,14 @@ interface
 
 uses
   Winapi.Windows
+  {$IFDEF USE_GAMEINPUT}
   , Winapi.GameInput
+  {$ENDIF}
+  {$IFDEF USE_XINPUT}
+  , Winapi.DirectInput
+  , WinApi.ActiveX
   , Winapi.XInput
+  {$ENDIF}
   , System.Classes
   , System.SysUtils
   , System.Types
@@ -55,14 +61,24 @@ type
       FPadInfo: TGamePadInfo;
       FIndex: Integer;
     public
+      {$IFDEF USE_GAMEINPUT}
       constructor Create(
         const APnPInfos: TPnPInfoArray;
         const ADevice: PIGameInputDevice);
+      {$ENDIF}
+      {$IFDEF USE_XINPUT}
+      constructor Create(
+        const APnPInfos: TPnPInfoArray;
+        const AVId, APId: Word;
+        const ADeviceId, ACaption: String);
+      {$ENDIF}
     end;
     TDeviceInfos = TList<TDeviceInfo>;
 
   private class var
+    {$IFDEF USE_GAMEINPUT}
     FGameInput: PIGameInput;
+    {$ENDIF}
     FDeviceInfos: TDeviceInfos;
     {$IFDEF USE_XINPUT}
     FValidDeviceCount: Integer;
@@ -71,6 +87,9 @@ type
     class constructor CreateClass;
     class destructor DestroyClass;
     class procedure UpdateDeviceList;
+    class function EnumDevicesCallback(
+      lpddi: PDIDEVICEINSTANCE; pvRef: Pointer): BOOL; static; stdcall;
+    {$IFDEF USE_GAMEINPUT}
     class procedure CallbackFunc(
       callbackToken: GameInputCallbackToken;
       context: Pointer;
@@ -78,17 +97,22 @@ type
       timestamp: UInt64;
       currentStatus: GameInputDeviceStatus;
       previousStatus: GameInputDeviceStatus); static; stdcall;
+    {$ENDIF}
+    {$IFDEF USE_XINPUT}
+    class procedure CreateDevice(
+      const APnPInfos: TPnPInfoArray;
+      const AVId, APId: Word;
+      const ADeviceId, ACaption: String); static; stdcall;
+    {$ENDIF}
   private var
     FControllerId: String;
-    {$IFDEF USE_GAMEINPUT}
-    FTarget: PIGameInputDevice;
-    {$ENDIF}
     FTargetIndex: Integer;
     FStatus: TGamePadButtons;
     FPrevStatus: TGamePadButtons;
     FDeadZoneLeft: Single;
     FDeadZoneRight: Single;
     {$IFDEF USE_GAMEINPUT}
+    FTarget: PIGameInputDevice;
     FGPadState: GameInputGamepadState;
     {$ENDIF}
   private
@@ -146,12 +170,14 @@ const
   GAMEPAD_RIGHT_THUMB_DEADZONE = 0.2;
   {$ENDIF}
 
+{$IFDEF USE_GAMEINPUT}
 function AppLocalDeviceIDToString(const AID: APP_LOCAL_DEVICE_ID): String;
 begin
   Result := '';
   for var i := 0 to High(AID.value) do
     Result := Result + AID.value[i].ToHexString(2);
 end;
+{$ENDIF}
 
 procedure RegisterGamePadWin;
 begin
@@ -169,6 +195,7 @@ end;
 
 { TWinGamePad.TDeviceInfo }
 
+{$IFDEF USE_GAMEINPUT}
 constructor TWinGamePad.TDeviceInfo.Create(
   const APnPInfos: TPnPInfoArray;
   const ADevice: PIGameInputDevice);
@@ -188,15 +215,26 @@ begin
   );
   }
 
-  if GPadInfo.displayName <> nil then
-  begin
-    var Name: String;
-    SetLength(Name, GPadInfo.displayName.sizeInBytes);
-    Move(
-      GPadInfo^.displayName^.data,
-      PChar(Name)^,
-      GPadInfo.displayName.sizeInBytes);
-  end;
+  Create(
+    APnPInfos,
+    GPadInfo.vendorId,
+    GPadInfo.productId,
+    AppLocalDeviceIDToString(GPadInfo.deviceId),
+    ''
+  );
+end;
+{$ENDIF}
+
+{$IFDEF USE_XINPUT}
+constructor TWinGamePad.TDeviceInfo.Create(
+  const APnPInfos: TPnPInfoArray;
+  const AVId, APId: Word;
+  const ADeviceId, ACaption: String);
+begin
+  FPadInfo.Id := ADeviceId;
+  FPadInfo.VendorId := AVId;
+  FPadInfo.ProductId := APId;
+  FPadInfo.Caption := ACaption;
 
   var Target :=
     Format('VID_%.4x&PID_%.4x', [FPadInfo.VendorId, FPadInfo.ProductId]);
@@ -232,7 +270,7 @@ begin
     then
     begin
       DeviceId := Info.FDeviceID;
-      //Log.d(DeviceId);
+      //Log.d('*' + DeviceId);
 
       // Xbox Wiress controller
       if DeviceId.StartsWith('BTHLEDEVICE') then
@@ -244,7 +282,7 @@ begin
         begin
           var Info2 := APnPInfos[j];
 
-          //Log.d('* ' + INfo2.FCaption + ': ' + Info2.FDeviceID);
+          //Log.d('* ' + Info2.FCaption + ': ' + Info2.FDeviceID);
 
           if Info2.FDeviceID.Contains(HIdTarget) then
           begin
@@ -298,6 +336,7 @@ begin
   //Log.d('');
   //Log.d(FPadInfo.Caption + ': ' + DeviceId);
 end;
+{$ENDIF}
 
 { TWinGamePad }
 
@@ -308,6 +347,7 @@ begin
     FTargetIndex := -1;
 end;
 
+{$IFDEF GAMEINPUT}
 class procedure TWinGamePad.CallbackFunc(
   callbackToken: GameInputCallbackToken;
   context: Pointer;
@@ -317,60 +357,10 @@ class procedure TWinGamePad.CallbackFunc(
   previousStatus: GameInputDeviceStatus);
 begin
   var Info := TDeviceInfo.Create(PPnPInfoArray(context)^, device);
-
-  {$IFDEF USE_XINPUT}
-  // Index を決定する
-  var Found := False;
-  var Cap: TXInputCapabilitiesEx;
-
-  var VId := Info.FPadInfo.VendorId;
-  var PId := Info.FPadInfo.ProductId;
-
-  for var i := 0 to 1 do
-  begin
-    for var j := 0 to 3 do
-    begin
-      FillChar(Cap, SizeOf(Cap), 0);
-
-      if
-        Succeeded(XInputGetCapabilitiesEx(1, j, 0, @Cap)) and
-        (Cap.VendorId = VId) and
-        (Cap.ProductId = PId)
-      then
-      begin
-        Info.FIndex := j;
-        FDeviceInfos[j] := Info;
-        Found := True;
-        Break;
-      end;
-    end;
-
-    // Xbox One Controller 対策
-    // Xbox One Controller だったら PId を変えてもう一度
-    if (not Found) and (VId = $045e) and (PId = $02ea) then
-      PId := $02ff
-    else
-      Break;
-  end;
-
-  // 見つからなかったら先頭から埋める
-  if not Found then
-    for var i := 0 to 3 do
-    begin
-      if not FDeviceInfos[i].FPadInfo.Valid then
-      begin
-        Info.FIndex := i;
-        FDeviceInfos[i] := Info;
-        Break;
-      end;
-    end;
-  {$ENDIF}
-
-  {$IFDEF USE_GAMEINPUT}
-  Info.FIndex := FDeviceInfos.Count - 1;
+  Info.FIndex := FDeviceInfos.Count;
   FDeviceInfos.Add(Info);
-  {$ENDIF}
 end;
+{$ENDIF}
 
 function TWinGamePad.Check: TGamePadButtons;
   // Stick
@@ -904,14 +894,107 @@ end;
 
 class constructor TWinGamePad.CreateClass;
 begin
+  {$IFDEF USE_GAMEINPUT}
+  if Failed(GameInputCreate(@FGameInput)) then
+    FGameInput := nil;
+  {$ENDIF}
+
   FDeviceInfos := TDeviceInfos.Create;
   UpdateDeviceList;
+end;
+
+class procedure TWinGamePad.CreateDevice(
+  const APnPInfos: TPnPInfoArray;
+  const AVId, APId: Word;
+  const ADeviceId, ACaption: String);
+begin
+  var Info := TDeviceInfo.Create(APnPInfos, AVid, APid, ADeviceId, ACaption);
+
+  // Index を決定する
+  var Found := False;
+  var Cap: TXInputCapabilitiesEx;
+
+  var VId := Info.FPadInfo.VendorId;
+  var PId := Info.FPadInfo.ProductId;
+
+  for var i := 0 to 1 do
+  begin
+    for var j := 0 to 3 do
+    begin
+      FillChar(Cap, SizeOf(Cap), 0);
+
+      if
+        Succeeded(XInputGetCapabilitiesEx(1, j, 0, @Cap)) and
+        (Cap.VendorId = VId) and
+        (Cap.ProductId = PId)
+      then
+      begin
+        Info.FIndex := j;
+        FDeviceInfos[j] := Info;
+        Found := True;
+        Break;
+      end;
+    end;
+
+    // Xbox One Controller 対策
+    // Xbox One Controller だったら PId を変えてもう一度
+    if (not Found) and (VId = $045e) and (PId = $02ea) then
+      PId := $02ff
+    else
+      Break;
+  end;
+
+  // 見つからなかったら先頭から埋める
+  if not Found then
+    for var i := 0 to 3 do
+    begin
+      if not FDeviceInfos[i].FPadInfo.Valid then
+      begin
+        Info.FIndex := i;
+        FDeviceInfos[i] := Info;
+        Break;
+      end;
+    end;
 end;
 
 class destructor TWinGamePad.DestroyClass;
 begin
   FDeviceInfos.Free;
-  FGameInput^.lpVtbl^.Release(FGameInput);
+
+  {$IFDEF USE_GAMEINPUT}
+  if FGameInput <> nil then
+    FGameInput^.lpVtbl^.Release(FGameInput);
+  {$ENDIF}
+end;
+
+class function TWinGamePad.EnumDevicesCallback(
+  lpddi: PDIDEVICEINSTANCE;
+  pvRef: Pointer): BOOL;
+begin
+  var GUID := TGUID.Create(lpddi.guidProduct.ToString);
+
+  var VendorID := LoWord(GUID.D1);
+  var ProductID := HiWord(GUID.D1);
+
+  var Caption := StrPas(lpddi.tszInstanceName);
+  if Caption.StartsWith('Controller (') then
+    Caption := Caption.Substring(12, Length(Caption) - 14);
+
+  {
+  Log.d(['Device Name: ', lpddi.tszInstanceName, ', ', lpddi.tszProductName]);
+  Log.d(Format('VendorId: %.4x', [VendorID]));
+  Log.d(Format('ProductID: %.4x', [ProductID]));
+  Log.d(['Caption: ', Caption]);
+  }
+
+  CreateDevice(
+    PPnPInfoArray(pvRef)^,
+    VendorID,
+    ProductID,
+    lpddi.guidInstance.ToString,
+    Caption);
+
+  Result := DIENUM_CONTINUE; // 列挙を続行
 end;
 
 function TWinGamePad.GetControllerId: String;
@@ -957,10 +1040,8 @@ end;
 
 function TWinGamePad.IsConnected(const AIndex: Integer): Boolean;
 begin
-  var Cap: TXInputCapabilities;
-  Result :=
-    (AIndex <> -1) and
-    (XInputGetCapabilities(AIndex, 0, @Cap) = ERROR_SUCCESS);
+  var Cap: TXInputState;
+  Result := (AIndex <> -1) and (XInputGetState(AIndex,Cap) = ERROR_SUCCESS);
 end;
 
 procedure TWinGamePad.SetControllerId(const AId: String);
@@ -990,20 +1071,17 @@ begin
 
   {$IFDEF USE_XINPUT}
   FValidDeviceCount := 0;
-  {$ENDIF}
 
-  if FGameInput <> nil then
-    FGameInput^.lpVtbl^.Release(FGameInput);
-
-  if Failed(GameInputCreate(@FGameInput)) then
-    Exit;
-
-  {$IFDEF USE_XINPUT}
   var DeviceInfo: TDeviceInfo;
   DeviceInfo.FPadInfo := GAMEPADINFO_NONE;
 
   for var i := 0 to 3 do
     FDeviceInfos.Add(DeviceInfo);
+  {$ENDIF}
+
+  {$IFDEF USE_GAMEINPUT}
+  if FGameInput = nil then
+    Exit;
   {$ENDIF}
 
   var PnPInfos: TPnPInfoArray;
@@ -1043,12 +1121,16 @@ begin
     end
   );
 
+  {$IFDEF USE_GAMEINPUT}
   var Token: GameInputCallbackToken;
 
   var Res := FGameInput^.lpVtbl^.RegisterDeviceCallback(
     FGameInput,
     nil,
-    GameInputKind.GameInputKindGamepad,
+    GameInputKind(
+      Ord(GameInputKind.GameInputKindGamepad) or
+      Ord(GameInputKind.GameInputKindController)
+    ),
     GameInputDeviceStatus.GameInputDeviceAnyStatus,
     GameInputEnumerationKind.GameInputBlockingEnumeration,
     @PnPInfos,
@@ -1057,12 +1139,54 @@ begin
   );
 
   if Succeeded(Res) then
-  begin
     FGameInput^.lpVtbl^.UnregisterCallback(FGameInput, Token, 5000);
-    SetLength(PnPInfos, 0);
-  end;
+  {$ENDIF}
 
   {$IFDEF USE_XINPUT}
+  // COMライブラリの初期化
+  if Failed(CoInitialize(nil)) then
+    Exit;
+
+  var DirectInput: IDirectInput8;
+
+  try
+    // DirectInput8オブジェクトの作成
+    if
+      Failed(
+        DirectInput8Create(
+          GetModuleHandle(nil),
+          DIRECTINPUT_VERSION,
+          IID_IDirectInput8,
+          DirectInput,
+          nil
+        )
+      )
+    then
+    begin
+      //Log.d('Failed to create DirectInput object');
+      Exit;
+    end;
+
+    // デバイスの列挙
+    if
+      Failed(
+        DirectInput.EnumDevices(
+          DI8DEVCLASS_GAMECTRL,
+          @EnumDevicesCallback,
+          @PnPInfos,
+          DIEDFL_ALLDEVICES
+        )
+      )
+    then
+    begin
+      //Log.d('Failed to enumerate devices');
+      Exit;
+    end;
+  finally
+    DirectInput := nil; // DirectInputオブジェクトの解放
+    CoUninitialize;     // COMのクリーンアップ
+  end;
+
   FValidDeviceCount := 0;
   for var i := 0 to 3 do
   begin
