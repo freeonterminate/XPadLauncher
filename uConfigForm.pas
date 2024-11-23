@@ -336,7 +336,12 @@ end;
 procedure TfrmConfig.timerUpdateTimer(Sender: TObject);
 begin
   if not FPad.Available then
+  begin
+    if FPad.CheckController then
+      UpdateDeviceList;
+
     Exit;
+  end;
 
   var S := FPad.Check;
 

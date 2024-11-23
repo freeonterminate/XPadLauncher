@@ -28492,6 +28492,6 @@ object frmConfig: TfrmConfig
     Filter = 'Exe File (*.exe)|*.exe|All (*.*)|*.*'
     Options = [ofHideReadOnly, ofFileMustExist, ofEnableSizing]
     Left = 536
-    Top = 124
+    Top = 128
   end
 end
