@@ -77,11 +77,6 @@ object frmVersion: TfrmVersion
           'https://kenney.nl/assets/input-prompts'
           'kenney_input-prompts'
           ''
-          'Winapi.GameInput.pas: translated by Chet.'
-          'Chet'
-          'https://github.com/neslib/Chet'
-          'Copyright (c) 2018 by Erik van Bilsen'
-          ''
           'Regal Blue Clear Style'
           'https://delphistyles.com/fmx/index.html'
           'by DelphiStyles.com')
