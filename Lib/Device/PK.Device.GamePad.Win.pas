@@ -100,12 +100,6 @@ type
       currentStatus: GameInputDeviceStatus;
       previousStatus: GameInputDeviceStatus); static; stdcall;
     {$ENDIF}
-    {$IFDEF USE_XINPUT}
-    class procedure CreateDevice(
-      const APnPInfos: TPnPInfoArray;
-      const AVId, APId: Word;
-      const ADeviceId, ACaption: String); static; stdcall;
-    {$ENDIF}
   private var
     FControllerId: String;
     FTargetIndex: Integer;
@@ -209,15 +203,6 @@ begin
   FPadInfo.Id := AppLocalDeviceIDToString(GPadInfo.deviceId);
   FPadInfo.VendorId := GPadInfo.vendorId;
   FPadInfo.ProductId := GPadInfo.productId;
-
-  {
-  Log.d(
-    Format(
-      '%s (%.4x:%.4x)',
-      [FPadInfo.Id, FPadInfo.VendorId, FPadInfo.ProductId]
-    )
-  );
-  }
 end;
 {$ENDIF}
 
@@ -901,50 +886,6 @@ begin
   UpdateDeviceList;
 end;
 
-{$IFDEF USE_XINPUT}
-class procedure TWinGamePad.CreateDevice(
-  const APnPInfos: TPnPInfoArray;
-  const AVId, APId: Word;
-  const ADeviceId, ACaption: String);
-begin
-  var Info := TDeviceInfo.Create(APnPInfos, AVid, APid, ADeviceId, ACaption);
-
-  // Index を決定する
-  var Found := False;
-  var Cap: TXInputCapabilitiesEx;
-
-  var VId := Info.FPadInfo.VendorId;
-  var PId := Info.FPadInfo.ProductId;
-
-  for var i := 0 to 1 do
-  begin
-    for var j := 0 to 3 do
-    begin
-      FillChar(Cap, SizeOf(Cap), 0);
-
-      if
-        Succeeded(XInputGetCapabilitiesEx(1, j, 0, @Cap)) and
-        (Cap.VendorId = VId) and
-        (Cap.ProductId = PId)
-      then
-      begin
-        Info.FIndex := j;
-        FDeviceInfos[j] := Info;
-        Found := True;
-        Break;
-      end;
-    end;
-
-    // Xbox One Controller 対策
-    // Xbox One Controller だったら PId を変えてもう一度
-    if (not Found) and (VId = $045e) and (PId = $02ea) then
-      PId := $02ff
-    else
-      Break;
-  end;
-end;
-{$ENDIF}
-
 class destructor TWinGamePad.DestroyClass;
 begin
   FDeviceInfos.Free;
@@ -960,14 +901,14 @@ class function TWinGamePad.EnumDevicesCallback(
   lpddi: PDIDEVICEINSTANCE;
   pvRef: Pointer): BOOL;
 begin
-  var GUID := TGUID.Create(lpddi.guidProduct.ToString);
+  Result := DIENUM_CONTINUE; // 列挙を続行
 
-  var VendorID := LoWord(GUID.D1);
-  var ProductID := HiWord(GUID.D1);
+  var VendorID := LoWord(lpddi.guidProduct.D1);
+  var ProductID := HiWord(lpddi.guidProduct.D1);
 
-  var Caption := StrPas(lpddi.tszInstanceName);
+  var Caption := String(lpddi.tszInstanceName);
   if Caption.StartsWith('Controller (') then
-    Caption := Caption.Substring(12, Length(Caption) - 14);
+    Caption := Caption.Substring(12, Length(Caption) - 13);
 
   {
   Log.d(['Device Name: ', lpddi.tszInstanceName, ', ', lpddi.tszProductName]);
@@ -976,14 +917,33 @@ begin
   Log.d(['Caption: ', Caption]);
   }
 
-  CreateDevice(
-    PPnPInfoArray(pvRef)^,
-    VendorID,
-    ProductID,
-    lpddi.guidInstance.ToString,
-    Caption);
+  var Info :=
+    TDeviceInfo.Create(
+      PPnPInfoArray(pvRef)^,
+      VendorID,
+      ProductID,
+      lpddi.guidInstance.ToString,
+      Caption
+    );
 
-  Result := DIENUM_CONTINUE; // 列挙を続行
+  // Index を決定する
+  var Cap: TXInputCapabilitiesEx;
+
+  for var j := 0 to 3 do
+  begin
+    FillChar(Cap, SizeOf(Cap), 0);
+
+    if
+      Succeeded(XInputGetCapabilitiesEx(1, j, 0, @Cap)) and
+      (Cap.VendorId = VendorID) and
+      (Cap.ProductId = ProductID)
+    then
+    begin
+      Info.FIndex := j;
+      FDeviceInfos[j] := Info;
+      Break;
+    end;
+  end;
 end;
 {$ENDIF}
 

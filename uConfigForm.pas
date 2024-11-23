@@ -141,6 +141,7 @@ implementation
 uses
   FMX.Pickers
   , PK.Device.GamePad.Types
+  , PK.Utils.Log
   , uCommandUtils
   , uConfig
   ;
@@ -196,12 +197,15 @@ end;
 procedure TfrmConfig.cmbbxControllerIndexPopup(Sender: TObject);
 
   function ListUp(const AObject: TFmxObject): Boolean;
+  var
+    ListBox: TCustomListBox absolute AObject;
   begin
     Result := False;
 
     if AObject is TCustomListBox then
     begin
-      TCustomListBox(AObject).ShowScrollBars := False;
+      ListBox.ShowScrollBars := False;
+      ListBox.Margins.Bottom := -1;
       Exit(True);
     end;
 
@@ -214,9 +218,7 @@ procedure TfrmConfig.cmbbxControllerIndexPopup(Sender: TObject);
   end;
 
 begin
-  // ComboBox のスクロールバーを消す
-  // 恐らく Style 側の不備
-
+  // ComboBox のスクロールバー計算が間違っているので修正する
   // ListPicker
   var RType := SharedContext.GetType(cmbbxControllerIndex.ClassType);
   if RType = nil then
@@ -434,6 +436,7 @@ begin
     try
       cmbbxControllerIndex.Clear;
 
+      var W := 0.0;
       var Index := -1;
       for var i := 0 to FPad.GamePadInfoCount - 1 do
       begin
@@ -446,10 +449,16 @@ begin
         if Info.Id = FPad.ControllerId then
           Index := i;
 
-        cmbbxControllerIndex.Items.Add(Format('#%d - %s', [i + 1, Caption]));
+        var ItemText := Format('#%d - %s', [i + 1, Caption]);
+        var ItemTextW := cmbbxControllerIndex.Canvas.TextWidth(ItemText + 'W');
+        if ItemTextW > W then
+          W := ItemTextW;
+
+        cmbbxControllerIndex.Items.Add(ItemText);
       end;
 
       cmbbxControllerIndex.ItemIndex := Index;
+      cmbbxControllerIndex.ItemWidth := W;
     finally
       cmbbxControllerIndex.EndUpdate;
     end;
