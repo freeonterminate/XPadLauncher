@@ -283,7 +283,7 @@ begin
     TThread.CreateAnonymousThread(
       procedure
       begin
-        Sleep(100);
+        Sleep(100); // １拍おいて最後のボタンを見せる
 
         TThread.Synchronize(
           nil,
