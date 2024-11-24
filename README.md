@@ -9,9 +9,13 @@ XPadLauncher はゲームパッドの操作でアプリケーションを起動�
 # 使い方 / ダウンロード
 
 下記のページの使い方をご覧ください。  
-同じページからバイナリをダウンロードできます。  
+同じページからバイナリをダウンロードできます。 
 
 https://www.piksware.com/xplauncher
+
+# 製作記事
+
+https://qiita.com/pik/items/6d96d79c659359fed0e4
 
 # ライセンス
 © 2024, piksware.  
