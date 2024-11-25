@@ -328,29 +328,28 @@
         <DCCReference Include="uCommandUtils.pas"/>
         <DCCReference Include="uConfig.pas"/>
         <DCCReference Include="uMisc.pas"/>
-        <DCCReference Include="Lib\Device\PK.Device.GamePad.Types.pas"/>
-        <DCCReference Include="Lib\Device\PK.Device.GamePad.pas"/>
-        <DCCReference Include="Lib\Device\PK.Device.GamePad.Win.pas"/>
-        <DCCReference Include="Lib\Graphics\PK.Graphic.IconConverter.Win.pas"/>
-        <DCCReference Include="Lib\Graphics\PK.Graphic.IconUtils.Win.pas"/>
-        <DCCReference Include="Lib\Utils\PK.Utils.Application.pas"/>
-        <DCCReference Include="Lib\Utils\PK.Utils.Log.pas"/>
-        <DCCReference Include="Lib\Utils\PK.Utils.ProhibitMultiExec.pas"/>
-        <DCCReference Include="Lib\TrayIcon\PK.TrayIcon.Win.pas"/>
-        <DCCReference Include="Lib\TrayIcon\PK.TrayIcon.Default.pas"/>
-        <DCCReference Include="Lib\TrayIcon\PK.TrayIcon.Mac.pas"/>
-        <DCCReference Include="Lib\TrayIcon\PK.TrayIcon.pas"/>
-        <DCCReference Include="Lib\GUI\PK.GUI.NativePopupMenu.Win.pas"/>
-        <DCCReference Include="Lib\Utils\PK.Utils.ImageListHelper.pas"/>
-        <DCCReference Include="Lib\GUI\PK.GUI.DarkMode.Win.pas"/>
-        <DCCReference Include="Lib\Graphics\PK.Graphic.BitmapCodecManagerHelper.pas"/>
-        <DCCReference Include="Lib\Utils\PK.Utils.ScreenHelper.pas"/>
-        <DCCReference Include="Lib\HardInfo\PK.HardInfo.WMI.Win.pas"/>
         <DCCReference Include="Lib\Winapi\Winapi.GameInput.pas"/>
         <DCCReference Include="Lib\Winapi\Winapi.XInput.pas"/>
         <DCCReference Include="Lib\AutoRun\PK.AutoRun.Pas"/>
         <DCCReference Include="Lib\AutoRun\PK.AutoRun.Types.pas"/>
         <DCCReference Include="Lib\AutoRun\PK.AutoRun.Win.pas"/>
+        <DCCReference Include="Lib\Device\PK.Device.GamePad.Types.pas"/>
+        <DCCReference Include="Lib\Device\PK.Device.GamePad.pas"/>
+        <DCCReference Include="Lib\Device\PK.Device.GamePad.Win.pas"/>
+        <DCCReference Include="Lib\Graphics\PK.Graphic.BitmapCodecManagerHelper.pas"/>
+        <DCCReference Include="Lib\Graphics\PK.Graphic.IconConverter.Win.pas"/>
+        <DCCReference Include="Lib\Graphics\PK.Graphic.IconUtils.Win.pas"/>
+        <DCCReference Include="Lib\GUI\PK.GUI.NativePopupMenu.Win.pas"/>
+        <DCCReference Include="Lib\GUI\PK.GUI.DarkMode.Win.pas"/>
+        <DCCReference Include="Lib\HardInfo\PK.HardInfo.WMI.Win.pas"/>
+        <DCCReference Include="Lib\TrayIcon\PK.TrayIcon.Win.pas"/>
+        <DCCReference Include="Lib\TrayIcon\PK.TrayIcon.Default.pas"/>
+        <DCCReference Include="Lib\TrayIcon\PK.TrayIcon.Mac.pas"/>
+        <DCCReference Include="Lib\TrayIcon\PK.TrayIcon.pas"/>
+        <DCCReference Include="Lib\Utils\PK.Utils.Application.pas"/>
+        <DCCReference Include="Lib\Utils\PK.Utils.ImageListHelper.pas"/>
+        <DCCReference Include="Lib\Utils\PK.Utils.Log.pas"/>
+        <DCCReference Include="Lib\Utils\PK.Utils.ProhibitMultiExec.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -435,9 +434,9 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="Win64\Debug\XPadLauncher.rsm" Configuration="Debug" Class="DebugSymbols">
+                <DeployFile LocalName="Win64\Release\XPadLauncher.exe" Configuration="Release" Class="ProjectOutput">
                     <Platform Name="Win64">
-                        <RemoteName>XPadLauncher.rsm</RemoteName>
+                        <RemoteName>XPadLauncher.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
