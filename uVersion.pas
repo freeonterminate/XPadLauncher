@@ -46,6 +46,7 @@ type
     lblDelphi: TLabel;
     styleBlueClear: TStyleBook;
     procedure FormCreate(Sender: TObject);
+    procedure imgDelphiClick(Sender: TObject);
   private
   public
   end;
@@ -57,7 +58,9 @@ implementation
 {$R *.fmx}
 
 uses
-  PK.Utils.Application;
+  PK.Utils.Application
+  , PK.Utils.Browser
+  ;
 
 procedure ShowVersion;
 begin
@@ -72,6 +75,11 @@ end;
 procedure TfrmVersion.FormCreate(Sender: TObject);
 begin
   lblVersion.Text := 'Version ' + Application.Version;
+end;
+
+procedure TfrmVersion.imgDelphiClick(Sender: TObject);
+begin
+  TBrowserUtils.Open('https://www.embarcadero.com/jp/products/delphi');
 end;
 
 end.

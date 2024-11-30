@@ -73,7 +73,6 @@ object frmVersion: TfrmVersion
           'Copryright 2024, piksware.'
           'https://github.com/freeonterminate/XPadLauncher/'
           ''
-          ''
           'Input Prompts (Pixel art)'
           'https://kenney.nl/assets/input-prompts'
           'kenney_input-prompts'
@@ -442,6 +441,7 @@ object frmVersion: TfrmVersion
             FileName = 'D:\Source\Delphi\Advent\2024\XPadLauncher\Images\Icon\Delphi.png'
           end>
         Align = Top
+        Cursor = crHandPoint
         Margins.Left = 8.000000000000000000
         Margins.Top = 8.000000000000000000
         Margins.Right = 8.000000000000000000
@@ -451,6 +451,7 @@ object frmVersion: TfrmVersion
         Size.Width = 64.000000000000000000
         Size.Height = 64.000000000000000000
         Size.PlatformDefault = False
+        OnClick = imgDelphiClick
       end
       object lblDelphi: TLabel
         Align = Top

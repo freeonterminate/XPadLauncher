@@ -333,6 +333,7 @@
         <DCCReference Include="Lib\AutoRun\PK.AutoRun.Pas"/>
         <DCCReference Include="Lib\AutoRun\PK.AutoRun.Types.pas"/>
         <DCCReference Include="Lib\AutoRun\PK.AutoRun.Win.pas"/>
+        <DCCReference Include="Lib\Utils\PK.Utils.Browser.pas"/>
         <DCCReference Include="Lib\Device\PK.Device.GamePad.Types.pas"/>
         <DCCReference Include="Lib\Device\PK.Device.GamePad.pas"/>
         <DCCReference Include="Lib\Device\PK.Device.GamePad.Win.pas"/>

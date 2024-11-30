@@ -17,6 +17,7 @@ uses
   PK.AutoRun in 'Lib\AutoRun\PK.AutoRun.Pas',
   PK.AutoRun.Types in 'Lib\AutoRun\PK.AutoRun.Types.pas',
   PK.AutoRun.Win in 'Lib\AutoRun\PK.AutoRun.Win.pas',
+  PK.Utils.Browser in 'Lib\Utils\PK.Utils.Browser.pas',
   PK.Device.GamePad.Types in 'Lib\Device\PK.Device.GamePad.Types.pas',
   PK.Device.GamePad in 'Lib\Device\PK.Device.GamePad.pas',
   PK.Device.GamePad.Win in 'Lib\Device\PK.Device.GamePad.Win.pas',
@@ -33,8 +34,7 @@ uses
   PK.Utils.Application in 'Lib\Utils\PK.Utils.Application.pas',
   PK.Utils.ImageListHelper in 'Lib\Utils\PK.Utils.ImageListHelper.pas',
   PK.Utils.Log in 'Lib\Utils\PK.Utils.Log.pas',
-  PK.Utils.ProhibitMultiExec in 'Lib\Utils\PK.Utils.ProhibitMultiExec.pas'
-  ;
+  PK.Utils.ProhibitMultiExec in 'Lib\Utils\PK.Utils.ProhibitMultiExec.pas';
 
 {$R *.res}
 
