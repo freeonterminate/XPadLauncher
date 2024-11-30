@@ -66,11 +66,8 @@ end;
 procedure Execute(const APath: String);
 begin
   {$IFDEF MSWINDOWS}
-  if TFile.Exists(APath) then
-  begin
-    if (ShellExecute(0, 'open', PChar(APath), nil, nil, SW_SHOW) < 32) then
-      WinExec(PAnsiChar(AnsiString(APath)), SW_SHOW)
-  end;
+  if (ShellExecute(0, 'open', PChar(APath), nil, nil, SW_SHOW) < 32) then
+    WinExec(PAnsiChar(AnsiString(APath)), SW_SHOW)
   {$ENDIF}
 
   {$IFDEF OSX}

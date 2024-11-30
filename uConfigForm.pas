@@ -104,11 +104,21 @@ type
     btControllerVibe: TButton;
     imgControllerVibeIcon: TImage;
     pathReload: TPath;
-    Layout1: TLayout;
+    layConfigBase: TLayout;
     chbxAutoStart: TCheckBox;
     btnCancel: TButton;
     pathCancel: TPath;
     Path1: TPath;
+    layAutoStartBase: TLayout;
+    layTimeoutMillisBase: TLayout;
+    lblTimeout: TLabel;
+    barTimeoutMillis: TTrackBar;
+    lblMillis: TLabel;
+    rectButtonSheet: TRectangle;
+    textSelectGamePad: TText;
+    effectSelectGamePad: TGlowEffect;
+    lblTimeoutMin: TLabel;
+    lblTimeoutMax: TLabel;
     procedure FormDestroy(Sender: TObject);
     procedure timerUpdateTimer(Sender: TObject);
     procedure rectSeqAddButtonMouseDown(Sender: TObject; Button: TMouseButton;
@@ -119,6 +129,7 @@ type
     procedure btControllerVibeClick(Sender: TObject);
     procedure cmbbxControllerIndexPopup(Sender: TObject);
     procedure chbxAutoStartChange(Sender: TObject);
+    procedure barTimeoutMillisChange(Sender: TObject);
   private var
     FUpdating: Boolean;
     FPad: TGamePad;
@@ -161,6 +172,11 @@ type
   TOpenPopup = class(TPopup) end;
 
 { TfrmConfig }
+
+procedure TfrmConfig.barTimeoutMillisChange(Sender: TObject);
+begin
+  lblMillis.Text := Format('%d [msec]', [Trunc(barTimeoutMillis.Value)]);
+end;
 
 procedure TfrmConfig.btControllerVibeClick(Sender: TObject);
 begin
@@ -272,6 +288,7 @@ begin
   begin
     FCommandFrames.Save;
     Config.ControllerId := FPad.ControllerId;
+    Config.TimeoutMillis := Trunc(barTimeoutMillis.Value);
   end
   else
     FPad.ControllerId := FOrgControllerId;
@@ -312,6 +329,7 @@ begin
   ClientHeight := Trunc(MinH);
 
   chbxAutoStart.IsChecked := TConfig.AutoRun.Registered;
+  barTimeoutMillis.Value := Config.TimeoutMillis;
 
   FCommandFrames :=
     TCommandFrames.Create(
@@ -437,7 +455,7 @@ begin
   try
     FPad.UpdateGamePadInfo;
 
-    cmbbxControllerIndex.BeginUpdate;
+    BeginUpdate;
     try
       cmbbxControllerIndex.Clear;
 
@@ -462,10 +480,14 @@ begin
         cmbbxControllerIndex.Items.Add(ItemText);
       end;
 
+      var Selected := Index > -1;
+      rectButtonSheet.Visible := not Selected;
+      FCommandFrames.ChangeAddEnabled(Selected);
+
       cmbbxControllerIndex.ItemIndex := Index;
       cmbbxControllerIndex.ItemWidth := W;
     finally
-      cmbbxControllerIndex.EndUpdate;
+      EndUpdate;
     end;
   finally
     FUpdating := False;

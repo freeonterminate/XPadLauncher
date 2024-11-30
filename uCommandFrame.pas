@@ -24,6 +24,7 @@ uses
   , System.Types
   , System.Classes
   , System.Generics.Collections
+  , System.UITypes
   , FMX.Types
   , FMX.Graphics
   , FMX.Controls
@@ -83,6 +84,8 @@ type
     FGroupingRects: TList<TRectangle>;
   private
     procedure AdjustSeqWidth;
+    procedure ChangeAddEnabled(const AEnabled: Boolean);
+    procedure CheckDelEnable;
     procedure GlyphClickHandler(Sender: TObject);
     procedure SetInfo(const ACommand: TJsonCommand);
     procedure AddCommand(const AButtons: TGamePadButtons);
@@ -100,6 +103,7 @@ type
   TCommandFrames = class
   private var
     FPad: TGamePad;
+    FAddEnabled: Boolean;
     FImageList: TImageList;
     FListBox: TListBox;
     FItems: TList<TframeCommand>;
@@ -113,6 +117,7 @@ type
     function Add: TframeCommand;
     procedure Load;
     procedure Save;
+    procedure ChangeAddEnabled(const AEnabled: Boolean);
   end;
 
 implementation
@@ -172,9 +177,16 @@ end;
 
 procedure TframeCommand.AdjustSeqWidth;
 begin
-  var Gs := FCommands[FCommands.Count - 1];
-  laySeq.Width :=
-    Gs[Gs.Count - 1].BoundsRect.Right + rectSelector.Stroke.Thickness + 4;
+  if FCommands.Count > 0 then
+  begin
+    var Gs := FCommands[FCommands.Count - 1];
+    laySeq.Width :=
+      Gs[Gs.Count - 1].BoundsRect.Right + rectSelector.Stroke.Thickness + 4;
+  end
+  else
+    laySeq.Width := 0;
+
+  CheckDelEnable;
 end;
 
 procedure TframeCommand.btnCommandRemoveClick(Sender: TObject);
@@ -265,6 +277,27 @@ begin
   end;
 
   CreateGroupingRect;
+  CheckDelEnable;
+end;
+
+procedure TframeCommand.ChangeAddEnabled(const AEnabled: Boolean);
+const
+  COLORS: array [Boolean] of TAlphaColor =
+    (TAlphaColors.Dimgray, TAlphaColors.Mediumspringgreen);
+begin
+  btnSeqAdd.Enabled := AEnabled;
+  pathSeqAdd.Fill.Color := COLORS[AEnabled];
+end;
+
+procedure TframeCommand.CheckDelEnable;
+const
+  COLORS: array [Boolean] of TAlphaColor =
+    (TAlphaColors.Dimgray, TAlphaColors.Mediumvioletred);
+begin
+  var HasItem := FCommands.Count > 0;
+
+  btnSeqDel.Enabled := HasItem;
+  pathSeqDel.Fill.Color := COLORS[HasItem];
 end;
 
 procedure TframeCommand.ClearGroupingRect;
@@ -413,7 +446,18 @@ function TCommandFrames.Add: TframeCommand;
 begin
   Result := TframeCommand.CreateCommandFrame(FListBox, FPad, FImageList);
   Result.FParent := Self;
+  Result.CheckDelEnable;
+  Result.ChangeAddEnabled(FAddEnabled);
+
   FItems.Add(Result);
+end;
+
+procedure TCommandFrames.ChangeAddEnabled(const AEnabled: Boolean);
+begin
+  FAddEnabled := AEnabled;
+
+  for var Item in FItems do
+    Item.ChangeAddEnabled(FAddEnabled);
 end;
 
 procedure TCommandFrames.Clear;

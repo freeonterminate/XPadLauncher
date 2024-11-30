@@ -43,11 +43,14 @@ type
 
   TJsonCommands = record
     controllerId: String;
+    timeoutMillis: Integer;
     count: Integer;
     items: TArray<TJsonCommand>;
   end;
 
   TConfig = class
+  private const
+    DEFAULT_TIMEOUT = 300;
   private class var
     FInstance: TConfig;
     FAutoRun: TAutoRun;
@@ -60,6 +63,7 @@ type
     FSeqs: TSequenceArray;
     FSortedSeqs: TSequenceArray;
     FControllerId: String;
+    FTimeoutMillis: Integer;
     FIsFirstRun: Boolean;
   private
     procedure CreateSortedSeqs;
@@ -84,6 +88,7 @@ type
     property SortedSequence[const AIndex: Integer]: TSequence
       read GetSortedSequence;
     property ControllerId: String read FControllerId write FControllerId;
+    property TimeoutMillis: Integer read FTimeoutMillis write FTimeoutMillis;
     property IsFirstRun: Boolean read FIsFirstRun;
     class property AutoRun: TAutoRun read FAutoRun;
   end;
@@ -105,7 +110,7 @@ uses
   , PK.Utils.Log
   ;
 
-function Config: TConfig;
+function Config: TConfig; inline;
 begin
   Result := TConfig.FInstance;
 end;
@@ -318,6 +323,9 @@ begin
         FItems[i] := Commands.items[i];
 
       FControllerId := Commands.controllerId;
+      FTimeoutMillis := Commands.timeoutMillis;
+      if FTimeoutMillis = 0 then
+        FTimeoutMillis := DEFAULT_TIMEOUT;
     finally
       S.Free;
     end;
@@ -395,6 +403,7 @@ begin
 
   var Commands: TJsonCommands;
 
+  Commands.timeoutMillis := FTimeoutMillis;
   Commands.controllerId := FControllerId;
   Commands.count := GetCount;
 

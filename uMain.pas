@@ -59,7 +59,6 @@ type
     procedure imgLogoClick(Sender: TObject);
   private const
     COMMAND_BUFFER_COUNT = 32;
-    COMMAND_LIMIT = 300;
     TIMER_INTERVAL_WAITING = 100;
     TIMER_INTERVAL_ACTIVE = 16;
   private var
@@ -186,7 +185,7 @@ begin
     Exit;
 
   var Cur: TDateTime := Now;
-  if MilliSecondsBetween(Cur, FPrevTime) > COMMAND_LIMIT then
+  if MilliSecondsBetween(Cur, FPrevTime) > Config.TimeoutMillis then
   begin
     FCommandIndex := 0;
     //Log.d('Rest');
