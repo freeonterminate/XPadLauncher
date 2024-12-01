@@ -137,6 +137,8 @@ type
     FCommandFrames: TCommandFrames;
     FOrgControllerId: String;
   private
+    procedure CheckControllerSelected;
+  private
     procedure Init(const APad: TGamePad; const AImageList: TImageList);
     procedure UpdateDeviceList;
     procedure Vibrate(const AProc: TProc);
@@ -196,6 +198,13 @@ begin
     TConfig.AutoRun.Unregister;
 end;
 
+procedure TfrmConfig.CheckControllerSelected;
+begin
+  var Selected := cmbbxControllerIndex.ItemIndex > -1;
+  rectButtonSheet.Visible := not Selected;
+  FCommandFrames.ChangeAddEnabled(Selected);
+end;
+
 procedure TfrmConfig.cmbbxControllerIndexChange(Sender: TObject);
 begin
   cmbbxControllerIndex.Hint := cmbbxControllerIndex.Text;
@@ -205,6 +214,7 @@ begin
     Exit;
 
   FPad.ControllerId := FPad.GamePadInfos[cmbbxControllerIndex.ItemIndex].Id;
+  CheckControllerSelected;
 
   if not FUpdating then
     btControllerVibeClick(nil);
@@ -480,12 +490,10 @@ begin
         cmbbxControllerIndex.Items.Add(ItemText);
       end;
 
-      var Selected := Index > -1;
-      rectButtonSheet.Visible := not Selected;
-      FCommandFrames.ChangeAddEnabled(Selected);
-
       cmbbxControllerIndex.ItemIndex := Index;
       cmbbxControllerIndex.ItemWidth := W;
+
+      CheckControllerSelected;
     finally
       EndUpdate;
     end;

@@ -3,12 +3,12 @@ object frmConfig: TfrmConfig
   Top = 0
   BorderIcons = [biSystemMenu, biMaximize]
   Caption = 'Config'
-  ClientHeight = 420
+  ClientHeight = 448
   ClientWidth = 800
   Position = ScreenCenter
   StyleBook = styleBlueClear
   FormStyle = StayOnTop
-  Constraints.MinHeight = 420.000000000000000000
+  Constraints.MinHeight = 448.000000000000000000
   Constraints.MinWidth = 800.000000000000000000
   FormFactor.Width = 320
   FormFactor.Height = 480
@@ -23,7 +23,7 @@ object frmConfig: TfrmConfig
     Padding.Right = 8.000000000000000000
     Padding.Bottom = 8.000000000000000000
     Size.Width = 800.000000000000000000
-    Size.Height = 420.000000000000000000
+    Size.Height = 448.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 0
     object layButtons: TLayout
@@ -32,7 +32,7 @@ object frmConfig: TfrmConfig
       Position.X = 8.000000000000000000
       Position.Y = 44.000000000000000000
       Size.Width = 400.000000000000000000
-      Size.Height = 368.000000000000000000
+      Size.Height = 396.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 0
       TabStop = False
@@ -177,7 +177,7 @@ object frmConfig: TfrmConfig
       object layConfigBase: TLayout
         Align = Bottom
         Margins.Bottom = -4.000000000000000000
-        Position.Y = 320.000000000000000000
+        Position.Y = 348.000000000000000000
         Size.Width = 400.000000000000000000
         Size.Height = 52.000000000000000000
         Size.PlatformDefault = False
@@ -271,6 +271,7 @@ object frmConfig: TfrmConfig
       object rectButtonSheet: TRectangle
         Align = Contents
         Fill.Color = xF0000000
+        Margins.Bottom = -1.000000000000000000
         Size.Width = 400.000000000000000000
         Size.Height = 368.000000000000000000
         Size.PlatformDefault = False
@@ -296,13 +297,13 @@ object frmConfig: TfrmConfig
     object laySequenceBase: TLayout
       Align = Client
       Size.Width = 372.000000000000000000
-      Size.Height = 368.000000000000000000
+      Size.Height = 396.000000000000000000
       Size.PlatformDefault = False
       TabOrder = 1
       object lstbxSequences: TListBox
         Align = Client
         Size.Width = 372.000000000000000000
-        Size.Height = 368.000000000000000000
+        Size.Height = 396.000000000000000000
         Size.PlatformDefault = False
         StyleLookup = 'commandlistboxstyle'
         TabOrder = 0
@@ -311,7 +312,7 @@ object frmConfig: TfrmConfig
         DefaultItemStyles.GroupHeaderStyle = ''
         DefaultItemStyles.GroupFooterStyle = ''
         Viewport.Width = 368.000000000000000000
-        Viewport.Height = 364.000000000000000000
+        Viewport.Height = 392.000000000000000000
         object itemSeqAdd: TListBoxItem
           Size.Width = 368.000000000000000000
           Size.Height = 40.000000000000000000
