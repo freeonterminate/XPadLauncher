@@ -128,16 +128,31 @@ begin
 
     {$IFDEF MSWINDOWS}
     var AppPath := path;
-    var SL := TStringList.Create;
-    try
-      SL.Delimiter := ' ';
-      SL.DelimitedText := path;
 
-      if SL.Count > 0 then
-        AppPath := SL[0];
-    finally
-      SL.Free;
+    if not TFile.Exists(AppPath) then
+    begin
+      var Index := AppPath.ToLower.IndexOf('.exe');
+      if Index > -1 then
+        AppPath := AppPath.SubString(0, Index + 4);
     end;
+
+    if not TFile.Exists(AppPath) then
+    begin
+      var SL := TStringList.Create;
+      try
+        SL.Delimiter := ' ';
+        SL.DelimitedText := path;
+
+        if SL.Count > 0 then
+          AppPath := SL[0];
+      finally
+        SL.Free;
+      end;
+    end;
+
+    var Index := AppPath.ToLower.IndexOf('.exe');
+    if Index < 0 then
+      AppPath := AppPath + '.exe';
 
     if TFile.Exists(AppPath) then
     begin
