@@ -127,9 +127,21 @@ begin
     AImage.Assign(nil);
 
     {$IFDEF MSWINDOWS}
-    if TFile.Exists(path) then
+    var AppPath := path;
+    var SL := TStringList.Create;
+    try
+      SL.Delimiter := ' ';
+      SL.DelimitedText := path;
+
+      if SL.Count > 0 then
+        AppPath := SL[0];
+    finally
+      SL.Free;
+    end;
+
+    if TFile.Exists(AppPath) then
     begin
-      var Icon := TIconUtils.GetAppIcon(path, 0);
+      var Icon := TIconUtils.GetAppIcon(AppPath, 0);
       try
         TIconConverter.IconToBitmap(Icon, AImage);
       finally
