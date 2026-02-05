@@ -328,7 +328,8 @@ destructor TTrayIconWin.Destroy;
 begin
   ClearIcon;
 
-  DeallocateHWnd(FHandle);
+  // Delphi 13 対応（無くても問題は無い）
+  // DeallocateHWnd(FHandle);
 
   DestroyMenu(FMenu);
   FIcons.Free;
